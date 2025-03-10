@@ -32,6 +32,9 @@ extern "C" {
 #define WS_CLEAR_AREA_OFFSET   2.0
 #define WS_FILL_AREA_OFFSET    1.0
 
+/* option to switch usage of shaders on or off */
+extern short int wsgl_use_shaders;
+
 typedef struct {
    Pint x, y;
    Pfloat distance;
@@ -132,7 +135,7 @@ int wsgl_init(
 /*******************************************************************************
  * wsgl_close
  *
- * DESCR:       Close 
+ * DESCR:       Close
  * RETURNS:     N/A
  */
 
@@ -497,7 +500,7 @@ void wsgl_setup_int_style(
 /*******************************************************************************
  * wsgl_setup_int_attr_nocol
  *
- * DESCR:       Setup interior attributes without color 
+ * DESCR:       Setup interior attributes without color
  * RETURNS:     N/A
  */
 
@@ -509,7 +512,7 @@ void wsgl_setup_int_attr_nocol(
 /*******************************************************************************
  * wsgl_setup_int_attr
  *
- * DESCR:       Setup interior attributes 
+ * DESCR:       Setup interior attributes
  * RETURNS:     N/A
  */
 
@@ -520,11 +523,11 @@ void wsgl_setup_int_attr(
 
 /*******************************************************************************
  * wsgl_get_back_int_colr
- * 
+ *
  * DESCR:       Get backface interior colur
  * RETURNS:     Pointer to interiour colour
  */
- 
+
 Pgcolr* wsgl_get_back_int_colr(
    Ws_attr_st *ast
    );
@@ -657,7 +660,7 @@ Pfloat wsgl_get_edge_width(
 /*******************************************************************************
  * wsgl_setup_edge_attr
  *
- * DESCR:       Setup edge attributes 
+ * DESCR:       Setup edge attributes
  * RETURNS:     N/A
  */
 
@@ -681,7 +684,7 @@ void wsgl_set_marker_ind(
 /*******************************************************************************
  * wsgl_setup_marker_attr
  *
- * DESCR:       Setup marker attributes 
+ * DESCR:       Setup marker attributes
  * RETURNS:     N/A
  */
 
@@ -694,7 +697,7 @@ void wsgl_setup_marker_attr(
 /*******************************************************************************
  * wsgl_setup_background
  *
- * DESCR:       Setup background colour 
+ * DESCR:       Setup background colour
  * RETURNS:     N/A
  */
 
@@ -1217,4 +1220,3 @@ extern unsigned char *wsgl_hatch_tbl[];
 #endif /* __cplusplus */
 
 #endif /* _wsglP_h */
-

@@ -122,7 +122,7 @@ void wsgl_setup_back_int_attr_nocol(
    }
 
    if (wsgl->cur_struct.lighting) {
-     if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) {
+     if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) {
        glUniform1i(shading_mode, 1);
      } else {
        glEnable(GL_LIGHTING);
@@ -130,7 +130,7 @@ void wsgl_setup_back_int_attr_nocol(
    }
    else
      {
-       if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) {
+       if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) {
 	 glUniform1i(shading_mode, 0);
        } else {
 	 glDisable(GL_LIGHTING);
@@ -379,7 +379,7 @@ void wsgl_setup_int_refl_props(
 
    switch (refl_eqn) {
    case PREFL_AMBIENT:
-     if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) glUniform1i(shading_mode, 1);
+     if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) glUniform1i(shading_mode, 1);
      if (colr_type == PMODEL_RGB) {
        ambient[0] = colr->direct.rgb.red   * refl_props->ambient_coef;
        ambient[1] = colr->direct.rgb.green * refl_props->ambient_coef;
@@ -400,7 +400,7 @@ void wsgl_setup_int_refl_props(
 
    case PREFL_AMB_DIFF:
      if (colr_type == PMODEL_RGB) {
-       if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) glUniform1i(shading_mode, 1);
+       if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) glUniform1i(shading_mode, 1);
        ambient[0] = colr->direct.rgb.red   * refl_props->ambient_coef;
        ambient[1] = colr->direct.rgb.green * refl_props->ambient_coef;
        ambient[2] = colr->direct.rgb.blue  * refl_props->ambient_coef;
@@ -420,7 +420,7 @@ void wsgl_setup_int_refl_props(
 
    case PREFL_AMB_DIFF_SPEC:
      if (colr_type == PMODEL_RGB) {
-       if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) glUniform1i(shading_mode, 1);
+       if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) glUniform1i(shading_mode, 1);
        ambient[0] = colr->direct.rgb.red   * refl_props->ambient_coef;
        ambient[1] = colr->direct.rgb.green * refl_props->ambient_coef;
        ambient[2] = colr->direct.rgb.blue  * refl_props->ambient_coef;
@@ -442,11 +442,11 @@ void wsgl_setup_int_refl_props(
      memset(ambient, 0.0, sizeof(Pfloat) * 3);
      memset(diffuse, 0.0, sizeof(Pfloat) * 3);
      memset(specular, 0.0, sizeof(Pfloat) * 3);
-     if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) glUniform1i(shading_mode, 0);
+     if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) glUniform1i(shading_mode, 0);
      break;
    }
 
-   if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) {
+   if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) {
      glVertexAttrib4f(vCOLOR,
 		      colr->direct.rgb.red,
 		      colr->direct.rgb.green,
@@ -610,7 +610,7 @@ void wsgl_setup_back_int_refl_props(
 	break;
    }
 
-   if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) {
+   if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) {
      glVertexAttrib4f(vCOLOR,
 		      colr->direct.rgb.red,
 		      colr->direct.rgb.green,

@@ -40,6 +40,7 @@
 #include "private/wsbP.h"
 #include "private/sofas3P.h"
 
+short int wsgl_use_shaders = 1;
 #define LOG_INT(DATA) \
    css_print_eltype(ELMT_HEAD(DATA)->elementType); \
    printf(":\tSIZE: %d\t", ELMT_HEAD(DATA)->length); \

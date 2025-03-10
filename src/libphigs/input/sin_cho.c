@@ -180,14 +180,18 @@ static void enable_choice(
 							  NULL, 0
 							  );
     for (i=0; i<data->count; i++){
-      if (data->choices.strings != NULL)
+      if (data->choices.strings != NULL){
+#ifdef DEBUG
+	printf("Setup Choice motif String nr %d is %s length %d\n", i, data->choices.strings[i], (int)strlen(data->choices.strings[i]));
+#endif
 	wm[i] = XtVaCreateManagedWidget(data->choices.strings[i],
 					xmToggleButtonWidgetClass,
 					device->item_handle.choice.viewport, NULL);
-      else
+      } else {
 	wm[i] = XtVaCreateManagedWidget(NULL,
 				      xmToggleButtonWidgetClass,
 				      device->item_handle.choice.viewport, NULL);
+      };
       params[i].choice = i+1;
       params[i].device = device;
       XtAddCallback(wm[i], XmNvalueChangedCallback, choice_notify, (XtPointer)&params[i]);

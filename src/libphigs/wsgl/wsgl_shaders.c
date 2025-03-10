@@ -352,17 +352,27 @@ void wsgl_shaders(Ws * ws){
     abort();
   }
 #endif
-  if (!GLEW_ARB_vertex_shader ||! GLEW_ARB_fragment_shader ||! GLEW_ARB_shader_objects) {
-    fprintf(stderr, "WARNING: Shaders are not available. Some functionality will not work, like shading, lighting and clipping\n");
+  if (! wsgl_use_shaders || !GLEW_ARB_vertex_shader ||! GLEW_ARB_fragment_shader ||! GLEW_ARB_shader_objects) {
+    fprintf(stderr, "WARNING: Shaders are not available or not wanted.\nSome functionality will not work, e.g. clipping\n");
   } else {
-    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     char NewerVersion[] = "1.30";
     const char * ShaderVersion = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
     const char * Vendor = (const char *) glGetString(GL_VENDOR);
     const char * Renderer = (const char *) glGetString(GL_RENDERER);
     printf("INFO: Shader version is %s.\n", ShaderVersion);
     printf("INFO Vendor: %s, card: %s\n", Vendor, Renderer);
+    /*
+      There is a bug somewhere when V3D driver (like on Raspberry-Pi) are used.
+      Rendering works fine but then the program crashes with a segfault when the OpenGL window is clicked.
+      For now, we switch off the use of shaders if this driver is detected.
+     */
+    if (0 == strncmp(Renderer,"V3D", 3)){
+	printf("WARNING: Detected V3D driver. Because of a bug shaders will be switched off\n");
+	wsgl_use_shaders = 0;
+	return;
+    }
+    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     if (strcmp(ShaderVersion, NewerVersion) < 0 ){
       printf("WARNING: Shader version is %s Using version 1.20 for shaders\n", ShaderVersion);
       glShaderSource(vertex_shader, 1, &vertex_shader_text_120, NULL);

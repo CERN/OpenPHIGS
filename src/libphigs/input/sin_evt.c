@@ -148,8 +148,8 @@ int phg_sin_evt_register(
 #ifdef DEBUG
    printf("sin_evt: phg_sin_evt_register\n");
    printf("\t%-14s", eventNames[event_type]);
-   printf("\tWindow = %p, ", window);
-   printf("\tClient_data = %p\n", cdata);
+   printf("\tWindow = %p, ", (void *) window);
+   printf("\tClient_data = %p\n", (void *) cdata);
 #endif
    /* First check if entry exists */
    for (ev = (Phg_sin_evt_entry *) LIST_HEAD(&ev_tbl->events[event_type]);

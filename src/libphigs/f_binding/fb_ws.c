@@ -59,11 +59,14 @@ FTN_SUBROUTINE(popwk)(
    Pcolr_rep rep;
    char filename[512];
 
+
    /* read default configuration file if not read yet */
    if (! config_read){
      config_read = 1;
      read_config("phigs.def");
    };
+   /* init filename to zero */
+   bzero(filename, 512);
 
    conn_id.lun = lun;
    conn_id.background = 0;
@@ -139,9 +142,11 @@ FTN_SUBROUTINE(popwk)(
 	 wsh = PHG_WSID(ws_id);
 	 if (strlen(config[ws_id].filename) == 0){
 	   sprintf(filename, "fort.%d", lun);
-	   strcpy(wsh->filename, filename);
+	   strncpy(wsh->filename, filename, strlen(filename));
+	   (wsh->filename)[strlen(filename)] = '\0';
 	 } else {
-	   strncpy(wsh->filename, config[ws_id].filename, sizeof(config[ws_id].filename));
+	   strncpy(wsh->filename, config[ws_id].filename, strlen(config[ws_id].filename));
+	   (wsh->filename)[strlen(config[ws_id].filename)] = '\0';
 	 }
 	 wsgl_clear(wsh);
       }
@@ -1170,8 +1175,8 @@ FTN_SUBROUTINE(pmsg)(
 }
 
 /*
- * 
- *  extensions to the Standard 
+ *
+ *  extensions to the Standard
  *
 */
 
@@ -1301,5 +1306,6 @@ FTN_SUBROUTINE(psfname)(
   wsh = PHG_WSID(ws_id);
   if (wsh != NULL){
     strncpy(wsh->filename, filename, length);
+    (wsh->filename)[length] = '\0';
   }
 }

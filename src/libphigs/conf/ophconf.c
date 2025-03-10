@@ -30,6 +30,7 @@
 #include "phg.h"
 #include "private/phgP.h"
 #include "phconf.h"
+#include "private/wsglP.h"
 
 int max_wkid = 40;
 Pophconf config[256];
@@ -46,6 +47,7 @@ void read_config(char * config_file){
   float xmin,  xmax, ymin, ymax;
   float red, green, blue;
   Pophconf newconfig;
+  int use_shaders;
 
   /* initialize output */
   newconfig.wkid = -1;
@@ -73,7 +75,7 @@ void read_config(char * config_file){
     /* read the configuration file and filter for wkid */
     fh = fopen(config_file, "r");
     if (fh == NULL){
-      printf("INFO: no configuration file %s found. Using defaults.\n", config_file);
+      printf("WARNING: Cannot open configuration file %s. Using defaults.\n", config_file);
       return;
     }
     while (fgets(line, maxsize, fh) != NULL){
@@ -118,6 +120,15 @@ void read_config(char * config_file){
 	  newconfig.background_color.rgb.red = red;
 	  newconfig.background_color.rgb.green = green;
 	  newconfig.background_color.rgb.blue = blue;
+	}
+	if (sscanf(line, "%%gs %d", &use_shaders) > 0){
+	  if (use_shaders == 0){
+	    wsgl_use_shaders = 0;
+	    printf("Shaders are DISABLED by configuration\n");
+	  } else {
+	    wsgl_use_shaders = 1;
+	    printf("Shaders are ENABLED by configuration\n");
+	  }
 	}
       }
     }

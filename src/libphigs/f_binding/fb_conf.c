@@ -33,10 +33,19 @@
  * DESCR:       Read configuration from file
  * RETURNS:     N/A
  */
-
+#define MAXLEN 4096
 FTN_SUBROUTINE(pxndef)(
-		       FTN_CHARACTER(name)
+		       FTN_CHARACTER(NAME)
 		       )
 {
-  read_config(FTN_CHARACTER_GET(name));
+  char name[MAXLEN+1];
+  char * filename = FTN_CHARACTER_GET(NAME);
+  Pint length = FTN_CHARACTER_LEN(NAME);
+  if (length <= MAXLEN) {
+    strncpy(name, filename, length);
+    name[length] = '\0';
+    read_config(name);
+  } else {
+    printf("WARNING: Configuration file name is too long\n");
+  }
 }

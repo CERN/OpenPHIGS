@@ -96,7 +96,7 @@ static void setup_ambient_light(
 #ifdef DEBUG
    printf("Ambient light: %f %f %f\n", amb[0], amb[1], amb[2]);
 #endif
-   if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
+   if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
      switch (ind){
      case 0:
        glUniform1i(lightSource0, 0);
@@ -177,7 +177,7 @@ static void setup_directional_light(
           dif[0], dif[1], dif[2],
           pos[0], pos[1], pos[2]);
 #endif
-   if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
+   if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
      switch (ind){
      case 0:
        glUniform1i(lightSource0, 0);
@@ -273,7 +273,7 @@ static void setup_positional_light(
           pos[0], pos[1], pos[2],
           coef[0], coef[1]);
 #endif
-   if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
+   if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
      switch (ind){
      case 0:
        glUniform1i(lightSource0, 0);
@@ -390,7 +390,7 @@ void wsgl_update_light_src_state(
             }
          }
       } else {
-	if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
+	if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
 	  switch (i){
 	  case 1:
 	    glUniform1i(lightSource0, 0);
@@ -419,7 +419,7 @@ void wsgl_update_light_src_state(
 	}
       }
    }
-   if (!GLEW_ARB_vertex_shader || !GLEW_ARB_fragment_shader || !GLEW_ARB_shader_objects) glPopMatrix();
+   if (!wsgl_use_shaders || !GLEW_ARB_vertex_shader || !GLEW_ARB_fragment_shader || !GLEW_ARB_shader_objects) glPopMatrix();
 }
 
 /*******************************************************************************

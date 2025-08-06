@@ -491,9 +491,7 @@ Ws* phg_wsb_open_ws(
   ws->drawable_id = 0;
   ws->glx_context = 0;
   ws->hcsf = 1.0;
-
   if (args->conn_type == PHG_ARGS_CONN_HCOPY) {
-
     /* Store workstation type parameters */
     dt = &args->type->desc_tbl.phigs_dt;
     xdt = &args->type->desc_tbl.xwin_dt;
@@ -512,6 +510,7 @@ Ws* phg_wsb_open_ws(
     ws->display = phg_wsx_open_gl_display(NULL, &ret->err);
     if (ws->display == NULL) {
       ERR_BUF(ws->erh, ret->err);
+      printf("Open GL display failed\n");
       goto abort;
     }
     if (!phg_wsx_setup_tool_nodisp(ws, NULL, args)) {
@@ -520,7 +519,6 @@ Ws* phg_wsb_open_ws(
     }
   }
   else if (args->conn_type == PHG_ARGS_CONN_OPEN) {
-
     /* Store workstation type parameters */
     dt = &args->type->desc_tbl.phigs_dt;
     xdt = &args->type->desc_tbl.xwin_dt;
@@ -541,7 +539,6 @@ Ws* phg_wsb_open_ws(
     }
   }
   else if (args->conn_type == PHG_ARGS_CONN_DRAWABLE) {
-
     /* Store workstation type parameters */
     dt = &args->type->desc_tbl.phigs_dt;
     xdt = &args->type->desc_tbl.xwin_dt;
@@ -567,7 +564,6 @@ Ws* phg_wsb_open_ws(
   }
 
   if (dt->ws_category == PCAT_OUTIN) {
-
     ws->input_overlay_window = phg_wsx_create_overlay(ws);
     if (ws->input_overlay_window == 0) {
       XDestroyWindow(ws->display, ws->drawable_id);
@@ -853,8 +849,8 @@ void phg_wsb_traverse_all_postings(
                                    Ws *ws
                                    )
 {
-  Wsb_output_ws	*owsb = &ws->out_ws.model.b;
-  Ws_post_str		*post_str, *end;
+  Wsb_output_ws *owsb = &ws->out_ws.model.b;
+  Ws_post_str   *post_str, *end;
 
   WSB_CHECK_POSTED(&owsb->posted);
   if( WSB_SOME_POSTED(&owsb->posted) ) {

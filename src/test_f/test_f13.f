@@ -222,54 +222,128 @@ C     Include PHIGS enumeration file
       INCLUDE 'phigsf77.h'
 
 C     Delcare variables
-      INTEGER        KR4
-      REAL           VALR4(80)
-      CHARACTER(LEN=80)  NAMR4
-*
-      CHARACTER(LEN=80) TCHAR
-      CHARACTER(LEN=80) DATREC
+      INTEGER WKID, I
 
-      INTEGER WKID,LENOCC,LNAMR4,LSTEDI,I
-      INTEGER STDNR,STAT,LCHAR,PET,IA(2),IERR,MLDR,LDR
-      REAL XMIN,XMAX,YMIN,YMAX
+C     Configure choices dialog
+      PARAMETER(N=7, MAXSTR=30)
+      CHARACTER(LEN=80) DATREC(MAXSTR)
+      CHARACTER(LEN=MAXSTR) STRING(N+1)
+      INTEGER PROMPT(N),LSTR(N+1)
+      DATA STRING/'EXIT', 'TGA', 'PNG', 'PNGA',
+     +     'EPS', 'PDF', 'SVG',
+     +     'Please choose output format'/
+      REAL EVOL(6)
+      REAL TIMOUT
+
+      INTEGER IERR, ISTAT, ICHNR, MLDR, CHDNR
+      INTEGER LDR, PET, STAT, CHNR, WKIDI, ICL, IDEV
+
 C---- Define parameters for screen shot
 C
 C     WKPSG: Grey scale    WKPSC: Color
 C     WKTGA: TGA output    WKPNG: PNG    WKPNGA: PNG with transparency
 C
       INTEGER WKTGA, WKPNG, WKPNGA
-      PARAMETER (WKTGA=4, WKPNG=5, WKPNGA=6)
+      PARAMETER (WKTGA=4, WKPNG=5, WKPNGA=6, WKEPS=7, WKPDF=8, WKSVG=9)
 C     Output format
       INTEGER WKTOUT, WKFORM, ICONDI
       INTEGER LUNPS
 C     Default output LUN
       PARAMETER (LUNPS=20)
 
+C     Initialise defaults
+      CHDNR = 1
+      DO 3 I = 1,N
+         PROMPT(I) = PON
+ 3    CONTINUE
+
+C     Choices: adjust length
+      LSTR(1) = 4
+      LSTR(2) = 3
+      LSTR(3) = 3
+      LSTR(4) = 4
+      LSTR(5) = 3
+      LSTR(6) = 3
+      LSTR(7) = 3
+      LSTR(8) = 24
+C choose device
+      ISTAT = PNCHOI
+      ICHNR = 0
+      MLDR = MAXSTR
+
+      PET = -4
+      EVOL(1) = 0.50
+      EVOL(2) = 0.80
+      EVOL(3) = 0.0
+      EVOL(4) = 0.05
+      EVOL(5) = 0.
+      EVOL(6) = 1.
+
+C     Set timeout for user response
+      TIMOUT=60.0
+C     Define redraw flag
+      ICONDI = 0
 C     Open PHIGS and a workstation
       WKID=1
 C     workstation ID for printing
-      WKTOUT=99
+      WKTOUT=95
 C     Create color PNG
-      WKFORM = WKPNG
+      WKFORM = WKEPS
+C     Open the main window
       CALL POPPH(0, 1)
       CALL POPWK(WKID, 0, 3)
+C     draw the hour glass
       CALL KYSABL(WKID)
-C     Wait for user interaction
-      CALL PMSG(WKID,"Create a hard copy to file.");
-C     Refresh 
-      CALL PRST(WKID, ICONDI)
-C     Open output workstation
-      CALL POPWK (WKTOUT, LUNPS, WKFORM)
-C     set the output filename
-      CALL PSFNAME(WKTOUT, "hourglass.png")
-C     draw again
-      CALL KYSABL(WKTOUT)
-C     close workstations
-      CALL PCLWK(WKTOUT)
-C     Refresh 
-      CALL PRST(WKID, ICONDI)
-C     Wait for user interaction
-      CALL PMSG(WKID,"Done. Press the button to exit.");
+C     setup choices
+      CALL PPREC(N-1, PROMPT, 0, 0., N+1, LSTR, STRING, MLDR,
+     +     IERR, LDR, DATREC)
+      CALL PSCHM(WKID, CHDNR, PREQU, PECHO)
+      CALL PINCH3(WKID, CHDNR, ISTAT, ICHNR, PET, EVOL, LDR, DATREC)
+C     infinite loop
+      DO WHILE (1 .GT. 0)
+C     Put the device into event mode
+         CALL PSCHM(WKID, CHDNR, PEVENT, PECHO)
+         CALL PWAIT(TIMOUT, WKIDI, ICL, IDEV )
+         CALL PFLUSH(WKIDI, ICL, IDEV)
+         STAT = 0
+         CALL PGTCH(STAT, CHNR)
+         IF (STAT.eq.POK) THEN
+            ICHNR = CHNR
+            IF (CHNR.EQ.1) GOTO 20
+C     Format: TGA is 4, corresponds to choice number 2
+C     Output work station numbers: 99 for TGA, 98 for PNG etc
+            WKFORM=CHNR+2
+            WKTOUT=101-CHNR
+C     Action  Open the output workstation
+            PRINT*, "Chosen option is: ", CHNR
+            PRINT*, "Workstation: ", WKTOUT, "Format: ", WKFORM
+            CALL POPWK (WKTOUT, LUNPS, WKFORM)
+C     set the output filenames accordingly
+            IF (CHNR.EQ.2) THEN
+               CALL PSFNAME(WKTOUT, "hourglass.tga")
+            ELSE IF (CHNR.EQ.3) THEN
+               CALL PSFNAME(WKTOUT, "hourglass.png")
+            ELSE IF (CHNR.EQ.4) THEN
+               CALL PSFNAME(WKTOUT, "hourglass.pnga")
+            ELSE IF (CHNR.EQ.5) THEN
+               CALL PSFNAME(WKTOUT, "hourglass.eps")
+            ELSE IF (CHNR.EQ.6) THEN
+               CALL PSFNAME(WKTOUT, "hourglass.pdf")
+            ELSE IF (CHNR.EQ.7) THEN
+               CALL PSFNAME(WKTOUT, "hourglass.svg")
+            ENDIF
+C     draw again to output workstation
+            CALL KYSABL(WKTOUT)
+C     close output workstation
+            CALL PCLWK(WKTOUT)
+C     Refresh the main window
+            CALL PRST(WKID, ICONDI)
+         ELSE
+            PRINT*, "Nothing chosen. Exiting ..."
+            GOTO 20
+         ENDIF
+      ENDDO
+ 20   CONTINUE
 C     Close the main window
       CALL PCLWK(WKID)
       STOP

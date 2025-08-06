@@ -116,6 +116,7 @@ void read_config(char * config_file){
 
   /* defaults for updated configs */
   init_defaults();
+  wsgl_use_shaders = 1;
 
   if (config_file == NULL){
     printf("No configuration file name defined. Using defaults instead.\n");

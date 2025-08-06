@@ -58,6 +58,12 @@ else()
   set (GL_INCLUDES ${Epoxy_INCLUDE_DIR})
 endif()
 
+# gl2ps
+FIND_PATH(GL2PS_INCLUDE_DIR gl2ps.h)
+FIND_LIBRARY(GL2PS_LIBRARY NAMES gl2ps)
+add_definitions(-DGLEW)
+set (GL_INCLUDES ${GL2PS_INCLUDE_DIR})
+
 message(STATUS "GL Includes=${GL_INCLUDES}")
 include_directories(${X11_INCLUDE_DIR} ${MOTIF_INCLUDE_DIR} ${GL_INCLUDES})
 
@@ -100,6 +106,7 @@ if (USE_GLEW)
       ${X11_LIBRARIES}
       ${GLEW_LIBRARIES}
       ${OPENGL_LIBRARIES}
+      ${GL2PS_LIBRARY}
       m
       )
 else()
@@ -115,6 +122,7 @@ else()
       ${X11_LIBRARIES}
       ${OPENGL_LIBRARIES}
       ${Epoxy_LIBRARY}
+      ${GL2PS_LIBRARY}
       m
       )
 endif()

@@ -23,11 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-/*
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glx.h>
-*/
 #ifdef GLEW
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -135,29 +130,12 @@ int phg_wsx_set_best_args(
    int status = 0;
    /* Select workstation type */
    switch (wst->ws_type) {
-      case PWST_HCOPY_TRUE:
+      case PWST_HCOPY_TRUE_TGA:
       case PWST_HCOPY_TRUE_RGBA_PNG:
       case PWST_HCOPY_TRUE_RGB_PNG:
-          args[argc++] = GLX_RENDER_TYPE;
-          args[argc++] = GLX_RGBA_BIT;
-          args[argc++] = GLX_DRAWABLE_TYPE;
-          args[argc++] = GLX_WINDOW_BIT|GLX_PIXMAP_BIT;
-          args[argc++] = GLX_RED_SIZE;
-            args[argc++] = 8;
-          args[argc++] = GLX_GREEN_SIZE;
-            args[argc++] = 8;
-          args[argc++] = GLX_BLUE_SIZE;
-            args[argc++] = 8;
-          args[argc++] = GLX_ALPHA_SIZE;
-            args[argc++] = 8;
-          args[argc++] = GLX_DEPTH_SIZE;
-          args[argc++] = 24;
-          args[argc] = None;
-          status = 2;
-	  break;
-      case PWST_HCOPY_TRUE_DB:
-      case PWST_HCOPY_TRUE_RGBA_PNG_DB:
-      case PWST_HCOPY_TRUE_RGB_PNG_DB:
+      case PWST_HCOPY_TRUE_EPS:
+      case PWST_HCOPY_TRUE_PDF:
+      case PWST_HCOPY_TRUE_SVG:
           args[argc++] = GLX_RENDER_TYPE;
           args[argc++] = GLX_RGBA_BIT;
           args[argc++] = GLX_DRAWABLE_TYPE;
@@ -243,7 +221,7 @@ void phg_wsx_find_best_visual(
        *visual_info = glXChooseVisual(dpy, DefaultScreen(dpy), args);
        if (*visual_info == NULL) {
          *err_ind = ERRN205;
-         printf("Failed to get visual info\n");
+         printf("ERROR: Failed to get visual info\n");
        } else {
          /* NOTE: Only call this for true colour */
          *cmap = get_sharable_colormap(*visual_info, dpy);
@@ -257,7 +235,7 @@ void phg_wsx_find_best_visual(
          *visual_info = glXGetVisualFromFBConfig(dpy, ws->fbc[0]);
          *err_ind = 0;
        } else {
-         printf("Failed to get visual info for pbuffer\n");
+         printf("ERROR: Failed to get visual info for frame buffer\n");
          *err_ind = ERRN205;
        }
        break;
@@ -312,7 +290,7 @@ void phg_wsx_pixel_colour(
    if (ws->display) {
      XQueryColor(ws->display, cmap, &color);
    } else {
-     printf("OpenPHIGS FATAL: DISPLAY is NULL!!!!");
+     printf("ERROR: OpenPHIGS DISPLAY is not set");
    }
    gcolr->type = PMODEL_RGB;
    gcolr->val.general.x = (float) color.red / 65535.0;
@@ -333,7 +311,7 @@ void phg_wsx_update_ws_rect(
 {
    XWindowAttributes wattr;
 #ifdef DEBUGINP
-  printf("Setting window attributes.\n");
+  printf("DEBUG: Setting window attributes.\n");
 #endif
   memset(&wattr, 0, sizeof(XWindowAttributes));
   XGetWindowAttributes(ws->display, ws->drawable_id, &wattr);

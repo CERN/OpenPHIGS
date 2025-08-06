@@ -160,7 +160,10 @@ typedef enum {
    PCAT_MI,
    PCAT_TGA,
    PCAT_PNG,
-   PCAT_PNGA
+   PCAT_PNGA,
+   PCAT_EPS,
+   PCAT_PDF,
+   PCAT_SVG
 } Pws_cat;
 
 typedef enum {
@@ -3997,9 +4000,9 @@ void pinq_light_src_rep(
  * RETURNS:     N/A
  */
 void panno_text_rel3(
-		    Ppoint3 *ref_point,
-		    Pvec3 *offset,
-		    char *text);
+                     Ppoint3 *ref_point,
+                     Pvec3 *offset,
+                     char *text);
 
 
 /*******************************************************************************
@@ -4020,8 +4023,8 @@ void panno_text_rel(
  * RETURNS:     N/A
  */
 void pset_anno_char_ht(
-		    Pfloat height
-		       );
+                       Pfloat height
+                       );
 
 /*******************************************************************************
  * set_anno_align
@@ -4030,8 +4033,8 @@ void pset_anno_char_ht(
  * RETURNS:     N/A
  */
 void pset_anno_align(
-		     Ptext_align *text_align
-		     );
+                     Ptext_align *text_align
+                     );
 
 /*******************************************************************************
  * set_anno_path
@@ -4040,8 +4043,8 @@ void pset_anno_align(
  * RETURNS:     N/A
  */
   void pset_anno_path(
-		      Ptext_path text_path
-		      );
+                      Ptext_path text_path
+                      );
 
 /*******************************************************************************
  * GS element
@@ -4050,9 +4053,9 @@ void pset_anno_align(
  * RETURNS:     N/A
  */
 void pgse(
-	  Pgse_type gse_type,
-	  Pgse_data * gse_data
-	  );
+          Pgse_type gse_type,
+          Pgse_data * gse_data
+          );
 
 /*******************************************************************************
  * set highlighting color
@@ -4061,8 +4064,8 @@ void pgse(
  * RETURNS:     N/A
  */
 void pxset_highlight_colr (
-			   Pgcolr *colr
-			   );
+                           Pgcolr *colr
+                           );
 
 /*******************************************************************************
  * set highlighting filter
@@ -4071,9 +4074,9 @@ void pxset_highlight_colr (
  * RETURNS:     N/A
  */
 void pset_highl_filter (
-			Pint ws_id,
-			Pfilter *filter
-			);
+                        Pint ws_id,
+                        Pfilter *filter
+                        );
 
 /*******************************************************************************
  * pset_model_clip_ind
@@ -4083,8 +4086,8 @@ void pset_highl_filter (
  */
 
 void pset_model_clip_ind(
-			 Pclip_ind clipi
-			 );
+                         Pclip_ind clipi
+                         );
 
 /*******************************************************************************
  * pset_model_clip_vol3
@@ -4094,9 +4097,9 @@ void pset_model_clip_ind(
  */
 
 void  pset_model_clip_vol3 (
-			    Pint op,
-			    Phalf_space_list3 spacelist
-			    );
+                            Pint op,
+                            Phalf_space_list3 spacelist
+                            );
 
 /*******************************************************************************
  * predefine colors
@@ -4106,8 +4109,8 @@ void  pset_model_clip_vol3 (
  * Note: DELPHI extension
  */
 void pxset_color_map(
-		    Pint ws_id
-		    );
+                     Pint ws_id
+                     );
 
 /*******************************************************************************
  * print invisibility filter
@@ -4117,8 +4120,8 @@ void pxset_color_map(
  * Note: moved here from testing suite for debugging
  */
 void print_invis_filter(
-			Pint ws_id
-			);
+                        Pint ws_id
+                        );
 
 /*******************************************************************************
  * set alpha channel
@@ -4128,8 +4131,8 @@ void print_invis_filter(
  * Note: extending the standard
  */
 void pset_alpha_channel(
-			  Pfloat alpha
-			  );
+                        Pfloat alpha
+                        );
 
 /*******************************************************************************
  * phigs message
@@ -4140,32 +4143,42 @@ void pset_alpha_channel(
  */
 
 void pmessage(
-	      Pint ws_id,
-	      char* message
-	      );
+              Pint ws_id,
+              char* message
+              );
 
 /*******************************************************************************
- * Extension: set config file name
+ * set config file name
  *
  * DESCR:       set config file name
  * RETURNS:     N/A
  * Note: extending the standard
  */
 void pxset_conf_file_name(
-			  char * name
-			  );
-  
+                          char * name
+                          );
+
 /*******************************************************************************
-* Extension: set hardcopy scale factor
-*
-* DESCR:       set harcopy scale factor for workstation
-* RETURNS:     N/A
-* Note: extending the standard
-*/
+ *set hardcopy scale factor
+ *
+ * DESCR:       set harcopy scale factor for workstation
+ * RETURNS:     N/A
+ * Note: extending the standard
+ */
 void pxset_conf_hcsf(
-		     Pint wkid,
-		     Pfloat hcsf
-		     );
+                     Pint wkid,
+                     Pfloat hcsf
+                     );
+
+/*******************************************************************************
+ * pxinq_conf_hcsf
+ *
+ * DESCR:       inquire the hardcopy scale factor
+ * RETURNS:     current hard copy scale factor for given workstation
+ */
+Pint pxinq_conf_hcsf(
+                     Pint wkid
+                     );
 
 #ifdef __cplusplus
 }

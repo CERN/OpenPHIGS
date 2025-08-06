@@ -64,22 +64,25 @@ void pinq_light_src_rep( ws_id, index, type, err_ind, rep)
     } else {
       dt = &((Wst*)wsinfo->wstype)->desc_tbl.phigs_dt;
       if ( !(dt->ws_category == PCAT_OUT ||
-	     dt->ws_category == PCAT_TGA ||
-	     dt->ws_category == PCAT_PNG ||
-	     dt->ws_category == PCAT_PNGA ||
-	     dt->ws_category == PCAT_OUTIN ||
-	     dt->ws_category == PCAT_MO) ) {
-	*err_ind = ERR59;
+             dt->ws_category == PCAT_TGA ||
+             dt->ws_category == PCAT_PNG ||
+             dt->ws_category == PCAT_PNGA ||
+             dt->ws_category == PCAT_EPS ||
+             dt->ws_category == PCAT_PDF ||
+             dt->ws_category == PCAT_SVG ||
+             dt->ws_category == PCAT_OUTIN ||
+             dt->ws_category == PCAT_MO) ) {
+        *err_ind = ERR59;
       } else if ( index < 1) {
-	*err_ind = ERR129;
+        *err_ind = ERR129;
       } else {
-	wsh = PHG_WSID(ws_id);
-	(*wsh->inq_representation)(wsh, index, type, PHG_ARGS_LIGHTSRCREP, &ret);
-	if ( ret.err) {
-	  *err_ind = ret.err;
-	} else {
-	  *rep = ret.data.rep.lightsrcrep;
-	}
+        wsh = PHG_WSID(ws_id);
+        (*wsh->inq_representation)(wsh, index, type, PHG_ARGS_LIGHTSRCREP, &ret);
+        if ( ret.err) {
+          *err_ind = ret.err;
+        } else {
+          *rep = ret.data.rep.lightsrcrep;
+        }
       }
     }
   }

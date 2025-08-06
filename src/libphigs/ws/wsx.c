@@ -100,10 +100,10 @@ int X11ErrorHandler(Display * display, XErrorEvent * error)
  */
 
 int phg_wsx_setup_tool(
-		       Ws *ws,
-		       Phg_args_conn_info *conn_info,
-		       Wst *wst
-		       )
+                       Ws *ws,
+                       Phg_args_conn_info *conn_info,
+                       Wst *wst
+                       )
 {
   Pint err_ind;
   XVisualInfo *best_info;

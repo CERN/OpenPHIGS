@@ -33,6 +33,7 @@
 #include <epoxy/gl.h>
 #include <epoxy/glx.h>
 #endif
+#include <gl2ps.h>
 
 #include "phg.h"
 #include "css.h"
@@ -42,6 +43,8 @@
 #include "private/wsglP.h"
 #include "private/wsxP.h"
 #include "phconf.h"
+
+short int wsgl_use_shaders_settings;
 
 /*******************************************************************************
  * popen_ws
@@ -69,6 +72,9 @@ void popen_ws(
     config_read = 1;
     read_config("phigs.def");
   };
+  /* save the current shader settings */
+  printf("popen_ws: %d %d\n", wsgl_use_shaders, wsgl_use_shaders_settings);
+  wsgl_use_shaders_settings = wsgl_use_shaders;
   if (phg_entry_check(PHG_ERH, ERR2, Pfn_open_ws)) {
     if ((ws_id < 0) || (ws_id > MAX_NO_OPEN_WS)) {
       ERR_REPORT(PHG_ERH, ERR65);
@@ -99,12 +105,12 @@ void popen_ws(
         else {
           args.conn_info.background = 0;
           if (
-              ws_type == PWST_HCOPY_TRUE ||
-              ws_type == PWST_HCOPY_TRUE_DB ||
+              ws_type == PWST_HCOPY_TRUE_TGA ||
               ws_type == PWST_HCOPY_TRUE_RGB_PNG ||
-              ws_type == PWST_HCOPY_TRUE_RGB_PNG_DB ||
               ws_type == PWST_HCOPY_TRUE_RGBA_PNG ||
-              ws_type == PWST_HCOPY_TRUE_RGBA_PNG_DB
+              ws_type == PWST_HCOPY_TRUE_EPS ||
+              ws_type == PWST_HCOPY_TRUE_PDF ||
+              ws_type == PWST_HCOPY_TRUE_SVG
               ) {
             args.conn_type = PHG_ARGS_CONN_HCOPY;
             args.width = config[ws_id].display_width*config[ws_id].hcsf;
@@ -117,7 +123,12 @@ void popen_ws(
             memcpy(&args.conn_info, conn_id, sizeof(Phg_args_conn_info));
           }
         }
-
+        /* switch off shaders for EPS export */
+        if (ws_type == PWST_HCOPY_TRUE_EPS  || ws_type == PWST_HCOPY_TRUE_PDF || ws_type == PWST_HCOPY_TRUE_SVG ){
+          //          printf("popen_ws: switch off shaders\n");
+          wsgl_use_shaders_settings = wsgl_use_shaders;
+          wsgl_use_shaders = 0;
+        }
         args.wsid = ws_id;
         args.type = wst;
         args.erh = PHG_ERH;
@@ -156,6 +167,15 @@ void popen_ws(
           case PCAT_PNG:
           case PCAT_PNGA:
             strcpy(wsh->filename, "output.png");
+            break;
+          case PCAT_EPS:
+            strcpy(wsh->filename, "output.eps");
+            break;
+          case PCAT_PDF:
+            strcpy(wsh->filename, "output.pdf");
+            break;
+          case PCAT_SVG:
+            strcpy(wsh->filename, "output.svg");
             break;
           case PCAT_IN:
           case PCAT_OUT:
@@ -202,6 +222,7 @@ void pclose_ws(
   png_byte ** png_rows;
   png_structp png;
   int clean_fb = FALSE;
+  int gl2ps = 0;
   if (phg_ws_open(ws_id, Pfn_close_ws) != NULL) {
     wsh = PHG_WSID(ws_id);
     int width = wsh->type->desc_tbl.xwin_dt.tool.width;
@@ -211,6 +232,7 @@ void pclose_ws(
     glFlush();
     glFinish();
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    
     switch (dt->ws_category){
     case PCAT_IN:
     case PCAT_OUT:
@@ -221,17 +243,16 @@ void pclose_ws(
     case PCAT_TGA:
       buffer_size = 3*width*height*sizeof(GLubyte);
       pixel_buffer = (GLubyte * ) malloc(buffer_size);
-      //glXMakeContextCurrent(wsh->display, wsh->drawable_id, wsh->drawable_id, wsh->glx_context);
       glReadPixels(0, 0, width, height, GL_BGR_EXT, GL_UNSIGNED_BYTE, pixel_buffer);
       error = glGetError();
       if (error != GL_NO_ERROR ){
         printf("PCLOSEWS ERROR: glReadPixel returned error code %d\n", error);
       }
       short header[] = {0, 2, 0, 0, 0, 0, (short) width, (short) height, 24};
-      FILE* fd = fopen(wsh->filename, "w+");
-      fwrite(&header, sizeof(header), 1, fd);
-      fwrite(pixel_buffer, buffer_size, 1, fd);
-      fclose(fd);
+      wsh->fd = fopen(wsh->filename, "w+");
+      fwrite(&header, sizeof(header), 1, wsh->fd);
+      fwrite(pixel_buffer, buffer_size, 1, wsh->fd);
+      fclose(wsh->fd);
       free(pixel_buffer);
       clean_fb = TRUE;
       break;
@@ -244,18 +265,18 @@ void pclose_ws(
       glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixel_buffer);
       error = glGetError();
       if (error != GL_NO_ERROR ){
-	printf("PCLOSEWS ERROR: glReadPixel returned error code %d\n", error);
+        printf("PCLOSEWS ERROR: glReadPixel returned error code %d\n", error);
       }
       for (i=0; i<height; i++){
-	png_rows[i] = &(pixel_buffer[ (height - i - 1) * width * channels]);
+        png_rows[i] = &(pixel_buffer[ (height - i - 1) * width * channels]);
         }
         png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
         if (png) {
           png_infop info = png_create_info_struct(png);
           if (info){
-            FILE* fd = fopen(wsh->filename, "w+");
+            wsh->fd = fopen(wsh->filename, "w+");
             setjmp(png_jmpbuf(png));
-            png_init_io(png, fd);
+            png_init_io(png, wsh->fd);
             png_set_IHDR(
                          png,
                          info,
@@ -269,7 +290,7 @@ void pclose_ws(
             png_write_info(png, info);
             png_write_image(png, png_rows);
             png_write_end(png, NULL);
-            fclose(fd);
+            fclose(wsh->fd);
           } else {
             printf("PNG export error: failed to create info structure\n");
           }
@@ -277,7 +298,7 @@ void pclose_ws(
         } else {
           printf("PNG export error: failed to create write structure\n");
         }
-	free(pixel_buffer);
+        free(pixel_buffer);
       free(png_rows);
       clean_fb = TRUE;
       break;
@@ -287,7 +308,6 @@ void pclose_ws(
       buffer_size = channels*width*height*sizeof(GLubyte);
       pixel_buffer = (GLubyte*) malloc(buffer_size);
       nvals = channels * width * height;
-      //glXMakeContextCurrent(wsh->display, wsh->drawable_id, wsh->drawable_id, wsh->glx_context);
       glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixel_buffer);
       error = glGetError();
       if (error != GL_NO_ERROR ){
@@ -300,9 +320,9 @@ void pclose_ws(
       if (png) {
         png_infop info = png_create_info_struct(png);
         if (info){
-          FILE* fd = fopen(wsh->filename, "w+");
+          wsh->fd = fopen(wsh->filename, "w+");
           setjmp(png_jmpbuf(png));
-          png_init_io(png, fd);
+          png_init_io(png, wsh->fd);
           png_set_IHDR(
                        png,
                        info,
@@ -316,7 +336,7 @@ void pclose_ws(
           png_write_info(png, info);
           png_write_image(png, png_rows);
           png_write_end(png, NULL);
-          fclose(fd);
+          fclose(wsh->fd);
         } else {
           printf("PNG export error: failed to create info structure\n");
         }
@@ -328,8 +348,37 @@ void pclose_ws(
       free(png_rows);
       clean_fb = TRUE;
       break;
+    case PCAT_EPS:
+      gl2ps = GL2PS_EPS;
+      break;
+    case PCAT_PDF:
+      gl2ps = GL2PS_PDF;
+      break;
+    case PCAT_SVG:
+      gl2ps = GL2PS_SVG;
+      break;
     default:
       break;
+    }
+    if (gl2ps){
+      int buffsize = 1024*1024*1024;
+      wsh->fd = fopen(wsh->filename, "wb");
+      gl2psBeginPage(config[ws_id].window_title, "OpenPHIGS", NULL, gl2ps, GL2PS_BSP_SORT,
+                     GL2PS_DRAW_BACKGROUND | GL2PS_USE_CURRENT_VIEWPORT| GL2PS_SIMPLE_LINE_OFFSET|GL2PS_OCCLUSION_CULL|GL2PS_TIGHT_BOUNDING_BOX,
+                     GL_RGBA, 0, NULL, 0, 0, 0, buffsize, wsh->fd, NULL);
+      /* redfine colors and redraw */
+      int ctrl_flag = 0;
+      pxset_color_map(ws_id);
+      pset_colr_rep(ws_id, 0, &(config[ws_id].background_color));
+      predraw_all_structs(ws_id, ctrl_flag);
+      int state = gl2psEndPage();
+      if (state == GL2PS_OVERFLOW) {
+        printf("ERROR exporting as eps. Buffer size is too small.\n");
+      }
+      fclose(wsh->fd);
+      /* restore original shader settings */
+      wsgl_use_shaders = wsgl_use_shaders_settings;
+      clean_fb = TRUE;
     }
     (*wsh->update)(wsh, PFLAG_PERFORM);
     owsb = &wsh->out_ws.model.b;
@@ -607,9 +656,12 @@ void pset_hlhsr_mode(
    else {
       dt = &wsinfo->wstype->desc_tbl.phigs_dt;
       if (!(dt->ws_category == PCAT_OUT ||
-	    dt->ws_category == PCAT_TGA ||
-	    dt->ws_category == PCAT_PNG ||
-	    dt->ws_category == PCAT_PNGA ||
+            dt->ws_category == PCAT_TGA ||
+            dt->ws_category == PCAT_PNG ||
+            dt->ws_category == PCAT_PNGA ||
+            dt->ws_category == PCAT_EPS ||
+            dt->ws_category == PCAT_PDF ||
+            dt->ws_category == PCAT_SVG ||
             dt->ws_category == PCAT_OUTIN ||
             dt->ws_category == PCAT_MO)) {
          ERR_REPORT(PHG_ERH, ERR59);
@@ -880,6 +932,9 @@ void predraw_all_structs(
          case PCAT_TGA:
          case PCAT_PNG:
          case PCAT_PNGA:
+         case PCAT_EPS:
+         case PCAT_PDF:
+         case PCAT_SVG:
          case PCAT_MO:
             wsh = PHG_WSID(ws_id);
             (*wsh->redraw_all)(wsh, ctrl_flag);
@@ -915,6 +970,9 @@ void pupd_ws(
          case PCAT_TGA:
          case PCAT_PNG:
          case PCAT_PNGA:
+         case PCAT_EPS:
+         case PCAT_PDF:
+         case PCAT_SVG:
          case PCAT_MO:
             wsh = PHG_WSID(ws_id);
             (*wsh->update)(wsh, regen_flag);
@@ -953,6 +1011,9 @@ void pset_disp_upd_st(
          case PCAT_TGA:
          case PCAT_PNG:
          case PCAT_PNGA:
+         case PCAT_EPS:
+         case PCAT_PDF:
+         case PCAT_SVG:
          case PCAT_MO:
             wsh = PHG_WSID(ws_id);
             (*wsh->set_disp_update_state)(wsh, def_mode, mod_mode);
@@ -1021,9 +1082,12 @@ void pset_light_src_rep(
    if (wsinfo != NULL) {
       dt = &wsinfo->wstype->desc_tbl.phigs_dt;
       if (!(dt->ws_category == PCAT_OUT ||
-	    dt->ws_category == PCAT_TGA ||
-	    dt->ws_category == PCAT_PNG ||
-	    dt->ws_category == PCAT_PNGA ||
+            dt->ws_category == PCAT_TGA ||
+            dt->ws_category == PCAT_PNG ||
+            dt->ws_category == PCAT_PNGA ||
+            dt->ws_category == PCAT_EPS ||
+            dt->ws_category == PCAT_PDF ||
+            dt->ws_category == PCAT_SVG ||
             dt->ws_category == PCAT_OUTIN ||
             dt->ws_category == PCAT_MO)) {
          ERR_REPORT(PHG_ERH, ERR59);
@@ -1034,7 +1098,7 @@ void pset_light_src_rep(
       else if ((light_src_rep->type == PLIGHT_SPOT) &&
                ((light_src_rep->rec.spot.angle < 0) ||
                 (light_src_rep->rec.spot.angle > M_PI))) {
-	ERR_REPORT(PHG_ERH, ERR132);
+        ERR_REPORT(PHG_ERH, ERR132);
       }
       else {
          wsh = PHG_WSID(ws_id);
@@ -1300,9 +1364,12 @@ void pinq_list_line_inds(
       else {
          dt = &wsinfo->wstype->desc_tbl.phigs_dt;
          if (!(dt->ws_category == PCAT_OUT ||
-	       dt->ws_category == PCAT_TGA ||
-	       dt->ws_category == PCAT_PNG ||
-	       dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_TGA ||
+               dt->ws_category == PCAT_PNG ||
+               dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_EPS ||
+               dt->ws_category == PCAT_PDF ||
+               dt->ws_category == PCAT_SVG ||
                dt->ws_category == PCAT_OUTIN ||
                dt->ws_category == PCAT_MO)) {
             *err_ind = ERR59;
@@ -1349,9 +1416,12 @@ void pinq_list_marker_inds(
       else {
          dt = &wsinfo->wstype->desc_tbl.phigs_dt;
          if (!(dt->ws_category == PCAT_OUT ||
-	       dt->ws_category == PCAT_TGA ||
-	       dt->ws_category == PCAT_PNG ||
-	       dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_TGA ||
+               dt->ws_category == PCAT_PNG ||
+               dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_EPS ||
+               dt->ws_category == PCAT_PDF ||
+               dt->ws_category == PCAT_SVG ||
                dt->ws_category == PCAT_OUTIN ||
                dt->ws_category == PCAT_MO)) {
             *err_ind = ERR59;
@@ -1398,9 +1468,12 @@ void pinq_list_text_inds(
       else {
          dt = &wsinfo->wstype->desc_tbl.phigs_dt;
          if (!(dt->ws_category == PCAT_OUT ||
-	       dt->ws_category == PCAT_TGA ||
-	       dt->ws_category == PCAT_PNG ||
-	       dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_TGA ||
+               dt->ws_category == PCAT_PNG ||
+               dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_EPS ||
+               dt->ws_category == PCAT_PDF ||
+               dt->ws_category == PCAT_SVG ||
                dt->ws_category == PCAT_OUTIN ||
                dt->ws_category == PCAT_MO)) {
             *err_ind = ERR59;
@@ -1447,9 +1520,12 @@ void pinq_list_int_inds(
       else {
          dt = &wsinfo->wstype->desc_tbl.phigs_dt;
          if (!(dt->ws_category == PCAT_OUT ||
-	       dt->ws_category == PCAT_TGA ||
-	       dt->ws_category == PCAT_PNG ||
-	       dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_TGA ||
+               dt->ws_category == PCAT_PNG ||
+               dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_EPS ||
+               dt->ws_category == PCAT_PDF ||
+               dt->ws_category == PCAT_SVG ||
                dt->ws_category == PCAT_OUTIN ||
                dt->ws_category == PCAT_MO)) {
             *err_ind = ERR59;
@@ -1496,9 +1572,12 @@ void pinq_list_edge_inds(
       else {
          dt = &wsinfo->wstype->desc_tbl.phigs_dt;
          if (!(dt->ws_category == PCAT_OUT ||
-	       dt->ws_category == PCAT_TGA ||
-	       dt->ws_category == PCAT_PNG ||
-	       dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_TGA ||
+               dt->ws_category == PCAT_PNG ||
+               dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_EPS ||
+               dt->ws_category == PCAT_PDF ||
+               dt->ws_category == PCAT_SVG ||
                dt->ws_category == PCAT_OUTIN ||
                dt->ws_category == PCAT_MO)) {
             *err_ind = ERR59;
@@ -1545,9 +1624,12 @@ void pinq_list_colr_inds(
       else {
          dt = &wsinfo->wstype->desc_tbl.phigs_dt;
          if (!(dt->ws_category == PCAT_OUT ||
-	       dt->ws_category == PCAT_TGA ||
-	       dt->ws_category == PCAT_PNG ||
-	       dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_TGA ||
+               dt->ws_category == PCAT_PNG ||
+               dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_EPS ||
+               dt->ws_category == PCAT_PDF ||
+               dt->ws_category == PCAT_SVG ||
                dt->ws_category == PCAT_OUTIN ||
                dt->ws_category == PCAT_MO)) {
             *err_ind = ERR59;
@@ -1595,9 +1677,12 @@ void pinq_line_rep(
       else {
          dt = &wsinfo->wstype->desc_tbl.phigs_dt;
          if (!(dt->ws_category == PCAT_OUT ||
-	       dt->ws_category == PCAT_TGA ||
-	       dt->ws_category == PCAT_PNG ||
-	       dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_TGA ||
+               dt->ws_category == PCAT_PNG ||
+               dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_EPS ||
+               dt->ws_category == PCAT_PDF ||
+               dt->ws_category == PCAT_SVG ||
                dt->ws_category == PCAT_OUTIN ||
                dt->ws_category == PCAT_MO)) {
             *err_ind = ERR59;
@@ -1660,9 +1745,12 @@ void pinq_marker_rep(
       else {
          dt = &wsinfo->wstype->desc_tbl.phigs_dt;
          if (!(dt->ws_category == PCAT_OUT ||
-	       dt->ws_category == PCAT_TGA ||
-	       dt->ws_category == PCAT_PNG ||
-	       dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_TGA ||
+               dt->ws_category == PCAT_PNG ||
+               dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_EPS ||
+               dt->ws_category == PCAT_PDF ||
+               dt->ws_category == PCAT_SVG ||
                dt->ws_category == PCAT_OUTIN ||
                dt->ws_category == PCAT_MO)) {
             *err_ind = ERR59;
@@ -1725,9 +1813,12 @@ void pinq_text_rep(
       else {
          dt = &wsinfo->wstype->desc_tbl.phigs_dt;
          if (!(dt->ws_category == PCAT_OUT ||
-	       dt->ws_category == PCAT_TGA ||
-	       dt->ws_category == PCAT_PNG ||
-	       dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_TGA ||
+               dt->ws_category == PCAT_PNG ||
+               dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_EPS ||
+               dt->ws_category == PCAT_PDF ||
+               dt->ws_category == PCAT_SVG ||
                dt->ws_category == PCAT_OUTIN ||
                dt->ws_category == PCAT_MO)) {
             *err_ind = ERR59;
@@ -1792,9 +1883,12 @@ void pinq_int_rep(
       else {
          dt = &wsinfo->wstype->desc_tbl.phigs_dt;
          if (!(dt->ws_category == PCAT_OUT ||
-	       dt->ws_category == PCAT_TGA ||
-	       dt->ws_category == PCAT_PNG ||
-	       dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_TGA ||
+               dt->ws_category == PCAT_PNG ||
+               dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_EPS ||
+               dt->ws_category == PCAT_PDF ||
+               dt->ws_category == PCAT_SVG ||
                dt->ws_category == PCAT_OUTIN ||
                dt->ws_category == PCAT_MO)) {
             *err_ind = ERR59;
@@ -1857,9 +1951,12 @@ void pinq_edge_rep(
       else {
          dt = &wsinfo->wstype->desc_tbl.phigs_dt;
          if (!(dt->ws_category == PCAT_OUT ||
-	       dt->ws_category == PCAT_TGA ||
-	       dt->ws_category == PCAT_PNG ||
-	       dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_TGA ||
+               dt->ws_category == PCAT_PNG ||
+               dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_EPS ||
+               dt->ws_category == PCAT_PDF ||
+               dt->ws_category == PCAT_SVG ||
                dt->ws_category == PCAT_OUTIN ||
                dt->ws_category == PCAT_MO)) {
             *err_ind = ERR59;
@@ -1923,9 +2020,12 @@ void pinq_colr_rep(
       else {
          dt = &wsinfo->wstype->desc_tbl.phigs_dt;
          if (!(dt->ws_category == PCAT_OUT ||
-	       dt->ws_category == PCAT_TGA ||
-	       dt->ws_category == PCAT_PNG ||
-	       dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_TGA ||
+               dt->ws_category == PCAT_PNG ||
+               dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_EPS ||
+               dt->ws_category == PCAT_PDF ||
+               dt->ws_category == PCAT_SVG ||
                dt->ws_category == PCAT_OUTIN ||
                dt->ws_category == PCAT_MO)) {
             *err_ind = ERR59;
@@ -1984,9 +2084,12 @@ static void inq_filter(
       else {
          dt = &wsinfo->wstype->desc_tbl.phigs_dt;
          if (!(dt->ws_category == PCAT_OUT ||
-	       dt->ws_category == PCAT_TGA ||
-	       dt->ws_category == PCAT_PNG ||
-	       dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_TGA ||
+               dt->ws_category == PCAT_PNG ||
+               dt->ws_category == PCAT_PNGA ||
+               dt->ws_category == PCAT_EPS ||
+               dt->ws_category == PCAT_PDF ||
+               dt->ws_category == PCAT_SVG ||
                dt->ws_category == PCAT_OUTIN ||
                dt->ws_category == PCAT_MO)) {
             *err_ind = ERR59;
@@ -2053,14 +2156,14 @@ void pxset_color_map(Pint ws_id){
   for (i=0; i<5; i++){
     for (j=0; j<5; j++){
       for (k=0; k<5; k++){
-	rep.rgb.red   = i*delta_n;
-	rep.rgb.green = j*delta_n;
-	rep.rgb.blue  = k*delta_n;
-	pset_colr_rep(ws_id, 16+index, &rep);
+        rep.rgb.red   = i*delta_n;
+        rep.rgb.green = j*delta_n;
+        rep.rgb.blue  = k*delta_n;
+        pset_colr_rep(ws_id, 16+index, &rep);
 #ifdef DEBUG
-	printf("Defining color index %d as RGB %f %f %f\n", 16+index, rep.rgb.red, rep.rgb.green, rep.rgb.blue);
+        printf("Defining color index %d as RGB %f %f %f\n", 16+index, rep.rgb.red, rep.rgb.green, rep.rgb.blue);
 #endif
-	index += 1;
+        index += 1;
       }
     }
   }

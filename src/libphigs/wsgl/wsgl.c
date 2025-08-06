@@ -25,8 +25,13 @@
 #include <string.h>
 #include <limits.h>
 #include <stdint.h>
-#include <GL/gl.h>
+#ifdef GLEW
+#include <GL/glew.h>
 #include <GL/glx.h>
+#else
+#include <epoxy/gl.h>
+#include <epoxy/glx.h>
+#endif
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xmu/StdCmap.h>
@@ -78,11 +83,11 @@ int wsgl_init(
    }
 #ifdef DEBUG
    printf("wsgl_init: background color type %d (%f %f %f)\n",
-	  background->type,
-	  background->val.general.x,
-	  background->val.general.y,
-	  background->val.general.z
-	  );
+          background->type,
+          background->val.general.x,
+          background->val.general.y,
+          background->val.general.z
+          );
 #endif
    phg_nset_init(&wsgl->cur_struct.ast.asf_nameset,
                  1,
@@ -406,6 +411,16 @@ void wsgl_begin_rendering(
 #ifdef DEBUG
    printf("Begin rendering\n");
 #endif
+   if (wsgl_use_shaders){
+     GLint currentProgram = 0;
+     glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+     if (currentProgram != ws->program){
+#ifdef DEBUG
+       printf("Switching back to program %d\n", ws->program);
+#endif
+       glUseProgram(ws->program);
+     }
+   }
 
    if (ws->drawable_id != 0){
      glXMakeContextCurrent(ws->display, ws->drawable_id, ws->drawable_id, ws->glx_context);

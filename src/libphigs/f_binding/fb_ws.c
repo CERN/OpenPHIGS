@@ -25,6 +25,7 @@
 #include <string.h>
 #include <math.h>
 
+#include <gl2ps.h>
 #include "phigs.h"
 #include "phg.h"
 #include "private/phgP.h"
@@ -34,6 +35,7 @@
 #include "util/ftn.h"
 #include "phconf.h"
 
+extern short int wsgl_use_shaders_settings;
 /*******************************************************************************
  * popwk
  *
@@ -60,15 +62,15 @@ FTN_SUBROUTINE(popwk)(
    Pcolr_rep rep;
    char filename[512];
 
-
    /* read default configuration file if not read yet */
    if (! config_read){
      config_read = 1;
      read_config("phigs.def");
    };
+   /* save the current shader settings */
+   wsgl_use_shaders_settings = wsgl_use_shaders;
    /* init filename to zero */
    bzero(filename, 512);
-
    conn_id.lun = lun;
    conn_id.background = 0;
 
@@ -107,12 +109,12 @@ FTN_SUBROUTINE(popwk)(
          }
          else {
            if (
-               ws_type == PWST_HCOPY_TRUE ||
-               ws_type == PWST_HCOPY_TRUE_DB ||
+               ws_type == PWST_HCOPY_TRUE_TGA ||
                ws_type == PWST_HCOPY_TRUE_RGB_PNG ||
-               ws_type == PWST_HCOPY_TRUE_RGB_PNG_DB ||
                ws_type == PWST_HCOPY_TRUE_RGBA_PNG ||
-               ws_type == PWST_HCOPY_TRUE_RGBA_PNG_DB
+               ws_type == PWST_HCOPY_TRUE_EPS ||
+               ws_type == PWST_HCOPY_TRUE_PDF ||
+               ws_type == PWST_HCOPY_TRUE_SVG
                ) {
              args.conn_type = PHG_ARGS_CONN_HCOPY;
              args.width = config[ws_id].display_width*config[ws_id].hcsf;
@@ -123,6 +125,11 @@ FTN_SUBROUTINE(popwk)(
              args.conn_type = PHG_ARGS_CONN_DRAWABLE;
              memcpy(&args.conn_info, &conn_id, sizeof(Phg_args_conn_info));
            }
+         }
+         /* switch off shaders for EPS export */
+         if (ws_type == PWST_HCOPY_TRUE_EPS || ws_type == PWST_HCOPY_TRUE_PDF || ws_type == PWST_HCOPY_TRUE_SVG ){
+           wsgl_use_shaders_settings = wsgl_use_shaders;
+           wsgl_use_shaders = 0;
          }
          args.wsid = ws_id;
          args.type = wst;
@@ -280,9 +287,9 @@ FTN_SUBROUTINE(pupast)(
  */
 
 FTN_SUBROUTINE(prst)(
-		     FTN_INTEGER(wkid),
-		     FTN_INTEGER(cofl)
-		     )
+                     FTN_INTEGER(wkid),
+                     FTN_INTEGER(cofl)
+                     )
 {
   Pint ws_id = FTN_INTEGER_GET(wkid);
   Pctrl_flag ctrl_flag =  FTN_INTEGER_GET(cofl);
@@ -327,9 +334,9 @@ FTN_SUBROUTINE(pswkw)(
  */
 
 FTN_SUBROUTINE(pswkw3)(
-		      FTN_INTEGER(wkid),
-		      FTN_REAL_ARRAY(wkwn)
-		       )
+                       FTN_INTEGER(wkid),
+                       FTN_REAL_ARRAY(wkwn)
+                       )
 {
   Pint wk_id = FTN_INTEGER_GET(wkid);
 #ifdef DEBUG
@@ -541,40 +548,43 @@ FTN_SUBROUTINE(pqvwr)(
     else {
       dt = &wsinfo->wstype->desc_tbl.phigs_dt;
       if (!(dt->ws_category == PCAT_OUT ||
-	    dt->ws_category == PCAT_TGA ||
-	    dt->ws_category == PCAT_PNG ||
-	    dt->ws_category == PCAT_PNGA ||
-	    dt->ws_category == PCAT_OUTIN ||
-	    dt->ws_category == PCAT_MO)) {
-	*err_ind = ERR59;
+            dt->ws_category == PCAT_TGA ||
+            dt->ws_category == PCAT_PNG ||
+            dt->ws_category == PCAT_PNGA ||
+            dt->ws_category == PCAT_EPS ||
+            dt->ws_category == PCAT_PDF ||
+            dt->ws_category == PCAT_SVG ||
+            dt->ws_category == PCAT_OUTIN ||
+            dt->ws_category == PCAT_MO)) {
+        *err_ind = ERR59;
       }
       else if (index < 1) {
-	*err_ind = ERR100;
+        *err_ind = ERR100;
       }
       else {
-	wsh = PHG_WSID(ws_id);
-	(*wsh->inq_representation)(wsh, index, type, PHG_ARGS_VIEWREP, &ret);
-	if (ret.err) {
-	  *err_ind = ret.err;
-	} else {
+        wsh = PHG_WSID(ws_id);
+        (*wsh->inq_representation)(wsh, index, type, PHG_ARGS_VIEWREP, &ret);
+        if (ret.err) {
+          *err_ind = ret.err;
+        } else {
           *err_ind = 0;
-	  if (ret.data.view_rep.update_state == PUPD_NOT_PEND){*vwupd = 0;} else {*vwupd = 1;};
-	  for (i=0;i<4;i++){
-	    for (j=0;j<4;j++){
-	      vwormt[4*j+i] = ret.data.rep.viewrep.ori_matrix[i][j];
-	      vwmpmt[4*j+i] = ret.data.rep.viewrep.map_matrix[i][j];
-	    }
-	  }
-	  vwcplm[0] =  ret.data.rep.viewrep.clip_limit.x_min;
-	  vwcplm[1] =  ret.data.rep.viewrep.clip_limit.x_max;
-	  vwcplm[2] =  ret.data.rep.viewrep.clip_limit.y_min;
-	  vwcplm[3] =  ret.data.rep.viewrep.clip_limit.y_max;
-	  vwcplm[4] =  ret.data.rep.viewrep.clip_limit.z_min;
-	  vwcplm[5] =  ret.data.rep.viewrep.clip_limit.z_max;
-	  if (ret.data.rep.viewrep.xy_clip)   {*xyclip = 1;} else {*xyclip = 0;};
-	  if (ret.data.rep.viewrep.back_clip) {*bclip = 1;}  else {*bclip = 0;};
-	  if (ret.data.rep.viewrep.front_clip){*fclip = 1;}  else {*fclip = 0;};
-	}
+          if (ret.data.view_rep.update_state == PUPD_NOT_PEND){*vwupd = 0;} else {*vwupd = 1;};
+          for (i=0;i<4;i++){
+            for (j=0;j<4;j++){
+              vwormt[4*j+i] = ret.data.rep.viewrep.ori_matrix[i][j];
+              vwmpmt[4*j+i] = ret.data.rep.viewrep.map_matrix[i][j];
+            }
+          }
+          vwcplm[0] =  ret.data.rep.viewrep.clip_limit.x_min;
+          vwcplm[1] =  ret.data.rep.viewrep.clip_limit.x_max;
+          vwcplm[2] =  ret.data.rep.viewrep.clip_limit.y_min;
+          vwcplm[3] =  ret.data.rep.viewrep.clip_limit.y_max;
+          vwcplm[4] =  ret.data.rep.viewrep.clip_limit.z_min;
+          vwcplm[5] =  ret.data.rep.viewrep.clip_limit.z_max;
+          if (ret.data.rep.viewrep.xy_clip)   {*xyclip = 1;} else {*xyclip = 0;};
+          if (ret.data.rep.viewrep.back_clip) {*bclip = 1;}  else {*bclip = 0;};
+          if (ret.data.rep.viewrep.front_clip){*fclip = 1;}  else {*fclip = 0;};
+        }
       }
     }
   }
@@ -641,19 +651,22 @@ FTN_SUBROUTINE(pqwkt)(
     else {
       dt = &wsinfo->wstype->desc_tbl.phigs_dt;
       if (!(dt->ws_category == PCAT_OUT ||
-	    dt->ws_category == PCAT_TGA ||
-	    dt->ws_category == PCAT_PNG ||
-	    dt->ws_category == PCAT_PNGA ||
-	    dt->ws_category == PCAT_OUTIN ||
-	    dt->ws_category == PCAT_MO)) {
-	*err_ind = ERR59;
+            dt->ws_category == PCAT_TGA ||
+            dt->ws_category == PCAT_PNG ||
+            dt->ws_category == PCAT_PNGA ||
+            dt->ws_category == PCAT_EPS  ||
+            dt->ws_category == PCAT_PDF  ||
+            dt->ws_category == PCAT_SVG  ||
+            dt->ws_category == PCAT_OUTIN ||
+            dt->ws_category == PCAT_MO)) {
+        *err_ind = ERR59;
       }
       else {
-	wsh = PHG_WSID(ws_id);
-	(*wsh->inq_disp_update_state)(wsh, &ret);
-	if (ret.err) {
-	  *err_ind = ret.err;
-	} else {
+        wsh = PHG_WSID(ws_id);
+        (*wsh->inq_disp_update_state)(wsh, &ret);
+        if (ret.err) {
+          *err_ind = ret.err;
+        } else {
           Wsb_output_ws	*owsb = &wsh->out_ws.model.b;
           if (owsb->ws_window_pending || owsb->ws_viewport_pending) {*tus = 1;} else {*tus = 0;};
           rwindo[0] = owsb->req_ws_window.x_min;
@@ -676,7 +689,7 @@ FTN_SUBROUTINE(pqwkt)(
           cviewp[2] = owsb->ws_viewport.y_min;
           cviewp[3] = owsb->ws_viewport.y_max;
           *err_ind = 0;
-	}
+        }
       }
     }
   }
@@ -723,15 +736,18 @@ FTN_SUBROUTINE(pqwkt3)(
     else {
       dt = &wsinfo->wstype->desc_tbl.phigs_dt;
       if (!(dt->ws_category == PCAT_OUT ||
-	    dt->ws_category == PCAT_TGA ||
-	    dt->ws_category == PCAT_PNG ||
-	    dt->ws_category == PCAT_PNGA ||
-	    dt->ws_category == PCAT_OUTIN ||
-	    dt->ws_category == PCAT_MO)) {
-	*err_ind = ERR59;
+            dt->ws_category == PCAT_TGA ||
+            dt->ws_category == PCAT_PNG ||
+            dt->ws_category == PCAT_PNGA ||
+            dt->ws_category == PCAT_EPS ||
+            dt->ws_category == PCAT_PDF ||
+            dt->ws_category == PCAT_SVG ||
+            dt->ws_category == PCAT_OUTIN ||
+            dt->ws_category == PCAT_MO)) {
+        *err_ind = ERR59;
       }
       else {
-	wsh = PHG_WSID(ws_id);
+        wsh = PHG_WSID(ws_id);
         Wsb_output_ws	*owsb = &wsh->out_ws.model.b;
         if (owsb->ws_window_pending || owsb->ws_viewport_pending) {*tus = 1;} else {*tus = 0;};
         rwindo[0] = owsb->req_ws_window.x_min;
@@ -812,34 +828,37 @@ FTN_SUBROUTINE(pqpost)(
     else {
       dt = &wsinfo->wstype->desc_tbl.phigs_dt;
       if (!(dt->ws_category == PCAT_OUT ||
-	    dt->ws_category == PCAT_TGA ||
-	    dt->ws_category == PCAT_PNG ||
-	    dt->ws_category == PCAT_PNGA ||
-	    dt->ws_category == PCAT_OUTIN ||
-	    dt->ws_category == PCAT_MO)) {
-	*err_ind = ERR59;
+            dt->ws_category == PCAT_TGA ||
+            dt->ws_category == PCAT_PNG ||
+            dt->ws_category == PCAT_PNGA ||
+            dt->ws_category == PCAT_EPS ||
+            dt->ws_category == PCAT_PDF ||
+            dt->ws_category == PCAT_SVG ||
+            dt->ws_category == PCAT_OUTIN ||
+            dt->ws_category == PCAT_MO)) {
+        *err_ind = ERR59;
       }
       else {
-	wsh = PHG_WSID(ws_id);
-	owsb = &wsh->out_ws.model.b;
-	Ws_posted_structs posted = owsb->posted;
-	current = &posted.highest;
-	while (current != NULL) {
-	  if (current->structh != NULL) {
-	    nposted += 1;
-	    prio = current->disp_pri;
-	    str_id = current->structh->struct_id;
-	    if (nposted == num) {
-	      *strid = str_id;
-	      *priort = prio;
-	    }
-	  }
-	  current = current->lower;
-	}
-	*err_ind = 0;
-	*number = nposted;
+        wsh = PHG_WSID(ws_id);
+        owsb = &wsh->out_ws.model.b;
+        Ws_posted_structs posted = owsb->posted;
+        current = &posted.highest;
+        while (current != NULL) {
+          if (current->structh != NULL) {
+            nposted += 1;
+            prio = current->disp_pri;
+            str_id = current->structh->struct_id;
+            if (nposted == num) {
+              *strid = str_id;
+              *priort = prio;
+            }
+          }
+          current = current->lower;
+        }
+        *err_ind = 0;
+        *number = nposted;
 #ifdef DEBUG
-	printf("PQPOST: returning number %d, strid %d and prio %f\n", nposted, *strid, *priort);
+        printf("PQPOST: returning number %d, strid %d and prio %f\n", nposted, *strid, *priort);
 #endif
       }
     }
@@ -1301,15 +1320,15 @@ FTN_SUBROUTINE(pxscm)(
 /*******************************************************************************
  * psfname
  *
- * DESCR:       Set workstation output file name for types 4 and 5
+ * DESCR:       Set workstation output file name for hardcopy types
  * RETURNS:     N/A
  * NOTES:       extension
  */
 
 FTN_SUBROUTINE(psfname)(
-			FTN_INTEGER(wkid),
-			FTN_CHARACTER(fname)
-			)
+                        FTN_INTEGER(wkid),
+                        FTN_CHARACTER(fname)
+                        )
 {
   Ws_handle wsh;
   Pint ws_id = FTN_INTEGER_GET(wkid);
@@ -1319,5 +1338,7 @@ FTN_SUBROUTINE(psfname)(
   if (wsh != NULL){
     strncpy(wsh->filename, filename, length);
     (wsh->filename)[length] = '\0';
+  } else {
+    printf("ERROR in PSFNAME: workstation %d not found.", ws_id);
   }
 }

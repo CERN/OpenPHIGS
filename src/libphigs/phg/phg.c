@@ -555,6 +555,9 @@ void phg_set_ws_filter(
          case PCAT_TGA:
          case PCAT_PNG:
          case PCAT_PNGA:
+         case PCAT_EPS:
+         case PCAT_PDF:
+         case PCAT_SVG:
          case PCAT_MO:
             wsh = PHG_WSID(ws_id);
             (*wsh->set_filter)(wsh,

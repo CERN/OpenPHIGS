@@ -882,10 +882,10 @@ FTN_SUBROUTINE(pschm)(
  */
 
 FTN_SUBROUTINE(pgtch)(
-		      Pint* stat,
-		      Pint* chnr) {
-  Pin_status status;
-  Pint choice;
+                      Pint* stat,
+                      Pint* chnr) {
+  Pin_status status = 0;
+  Pint choice = 0;
   pget_choice(&status, &choice);
   *stat = (Pint)status;
   *chnr = choice;

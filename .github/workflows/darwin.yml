@@ -18,7 +18,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: dependencies
-      run: brew reinstall gcc; brew install --cask xquartz; brew install mesa-glu glfw3 tcsh glew openmotif libXaw
+      run: brew reinstall gcc; brew install --cask xquartz; brew install mesa-glu glfw3 tcsh glew openmotif libXaw gl2ps
 
     - name: clean
       run: make clean

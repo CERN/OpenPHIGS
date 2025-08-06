@@ -65,12 +65,12 @@ Workstation numbers can be in the range from 0 to 99.
 * 1 PWST_OUTIN_TRUE                  Input/Output on GL display
 * 2 PWST_OUTPUT_TRUE_DB              Output only on GL, buffered
 * 3 PWST_OUTIN_TRUE_DB               Input/Output on GL display, buffered
-* 4 PWST_HCOPY_TRUE                  Hardcopy to file as TGA
-* 5 PWST_HCOPY_TRUE_DB               Hardcopy to file as TGA
-* 6 PWST_HCOPY_TRUE_RGB_PNG          Hardcopy to file as PNG RGB only
-* 7 PWST_HCOPY_TRUE_RGB_PNG_DB       Hardcopy to file as PNG RGB only, same as 6
-* 8 PWST_HCOPY_TRUE_RGBA_PNG         Hardcopy to file as PNG with Alpha channel
-* 9 PWST_HCOPY_TRUE_RGBA_PNG_DB      Hardcopy to file as PNG with Alpha channel, same as 6
+* 4 PWST_HCOPY_TRUE_TGA              Hardcopy to file as TGA
+* 5 PWST_HCOPY_TRUE_RGB_PNG          Hardcopy to file as PNG RGB only
+* 6 PWST_HCOPY_TRUE_RGBA_PNG         Hardcopy to file as PNG with Alpha channel
+* 7 PWST_HCOPY_TRUE_EPS              Hardcopy to file as Encapsulated PostScript, no shaders
+* 8 PWST_HCOPY_TRUE_PDF              Hardcopy to file as PDF, no shaders
+* 9 PWST_HCOPY_TRUE_SVG              Hardcopy to file as SVG, no shaders
 
 Notes:
  * There is no support for PostScript at the moment.
@@ -136,12 +136,16 @@ Extensions:
 ### There is some support for transparency.
 #### Fortran bindings
 * PXNDEF(STRING NAME): set the configuration location and file name
-* PXHCSF(INTEGER IWK, REAL VALUE): Set hardcopy scale factor for workstation ID WKID. Must be set before the workstation is being opened
+* PXSHCSF(INTEGER IWK, REAL VALUE): Set hardcopy scale factor for workstation ID WKID. Must be set before the workstation is being opened.
+* PXQHCSF(INTEGER IWK, REAL VALUE): Inquire the current scale factor for workstation ID WKID. The value is returned in the second argument.
 
 * PSALCH(REAL VALUE): set ALPHA channel to Value. Value is between 0(fully transparent) and 1 (opaque). Added to the current structure.
+* PSFNAME(INTEGER IWK, CHARACTER FNAME): set output file name for workstation ID IWK
+
 #### C-bindings
 * pxset_conf_file_name(char* path): set the configuration location and file name
-* pxset_conf_hcsf(WKID, float value): Set hardcopy scale factor for workstation ID WKID. Must be set before the workstation is being opened
+* pxset_conf_hcsf(WKID, Pfloat value): Set hardcopy scale factor for workstation ID WKID. Must be set before the workstation is being opened
+* Pfloat pxinq_conf_hcsf(WKID): Inquire the current hardcopy scale factor for workstation ID WKID.
 
 * pset_alpha_channel(float value): C-Binding for PSALCH. Added to the current structure.
 
@@ -150,3 +154,4 @@ Extensions:
 * 0.0.2-1: Implement additional extend C and Fortran bindings for CERN specific purposes
 * v0.1-1:  Fixes for exotic hardware
 * v0.2-1:  Introduce scale factor for hardcopies
+* v0.2-2:  Introduce additional functions to manage the scale factor programmatically

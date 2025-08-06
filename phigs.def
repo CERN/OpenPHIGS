@@ -16,7 +16,44 @@ Per workstation configurations
 %bg 0. 0. 0.          Background color R G B
 %hs 4.
 
-Workstation example for output
+Workstation example for output as tga
 %wk 99                Workstation for hardcopy
-%wg 512 512 0 0 1     Window width height px py border
-%hs 8.                scale factor for hardcopy
+%wg 1024 1024 0 0 1   Window width height px py border
+%wp 0.0 1.0 0.0 1.    position
+%bg 0. 0. 0.          Background color R G B
+%hs 3.                scale factor for hardcopy
+
+Workstation example for output png
+%wk 98                Workstation for hardcopy
+%wg 1024 1024 0 0 1   Window width height px py border
+%wp 0.0 1.0 0.0 1.    position
+%bg 0. 0. 0.          Background color R G B
+%hs 2.                scale factor for hardcopy
+
+Workstation example for output pnga
+%wk 97                Workstation for hardcopy
+%wg 1024 1024 0 0 1   Window width height px py border
+%wp 0.0 1.0 0.0 1.    position
+%hs 1.                scale factor for hardcopy
+%bg 0. 0. 0.          Background color R G B
+
+Workstation example for output eps
+%wk 96                Workstation for hardcopy
+%wg 2480 3508 0 0 1   Window width height px py border
+%wp 0.0 1.0 0.0 1.    position
+%hs 1.                scale factor for hardcopy
+%bg 0. 0. 0.          Background color R G B
+
+Workstation example for output pdf
+%wk 95                Workstation for hardcopy
+%wg 2480 3508 0 0 1     Window width height px py border
+%wp 0.0 1.0 0.0 1.    position
+%hs 1.                scale factor for hardcopy
+%bg 0. 0. 0.          Background color R G B
+
+Workstation example for output svg
+%wk 94                Workstation for hardcopy
+%wg 2480 2480 0 0 1   Window width height px py border
+%wp 0.0 1.0 0.0 1.    position
+%hs 1.                scale factor for hardcopy
+%bg 0. 0. 0.          Background color R G B

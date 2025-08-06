@@ -1653,9 +1653,9 @@ void pget_val(
  */
 
 void pget_choice(
-	      Pin_status *in_status,
-	      Pint *choice
-	      )
+                 Pin_status *in_status,
+                 Pint *choice
+                 )
 {
   Pchoice *chc;
   if (PSL_CUR_EVENT_CLASS(PHG_PSL) != PIN_NONE){
@@ -1663,9 +1663,10 @@ void pget_choice(
       chc = &PSL_CUR_EVENT_DATA(PHG_PSL, chc);
       *in_status = chc->status;
       if (chc->status == PIN_STATUS_OK) {
-	*choice = chc->choice;
+        *choice = chc->choice;
       } else {
-	*in_status = PIN_STATUS_NO_IN;
+        *choice = 0;
+        *in_status = PIN_STATUS_NO_IN;
       }
     }
   }

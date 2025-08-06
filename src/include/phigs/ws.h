@@ -49,6 +49,7 @@ SOFTWARE.
 #ifndef _ws_h
 #define _ws_h
 
+#include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
 #include <GL/glx.h>
@@ -243,12 +244,14 @@ typedef struct _Ws {
    GLXFBConfig  *fbc;
    GLuint       fbuf, depthbuf, colorbuf;
    GLint        old_viewport[4];
+   GLint        program;
 
    /* Output LUN for some work station types, e.g. to print out stuff here */
    Pint         lun;
    Pfloat       hcsf;
-   /* File name */
+   /* Output File name and descriptor*/
    char         filename[512];
+   FILE         *fd;
    void         (*close)(
                    struct _Ws *ws
                    );

@@ -36,7 +36,9 @@
 #include "private/wsglP.h"
 
 GLint vertex_shader, fragment_shader;
-GLint clipping_ind, num_clip_planes, plane0, point0;
+GLint clipping_ind, num_clip_planes;
+GLint plane0, point0;
+GLint plane1, point1;
 GLint shading_mode;
 GLint vAmbient, vDiffuse, vSpecular, vPositional;
 GLint ModelViewMatrix, ProjectionMatrix;
@@ -61,18 +63,28 @@ static const char* vertex_shader_text_130 =
 "uniform int clipping_ind;\n"
 "uniform vec4 plane0;\n"
 "uniform vec4 point0;\n"
+"uniform vec4 plane1;\n"
+"uniform vec4 point1;\n"
 "float distance;\n"
 "void main()\n"
 "{\n"
-"    Color = vColor;\n"
-"    Normal = normalize(ModelViewMatrix * vec4(gl_Normal, 1));\n"
-"    gl_Position = ProjectionMatrix * ModelViewMatrix * gl_Vertex;\n"
-"    if ((num_clip_planes == 1) && (clipping_ind > 0)) {\n"
-"      distance = dot(gl_Vertex-point0, plane0);\n"
+"  Color = vColor;\n"
+"  Normal = normalize(ModelViewMatrix * vec4(gl_Normal, 1));\n"
+"  gl_Position = ProjectionMatrix * ModelViewMatrix * gl_Vertex;\n"
+"  if (clipping_ind > 0) {\n"
+"    if (num_clip_planes == 1) {\n"
+"      gl_ClipDistance[0] = dot(gl_Vertex-point0, plane0);\n"
+"    } else if (num_clip_planes == 2) {\n"
+"      gl_ClipDistance[0] = dot(gl_Vertex-point0, plane0);\n"
+"      gl_ClipDistance[1] = -dot(gl_Vertex-point1, plane1);\n"
 "    } else {\n"
-"      distance = 1.0;\n"
-"    };\n"
-"    gl_ClipDistance[0] = distance;\n"
+"      gl_ClipDistance[0] = 1.0;\n"
+"      gl_ClipDistance[1] = 1.0;\n"
+"    }\n"
+"  } else {\n"
+"    gl_ClipDistance[0] = 1.0;\n"
+"    gl_ClipDistance[1] = 1.0;\n"
+"  }\n"
 "}\n";
 
 static const char* fragment_shader_text_130 =
@@ -208,12 +220,14 @@ static const char* vertex_shader_text_120 =
 "uniform int clipping_ind;\n"
 "uniform vec4 plane0;\n"
 "uniform vec4 point0;\n"
+"uniform vec4 plane1;\n"
+"uniform vec4 point1;\n"
 "void main()\n"
 "{\n"
 "    Color = vColor;\n"
 "    Normal = normalize(ModelViewMatrix * vec4(gl_Normal, 1));\n"
 "    gl_Position = ProjectionMatrix * ModelViewMatrix * gl_Vertex;\n"
-"    if ((num_clip_planes == 1) && (clipping_ind > 0)) {\n"
+"    if ((num_clip_planes >0 ) && (clipping_ind > 0)) {\n"
 "      gl_ClipVertex = transpose(ModelViewMatrix) * gl_Vertex;\n"
 "    };\n"
 "}\n";
@@ -436,10 +450,13 @@ void wsgl_shaders(Ws * ws){
     num_clip_planes = glGetUniformLocation(ws->program, "num_clip_planes");
     clipping_ind = glGetUniformLocation(ws->program, "clipping_ind");
     glDisable(GL_CLIP_PLANE0);
+    glDisable(GL_CLIP_PLANE1);
     glUniform1i(clipping_ind, 0);
-    glUniform1i(num_clip_planes, 1);
+    glUniform1i(num_clip_planes, 2);
     plane0 = glGetUniformLocation(ws->program, "plane0");
     point0 = glGetUniformLocation(ws->program, "point0");
+    plane1 = glGetUniformLocation(ws->program, "plane1");
+    point1 = glGetUniformLocation(ws->program, "point1");
     // shading mode
     shading_mode = glGetUniformLocation(ws->program, "ShadingMode");
     // light sources

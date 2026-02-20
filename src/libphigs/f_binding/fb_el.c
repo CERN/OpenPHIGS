@@ -752,51 +752,6 @@ FTN_SUBROUTINE(psiasf)(
 }
 
 /*******************************************************************************
- * psmcli
- *
- * DESCR:       set modelling clipping indicator
- * RETURNS:   N/A
- */
-FTN_SUBROUTINE(psmcli)(
-                       FTN_INTEGER(mclipi)
-                       )
-{
-  Pint clipi = FTN_INTEGER_GET(mclipi);
-  pset_model_clip_ind(clipi);
-}
-
-/*******************************************************************************
- * psmcv3
- *
- * DESCR:       set modelling clipping volume 3
- * RETURNS:   N/A
- */
-FTN_SUBROUTINE(psmcv3)(
-                       FTN_INTEGER(op),
-                       FTN_INTEGER(nhalfs),
-                       FTN_REAL_ARRAY(halfsp)
-                       )
-{
-  Pint iop = FTN_INTEGER_GET(op);
-  Pint num = FTN_INTEGER_GET(nhalfs);
-  Phalf_space_list3 spacelist;
-  Phalf_space3 list[num];
-  int i;
-
-  spacelist.num_half_spaces = num;
-  for (i=0; i<num; i++){
-    list[i].point.x = FTN_REAL_ARRAY_GET(halfsp, 0 + i*6);
-    list[i].point.y = FTN_REAL_ARRAY_GET(halfsp, 1 + i*6);
-    list[i].point.z = FTN_REAL_ARRAY_GET(halfsp, 2 + i*6);
-    list[i].norm.delta_x = FTN_REAL_ARRAY_GET(halfsp, 3 + i*6);
-    list[i].norm.delta_y = FTN_REAL_ARRAY_GET(halfsp, 4 + i*6);
-    list[i].norm.delta_z = FTN_REAL_ARRAY_GET(halfsp, 5 + i*6);
-  }
-  spacelist.half_spaces = &list[0];
-  pset_model_clip_vol3(iop, spacelist);
-}
-
-/*******************************************************************************
  * psedci
  *
  * DESCR:       set edge colour index

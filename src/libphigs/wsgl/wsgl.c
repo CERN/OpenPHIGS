@@ -605,8 +605,8 @@ void wsgl_begin_structure(
   wsgl->cur_struct.offset  = 0;
   phg_mat_copy(wsgl->cur_struct.global_tran, wsgl->composite_tran);
   phg_mat_identity(wsgl->cur_struct.local_tran);
-  wsgl_set_clip_ind(ws, 0); // FIXME
-  wsgl_set_alpha_channel(ws, 1.0); // FIXME
+  wsgl_set_clip_ind(ws, 0);
+  wsgl_set_alpha_channel(ws, 1.0);
   wsgl_update_modelview(ws);
 
   if (wsgl->render_mode == WS_RENDER_MODE_SELECT) {

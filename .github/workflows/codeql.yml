@@ -27,7 +27,7 @@ jobs:
     #   - https://gh.io/supported-runners-and-hardware-resources
     #   - https://gh.io/using-larger-runners (GitHub.com only)
     # Consider using larger runners or machines with greater resources for possible analysis time improvements.
-    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-22.04' }}
     permissions:
       # required for all workflows
       security-events: write
@@ -64,6 +64,8 @@ jobs:
     # or others). This is typically only required for manual builds.
     # - name: Setup runtime (example)
     #   uses: actions/setup-example@v1
+    - name: dependencies
+      run: sudo apt install --fix-missing cmake gcc gfortran libx11-dev libglu1-mesa-dev libmotif-dev tcsh libxaw7-dev libglew-dev libdlm-dev libgl2ps-dev libpng-dev
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL

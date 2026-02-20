@@ -35,7 +35,9 @@
 #include "ws.h"
 #include "private/wsglP.h"
 
-extern GLint clipping_ind, num_clip_planes, plane0, point0;
+extern GLint clipping_ind, num_clip_planes;
+extern GLint plane0, point0;
+extern GLint plane1, point1;
 extern GLint shading_mode;
 extern GLint ModelViewMatrix, ProjectionMatrix;
 extern GLint alpha_channel;
@@ -242,8 +244,13 @@ void wsgl_set_clip_ind(
       glUniform1i(clipping_ind, ind);
       if (ind == 1) {
         glEnable(GL_CLIP_PLANE0);
+        glDisable(GL_CLIP_PLANE1);
+      } else if (ind == 2) {
+        glEnable(GL_CLIP_PLANE0);
+        glEnable(GL_CLIP_PLANE1);
       } else {
         glDisable(GL_CLIP_PLANE0);
+        glDisable(GL_CLIP_PLANE1);
       }
     }
 }
@@ -283,8 +290,10 @@ void wsgl_set_clip_vol3(
   int op, num;
   int * int_data = (int*) el_data;
   Phalf_space3 * list;
-  Phalf_space3 volume0;
-  Ppoint3 tmp1, tmp2, vol3, point3, pwc;
+  Phalf_space3 volume0, volume1;
+  Ppoint3 nn0, pt0; /* first plane */
+  Ppoint3 nn1, pt1; /* second plane if any */
+  Ppoint3 vol3, point3, pwc;
   Pmatrix3  vrc2wc, unity;
 
 #ifdef GLEW
@@ -297,21 +306,43 @@ void wsgl_set_clip_vol3(
       op = int_data[0];
       num = int_data[1];
       list = (Phalf_space3 *)(&int_data[2]);
-      volume0 = list[0];
-      /* take a local copy of the data */
-      tmp1.x = volume0.norm.delta_x;
-      tmp1.y = volume0.norm.delta_y;
-      tmp1.z = volume0.norm.delta_z;
+      if (1 == num || 2 ==num){
+        glUniform1i(num_clip_planes, num);
+        /* first plane */
+        volume0 = list[0];
+        /* take a local copy of the data */
+        nn0.x = volume0.norm.delta_x;
+        nn0.y = volume0.norm.delta_y;
+        nn0.z = volume0.norm.delta_z;
 
-      tmp2.x = volume0.point.x;
-      tmp2.y = volume0.point.y;
-      tmp2.z = volume0.point.z;
+        pt0.x = volume0.point.x;
+        pt0.y = volume0.point.y;
+        pt0.z = volume0.point.z;
 
-      glUniform1i(num_clip_planes, num);
-      glUniform4f(plane0, tmp1.x, tmp1.y, tmp1.z, 0.);
-      GLdouble eqn0[4] = {tmp1.x, tmp1.y, tmp1.z, 0.};
-      glClipPlane(GL_CLIP_PLANE0, eqn0);
-      glUniform4f(point0, tmp2.x, tmp2.y, tmp2.z, 0.);
+        glUniform4f(plane0, nn0.x, nn0.y, nn0.z, 0.);
+        GLdouble eqn0[4] = {nn0.x, nn0.y, nn0.z, 0.};
+        glClipPlane(GL_CLIP_PLANE0, eqn0);
+        glUniform4f(point0, pt0.x, pt0.y, pt0.z, 0.);
+        if (2 ==num){
+          /* first plane */
+          volume1 = list[1];
+          /* take a local copy of the data */
+          nn1.x = volume1.norm.delta_x;
+          nn1.y = volume1.norm.delta_y;
+          nn1.z = volume1.norm.delta_z;
+
+          pt1.x = volume1.point.x;
+          pt1.y = volume1.point.y;
+          pt1.z = volume1.point.z;
+
+          glUniform4f(plane1, nn1.x, nn1.y, nn1.z, 0.);
+          GLdouble eqn1[4] = {nn1.x, nn1.y, nn1.z, 0.};
+          glClipPlane(GL_CLIP_PLANE1, eqn1);
+          glUniform4f(point1, pt1.x, pt1.y, pt1.z, 0.);
+        }
+      } else {
+        glUniform1i(num_clip_planes, 0); /* ignore the call */
+      }
     }
 }
 

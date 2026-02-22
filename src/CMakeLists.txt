@@ -44,6 +44,7 @@ set(GLEW_VERBOSE ON)
 add_definitions(-g)
 # add_definitions(-DTEST)
 # add_definitions(-DDEBUG)
+# add_definitions(-DDEBUGL)
 # add_definitions(-DDEBUGINP)
 
 #

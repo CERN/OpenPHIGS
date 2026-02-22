@@ -58,7 +58,6 @@ static GLuint get_light_id(
    )
 {
    GLuint id;
-
    switch (ind) {
       case 1:  id = GL_LIGHT1; break;
       case 2:  id = GL_LIGHT2; break;
@@ -93,13 +92,16 @@ static void setup_ambient_light(
    amb[2] = rec->colr.val.general.z;
    amb[3] = 1.0;
 
-#ifdef DEBUG
+#ifdef DEBUGL
    printf("Ambient light: %f %f %f\n", amb[0], amb[1], amb[2]);
 #endif
 #ifdef GLEW
    if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
 #else
    if (wsgl_use_shaders){
+#endif
+#ifdef DEBUGL
+     printf("Ambient light Using shaders %d\n", ind);
 #endif
      switch (ind){
      case 0:
@@ -176,7 +178,7 @@ static void setup_directional_light(
    pos[2] = rec->dir.delta_z;
    pos[3] = 1.0;
 
-#ifdef DEBUG
+#ifdef DEBUGL
    printf("Directional light: %f %f %f @(%f, %f %f)\n",
           dif[0], dif[1], dif[2],
           pos[0], pos[1], pos[2]);
@@ -185,6 +187,9 @@ static void setup_directional_light(
    if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
 #else
    if (wsgl_use_shaders){
+#endif
+#ifdef DEBUGL
+     printf("Directional light Using shaders %d\n", ind);
 #endif
      switch (ind){
      case 0:
@@ -275,7 +280,7 @@ static void setup_positional_light(
    coef[2] = 0.0;
    coef[3] = 0.0;
 
-#ifdef DEBUG
+#ifdef DEBUGL
    printf("Positional light: %f %f %f @(%f, %f %f) with %f %f\n",
           dif[0], dif[1], dif[2],
           pos[0], pos[1], pos[2],
@@ -285,6 +290,9 @@ static void setup_positional_light(
    if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
 #else
    if (wsgl_use_shaders){
+#endif
+#ifdef DEBUGL
+     printf("Positional light Using shaders %d\n", ind);
 #endif
      switch (ind){
      case 0:
@@ -358,83 +366,92 @@ static void setup_positional_light(
  */
 
 void wsgl_update_light_src_state(
-   Ws *ws
-   )
+                                 Ws *ws
+                                 )
 {
-   Pint i;
-   Phg_ret ret;
-   Wsgl *wsgl = ws->render_context;
+  Pint i;
+  Phg_ret ret;
+  Wsgl *wsgl = ws->render_context;
 
-   glPushMatrix();
-   glLoadIdentity();
+  glPushMatrix();
+  glLoadIdentity();
 
-   /* Activate light sources */
-   for (i = 0; i < WS_MAX_LIGHT_SRC; i++) {
-      if (phg_nset_name_is_set(&wsgl->cur_struct.lightstat, i)) {
-#ifdef DEBUG
-         printf("Setup light source: %d\n", i);
+  /* Activate light sources */
+  for (i = 0; i < WS_MAX_LIGHT_SRC; i++) {
+    if (phg_nset_name_is_set(&wsgl->cur_struct.lightstat, i)) {
+#ifdef DEBUGL
+      printf("Setup light source: %d\n", i);
 #endif
-         (*ws->inq_representation)(ws,
-                                   i,
-                                   PINQ_REALIZED,
-                                   PHG_ARGS_LIGHTSRCREP,
-                                   &ret);
-         if (ret.err == 0) {
-            switch (ret.data.rep.lightsrcrep.type) {
-               case PLIGHT_AMBIENT:
-                  setup_ambient_light(i, &ret.data.rep.lightsrcrep.rec.ambient);
-                  break;
-
-               case PLIGHT_DIRECTIONAL:
-                  setup_directional_light(i, &ret.data.rep.lightsrcrep.rec.directional);
-                  break;
-
-               case PLIGHT_POSITIONAL:
-                  setup_positional_light(i, &ret.data.rep.lightsrcrep.rec.positional);
-                  break;
-		  /* FIXME
-               case PLIGHT_SPOT:
-                  setup_spot_light(i, &ret.data.rep.lightsrcrep.rec.spot);
-                  break;
-		  */
-               default:
-                  break;
-            }
-         }
-      } else {
-#ifdef GLEW
-	if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
-#else
-	if (wsgl_use_shaders){
+      (*ws->inq_representation)(ws,
+                                i,
+                                PINQ_REALIZED,
+                                PHG_ARGS_LIGHTSRCREP,
+                                &ret);
+      if (ret.err == 0) {
+        switch (ret.data.rep.lightsrcrep.type) {
+        case PLIGHT_AMBIENT:
+#ifdef DEBUGL
+          printf("Configure abient light\n");
 #endif
-	  switch (i){
-	  case 1:
-	    glUniform1i(lightSource0, 0);
-	    break;
-	  case 2:
-	    glUniform1i(lightSource1, 0);
-	    break;
-	  case 3:
-	    glUniform1i(lightSource2, 0);
-	    break;
-	  case 4:
-	    glUniform1i(lightSource3, 0);
-	    break;
-	  case 5:
-	    glUniform1i(lightSource4, 0);
-	    break;
-	  case 6:
-	    glUniform1i(lightSource5, 0);
-	    break;
-	  case 7:
-	    glUniform1i(lightSource6, 0);
-	    break;
-	  }
-	} else {
-	  glDisable(get_light_id(i));
-	}
+          setup_ambient_light(i, &ret.data.rep.lightsrcrep.rec.ambient);
+          break;
+          
+        case PLIGHT_DIRECTIONAL:
+#ifdef DEBUGL
+          printf("Configure directional light\n");
+#endif
+          setup_directional_light(i, &ret.data.rep.lightsrcrep.rec.directional);
+          break;
+          
+        case PLIGHT_POSITIONAL:
+#ifdef DEBUGL
+          printf("Configure positional light\n");
+#endif
+          setup_positional_light(i, &ret.data.rep.lightsrcrep.rec.positional);
+          break;
+          /* FIXME
+             case PLIGHT_SPOT:
+             setup_spot_light(i, &ret.data.rep.lightsrcrep.rec.spot);
+             break;
+          */
+        default:
+          break;
+        }
       }
-   }
+    } else {
+#ifdef GLEW
+      if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
+#else
+      if (wsgl_use_shaders){
+#endif
+        switch (i){
+        case 1:
+          glUniform1i(lightSource0, 0);
+          break;
+        case 2:
+          glUniform1i(lightSource1, 0);
+          break;
+        case 3:
+          glUniform1i(lightSource2, 0);
+          break;
+        case 4:
+          glUniform1i(lightSource3, 0);
+          break;
+        case 5:
+          glUniform1i(lightSource4, 0);
+          break;
+        case 6:
+          glUniform1i(lightSource5, 0);
+          break;
+        case 7:
+          glUniform1i(lightSource6, 0);
+          break;
+        }
+      } else {
+        glDisable(get_light_id(i));
+      }
+      }
+    }
 #ifdef GLEW
    if (!wsgl_use_shaders || !GLEW_ARB_vertex_shader || !GLEW_ARB_fragment_shader || !GLEW_ARB_shader_objects) glPopMatrix();
 #else
@@ -480,7 +497,7 @@ void wsgl_set_light_src_state(
       wsgl->cur_struct.lighting = TRUE;
    }
 
-#ifdef DEBUG
+#ifdef DEBUGL
    printf("Lighting nameset: ");
    phg_nset_print(&wsgl->cur_struct.lightstat);
    printf("Lighting is %s\n", (wsgl->cur_struct.lighting) ? "On" : "Off");

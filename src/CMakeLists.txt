@@ -1,6 +1,16 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.9...3.31)
 PROJECT(PHIGS)
 
+SET(CMAKE_MODULE_PATH ${PHIGS_SOURCE_DIR}/cmake)
+
+FIND_PACKAGE(PNG REQUIRED)
+FIND_PACKAGE(OpenGL REQUIRED)
+FIND_PACKAGE(X11 REQUIRED)
+FIND_PACKAGE(XMU REQUIRED)
+FIND_PACKAGE(Motif REQUIRED)
+FIND_PACKAGE(GLEW)
+FIND_PACKAGE(epoxy)
+
 if (APPLE)
   set(CMAKE_C_COMPILER gcc)
   set(CMAKE_C_COMPILER_ID GNU)
@@ -28,31 +38,21 @@ if (OPENPHIGS_FORCE_32)
   message(STATUS "PHIGS: Guess for 32bit: OPENSSL_CRYPTO_LIBRARY=${OPENSSL_CRYPTO_LIBRARY}")
 endif()
 
-SET(CMAKE_MODULE_PATH ${PHIGS_SOURCE_DIR}/cmake)
 set(GLEW_VERBOSE ON)
 
 # for debugging
 add_definitions(-g)
 # add_definitions(-DTEST)
 # add_definitions(-DDEBUG)
+# add_definitions(-DDEBUGL)
 # add_definitions(-DDEBUGINP)
 
 #
 # use Motif widgets rather than Xaw
 add_definitions(-DMOTIF)
 
-FIND_PACKAGE(PNG REQUIRED)
-FIND_PACKAGE(OpenGL REQUIRED)
-FIND_PACKAGE(X11 REQUIRED)
-FIND_PACKAGE(XMU REQUIRED)
-FIND_PACKAGE(Motif REQUIRED)
-
 # use GLEW or epoxy
 if (USE_GLEW)
-  if (APPLE)
-    set (GLEW_USE_STATIC_LIBS "ON")
-  endif()
-  FIND_PACKAGE(GLEW)
   add_definitions(-DGLEW)
   set (GL_INCLUDES ${GLEW_INCLUDE_DIR})
 else()
@@ -112,7 +112,6 @@ if (USE_GLEW)
       m
       )
 else()
-  FIND_PACKAGE(epoxy)
   SET(PHIGS_LIBRARIES
       phigs
       ${XLIBS}

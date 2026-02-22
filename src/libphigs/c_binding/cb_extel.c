@@ -1149,6 +1149,9 @@ void pset_model_clip_ind(
     else if (clipi < 0) {
       ERR_REPORT(PHG_ERH, ERR112);
     }
+    else if (clipi > 2) {
+      ERR_REPORT(PHG_ERH, ERR112);
+    }
     else {
       args.el_type = PELEM_MODEL_CLIP_IND;
       args.el_size = sizeof(Pint);
@@ -1183,7 +1186,7 @@ void  pset_model_clip_vol3 (
     if (PSL_STRUCT_STATE(PHG_PSL) != PSTRUCT_ST_STOP) {
       ERR_REPORT(PHG_ERH, ERR5);
     }
-    else if ( op < 0) {
+    else if ( op < 0 || op > 2) {
       /* the value of op is not important as this is anyway not used */
       ERR_REPORT(PHG_ERH, ERR112);
     }

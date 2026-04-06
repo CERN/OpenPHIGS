@@ -95,16 +95,29 @@ FTN_SUBROUTINE(psbism)(
 }
 
 /*******************************************************************************
+ * psrfm
+ *
+ * DESCR:       set reflectance model
+ * RETURNS:   N/A
+ */
+FTN_SUBROUTINE(psrfm)(
+                       FTN_INTEGER(refl_mod)
+                       ){
+  Pint refl_model = FTN_INTEGER_GET(refl_mod);
+  pset_refl_model(refl_model);
+}
+
+/*******************************************************************************
  * psrfeq
  *
  * DESCR:       set reflectance equation
  * RETURNS:   N/A
  */
 FTN_SUBROUTINE(psrfeq)(
-                       FTN_INTEGER(refl_model1)
+                       FTN_INTEGER(refl_eq)
                        ){
-  Pint refl_model = FTN_INTEGER_GET(refl_model1);
-  pset_refl_eqn(refl_model);
+  Pint refl_equation = FTN_INTEGER_GET(refl_eq);
+  pset_refl_eqn(refl_equation);
 }
 
 /*******************************************************************************
@@ -114,10 +127,10 @@ FTN_SUBROUTINE(psrfeq)(
  * RETURNS:   N/A
  */
 FTN_SUBROUTINE(psbrfm)(
-                       FTN_INTEGER(refl_model1)
+                       FTN_INTEGER(refl_eq)
                        ){
-  Pint refl_model = FTN_INTEGER_GET(refl_model1);
-  pset_back_refl_eqn(refl_model);
+  Pint refl_equation = FTN_INTEGER_GET(refl_eq);
+  pset_back_refl_eqn(refl_equation);
 }
 
 /*******************************************************************************

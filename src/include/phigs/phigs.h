@@ -248,6 +248,7 @@ typedef enum {
    PELEM_GSE,
    PELEM_ALPHA_CHANNEL,
    PELEM_TEXT3,
+   PELEM_INT_REFL_MODEL,
    PELEM_NUM_EL_TYPES
 } Pelem_type;
 
@@ -419,6 +420,7 @@ typedef enum {
    PASPECT_INT_SHAD_METH,
    PASPECT_REFL_PROPS,
    PASPECT_INT_REFL_EQN,
+   PASPECT_INT_REFL_MODEL,
    PASPECT_BACK_INT_STYLE,
    PASPECT_BACK_INT_STYLE_IND,
    PASPECT_BACK_INT_COLR,
@@ -683,6 +685,7 @@ typedef struct {
    Pint        style_ind;
    Pgcolr      colr;
    Pint        refl_eqn;
+   Pint        refl_model;
    Pint        shad_meth;
    Prefl_props refl_props;
    Pint_style  back_style;
@@ -2912,6 +2915,17 @@ void pset_int_shad_meth(
 
 void pset_back_int_shad_meth(
    Pint shad_meth
+   );
+
+/*******************************************************************************
+ * pset_refl_model
+ *
+ * DESCR:       Creates a new element - Set reflectance model
+ * RETURNS:     N/A
+ */
+
+void pset_refl_model(
+   Pint refl_model
    );
 
 /*******************************************************************************

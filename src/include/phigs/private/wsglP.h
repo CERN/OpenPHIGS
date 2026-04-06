@@ -619,6 +619,19 @@ void wsgl_setup_back_int_attr_nocol(
    );
 
 /*******************************************************************************
+ * wsgl_setup_int_reflectance_model
+ *
+ * DESCR:       
+ * RETURNS:     N/A
+ */
+
+void wsgl_setup_int_reflectance_model(
+   Pint colr_type,
+   Pcoval *colr,
+   Ws_attr_st *ast
+);
+
+/*******************************************************************************
  * wsgl_setup_int_refl_props
  *
  * DESCR:       Setup surface reflection and colour properties

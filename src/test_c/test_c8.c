@@ -44,6 +44,7 @@
 #define BACK_STYLE_IND 6
 #define SHAD_METH      PSD_COLOUR
 #define BACK_SHAD_METH PSD_NONE
+#define REFL_MODEL     PREFL_AMB_DIFF_SPEC
 #define REFL_EQN       PREFL_AMB_DIFF
 #define BACK_REFL_EQN  PREFL_AMBIENT
 
@@ -740,8 +741,9 @@ int main(int argc, char *argv[])
    pset_light_src_state(&lights_on_list, &lights_off_list);
    pset_int_shad_meth(SHAD_METH);
    pset_back_int_shad_meth(BACK_SHAD_METH);
-   pset_refl_eqn(REFL_EQN);
-   pset_back_refl_eqn(BACK_REFL_EQN);
+   pset_refl_model(REFL_MODEL);
+   //pset_refl_eqn(REFL_EQN);
+   //pset_back_refl_eqn(BACK_REFL_EQN);
    pset_refl_props(&refl_props);
    pset_back_refl_props(&back_refl_props);
    plabel(LABEL_TRANS);

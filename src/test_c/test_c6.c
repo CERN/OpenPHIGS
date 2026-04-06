@@ -45,7 +45,7 @@
 #define BACK_SHAD_METH PSD_NONE
 #define REFL_EQN       PREFL_AMB_DIFF
 #define BACK_REFL_EQN  PREFL_AMBIENT
-
+#define REFL_MODEL     PREFL_AMB_DIFF_SPEC
 
 Pint errnum;
 Pmatrix3 rot3, rotx, roty;
@@ -1510,7 +1510,8 @@ int main(int argc, char *argv[])
    pset_back_int_style_ind(BACK_STYLE_IND);
    pset_light_src_state(&lights_on_list, &lights_off_list);
    pset_int_shad_meth(PSD_COLOUR);
-   pset_refl_eqn(PREFL_AMB_DIFF);
+   pset_refl_model(REFL_MODEL);
+   pset_refl_eqn(REFL_EQN);
    pset_refl_props(&refl_props);
    plabel(LABEL_TRANS);
    pset_local_tran3(rot3, PTYPE_REPLACE);

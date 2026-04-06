@@ -1209,8 +1209,11 @@ void wsgl_render_element(
     break;
 
   case PELEM_BACK_INT_SHAD_METH:
-    wsgl->cur_struct.ast.indiv_group.int_bundle.back_shad_meth =
-      PHG_INT(el);
+    wsgl->cur_struct.ast.indiv_group.int_bundle.back_shad_meth = PHG_INT(el);
+    break;
+
+  case PELEM_INT_REFL_MODEL:
+    wsgl->cur_struct.ast.indiv_group.int_bundle.refl_model = PHG_INT(el);
     break;
 
   case PELEM_INT_REFL_EQN:
@@ -1218,8 +1221,7 @@ void wsgl_render_element(
     break;
 
   case PELEM_BACK_INT_REFL_EQN:
-    wsgl->cur_struct.ast.indiv_group.int_bundle.back_refl_eqn =
-      PHG_INT(el);
+    wsgl->cur_struct.ast.indiv_group.int_bundle.back_refl_eqn = PHG_INT(el);
     break;
 
   case PELEM_REFL_PROPS:

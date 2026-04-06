@@ -943,6 +943,37 @@ void pset_back_int_shad_meth(
 }
 
 /*******************************************************************************
+ * pset_refl_model
+ *
+ * DESCR:   Creates a new element - Set surface reflectance equation
+ * RETURNS:   N/A
+ */
+void pset_refl_model(
+                   Pint refl_model
+                   )
+{
+  Phg_args_add_el args;
+
+  if (phg_entry_check(PHG_ERH, ERR5, Pfn_set_refl_model)) {
+    if (PSL_STRUCT_STATE(PHG_PSL) != PSTRUCT_ST_STOP) {
+      ERR_REPORT(PHG_ERH, ERR5);
+    }
+    else {
+      args.el_type = PELEM_INT_REFL_MODEL;
+      args.el_size = sizeof(Pint);
+      if (!PHG_SCRATCH_SPACE(&PHG_SCRATCH, args.el_size)) {
+        ERR_REPORT(PHG_ERH, ERR900);
+      }
+      else {
+        args.el_data = PHG_SCRATCH.buf;
+        memcpy(args.el_data, &refl_model, args.el_size);
+        phg_add_el(PHG_CSS, &args);
+      }
+    }
+  }
+}
+
+/*******************************************************************************
  * pset_refl_eqn
  *
  * DESCR:   Creates a new element - Set surface reflectance equation

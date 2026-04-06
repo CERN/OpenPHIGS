@@ -73,7 +73,7 @@ Css_handle phg_css_init(Err_handle erh, Css_ssh_type ssh_type)
     Css_func	*fptr;
 
     if ( !(cssh = (Css_handle) calloc((unsigned)1,sizeof(Css_struct))) )
-        return(NULL);					/* out of memory */
+      return(NULL);  /* out of memory */
     fptr = cssh->el_funcs;
     fptr[(int)PELEM_NIL] = phg_css_no_data;
     fptr[(int)PELEM_ADD_NAMES_SET] = hdl_generic_elmt;
@@ -134,6 +134,7 @@ Css_handle phg_css_init(Err_handle erh, Css_ssh_type ssh_type)
     fptr[(int)PELEM_TEXT_COLR] = hdl_generic_elmt;
     fptr[(int)PELEM_LIGHT_SRC_STATE] = hdl_generic_elmt;
     fptr[(int)PELEM_INT_SHAD_METH] = hdl_generic_elmt;
+    fptr[(int)PELEM_INT_REFL_MODEL] = hdl_generic_elmt;
     fptr[(int)PELEM_BACK_INT_SHAD_METH] = hdl_generic_elmt;
     fptr[(int)PELEM_INT_REFL_EQN] = hdl_generic_elmt;
     fptr[(int)PELEM_BACK_INT_REFL_EQN] = hdl_generic_elmt;
@@ -156,8 +157,8 @@ Css_handle phg_css_init(Err_handle erh, Css_ssh_type ssh_type)
     fptr[(int)PELEM_GSE] = hdl_generic_elmt;
 
     if ( !(cssh->stab = phg_css_stab_init(CSS_STAB_SIZE)) ) {
-	free((char *)cssh);
-	return(NULL);					/* out of memory */
+      free((char *)cssh);
+      return(NULL);					/* out of memory */
     }
     cssh->open_struct = NULL;
     cssh->el_ptr = NULL;
@@ -165,12 +166,12 @@ Css_handle phg_css_init(Err_handle erh, Css_ssh_type ssh_type)
     cssh->edit_mode = PEDIT_INSERT;
     cssh->erh = erh;
     if ( !(cssh->ws_list = (Css_ws_list)
-	    malloc((MAX_NO_OPEN_WS+1) * sizeof(Css_ws_on))) ) {
-	phg_css_stab_free(cssh->stab);
-	free((char *)cssh);
-	return(NULL);					/* out of memory */
+           malloc((MAX_NO_OPEN_WS+1) * sizeof(Css_ws_on))) ) {
+      phg_css_stab_free(cssh->stab);
+      free((char *)cssh);
+      return(NULL);  /* out of memory */
     }
-    cssh->mem = NULL;		/* don't allocate space until it's needed */
+    cssh->mem = NULL;  /* don't allocate space until it's needed */
     cssh->ssh_type = ssh_type;
     return(cssh);
 }
@@ -183,10 +184,10 @@ Css_handle phg_css_init(Err_handle erh, Css_ssh_type ssh_type)
 
 void phg_css_destroy(Css_handle cssh)
 {
-    phg_css_delete_all_structs(cssh);
-    phg_css_stab_free(cssh->stab);
-    free((char *)cssh->ws_list);
-    if (cssh->mem)
-	free(cssh->mem);
-    free((char *)cssh);
+  phg_css_delete_all_structs(cssh);
+  phg_css_stab_free(cssh->stab);
+  free((char *)cssh->ws_list);
+  if (cssh->mem)
+    free(cssh->mem);
+  free((char *)cssh);
 }

@@ -894,7 +894,7 @@ void wsgl_render_element(
     wsgl->cur_struct.ast.indiv_group.line_bundle.type = PHG_INT(el);
     break;
 
-  case PELEM_FILL_AREA:
+   case PELEM_FILL_AREA:
     if (check_draw_primitive(ws)) {
       if (wsgl_get_int_style(&wsgl->cur_struct.ast) != PSTYLE_EMPTY) {
         wsgl_fill_area(ws, ELMT_CONTENT(el), &wsgl->cur_struct.ast);
@@ -931,7 +931,7 @@ void wsgl_render_element(
   case PELEM_FILL_AREA3:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON) {
+      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
           wsgl_clear_area3(ws, ELMT_CONTENT(el), &wsgl->cur_struct.ast);
         }
@@ -970,7 +970,7 @@ void wsgl_render_element(
   case PELEM_FILL_AREA_SET3:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON) {
+      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
           wsgl_clear_area_set3(ws,
                                ELMT_CONTENT(el),
@@ -989,7 +989,7 @@ void wsgl_render_element(
   case PELEM_FILL_AREA_SET_DATA:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON) {
+      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
           wsgl_clear_area_set_data(ws,
                                    ELMT_CONTENT(el),
@@ -1032,7 +1032,7 @@ void wsgl_render_element(
   case PELEM_FILL_AREA_SET3_DATA:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON) {
+      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
           wsgl_clear_area_set3_data(ws,
                                     ELMT_CONTENT(el),
@@ -1075,7 +1075,7 @@ void wsgl_render_element(
   case PELEM_SET_OF_FILL_AREA_SET3_DATA:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON) {
+      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
           wsgl_set_of_clear_area_set3_data(ws,
                                            ELMT_CONTENT(el),

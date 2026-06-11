@@ -10,6 +10,7 @@ FIND_PACKAGE(XMU REQUIRED)
 FIND_PACKAGE(Motif REQUIRED)
 FIND_PACKAGE(GLEW)
 FIND_PACKAGE(epoxy)
+FIND_LIBRARY(MATH_LIBRARY m)
 
 if (APPLE)
   set(CMAKE_C_COMPILER gcc)
@@ -109,7 +110,7 @@ if (USE_GLEW)
       ${GLEW_LIBRARIES}
       ${OPENGL_LIBRARIES}
       ${GL2PS_LIBRARY}
-      m
+      ${MATH_LIBRARY}
       )
 else()
   SET(PHIGS_LIBRARIES
@@ -124,7 +125,7 @@ else()
       ${OPENGL_LIBRARIES}
       ${Epoxy_LIBRARY}
       ${GL2PS_LIBRARY}
-      m
+      ${MATH_LIBRARY}
       )
 endif()
 message(STATUS "PHIGS: Linking with libraries ${PHIGS_LIBRARIES}")

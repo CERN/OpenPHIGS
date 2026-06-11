@@ -306,11 +306,11 @@ FTN_SUBROUTINE(pqeco)(
       *err_ind = ret.err;
     } else {
       elem_type = ret.data.el_type_size.type;
-      phg_css_inq_el_content(PHG_CSS, 0, -1, &ret);
+      phg_css_inq_el_content(PHG_CSS, struct_id, elem_num, &ret);
       if (ret.err == 0) {
         if (ret.data.el_info.op != PELEM_NIL) {
-          pcreate_store(err_ind, &store);
           el_info = ret.data.el_info.el_head;
+          pcreate_store(err_ind, &store);
           size = phg_cb_store_el_size(el_info);
           if (phg_cb_resize_store(store, size, err_ind)) {
             phg_cb_store_el_data(el_info, store->buf,

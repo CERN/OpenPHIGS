@@ -177,7 +177,7 @@ else()
   target_link_libraries(phigs-shared ${EPOXY_LIBRARIES})
 endif()
   target_link_libraries(phigs-shared ${GL2PS_LIBRARY})
-  target_link_libraries(phigs-shared m)
+  target_link_libraries(phigs-shared ${MATH_LIBRARY})
 endif()
 
 INSTALL(TARGETS

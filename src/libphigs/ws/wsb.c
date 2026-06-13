@@ -1620,12 +1620,21 @@ void phg_wsb_set_rep(
   case PHG_ARGS_COREP:
     /* Store in current colour model. */
     gcolr.type = ws->current_colour_model;
-    gcolr.val.general.x = rep->bundl.corep.rgb.red;
-    gcolr.val.general.y = rep->bundl.corep.rgb.green;
-    gcolr.val.general.z = rep->bundl.corep.rgb.blue;
+    switch(gcolr.type){
+    case PMODEL_RGB:
+      gcolr.val.general.x = rep->bundl.corep.rgb.red;
+      gcolr.val.general.y = rep->bundl.corep.rgb.green;
+      gcolr.val.general.z = rep->bundl.corep.rgb.blue;
+      break;
+    case PMODEL_RGBA:
+      gcolr.val.general.x = rep->bundl.corep.rgba.red;
+      gcolr.val.general.y = rep->bundl.corep.rgba.green;
+      gcolr.val.general.z = rep->bundl.corep.rgba.blue;
+      gcolr.val.general.a = rep->bundl.corep.rgba.alpha;
+      break;
+    }
     phg_wsb_set_LUT_entry(ws, type, rep, &gcolr);
     break;
-
   case PHG_ARGS_VIEWREP:
 #ifdef DEBUG
     printf("Set view: %d\n", rep->index);
@@ -1813,10 +1822,21 @@ void phg_wsb_inq_rep(
     /* NOTE:
      * Convert to correct colour model here if needed
      */
+    switch (gcolr.type) {
+    case PMODEL_RGB:
+      cb->rgb.red = gcolr.val.general.x;
+      cb->rgb.green = gcolr.val.general.y;
+      cb->rgb.blue = gcolr.val.general.z;
+      break;
 
-    cb->rgb.red = gcolr.val.general.x;
-    cb->rgb.green = gcolr.val.general.y;
-    cb->rgb.blue = gcolr.val.general.z;
+    case PMODEL_RGBA:
+      cb->rgba.red = gcolr.val.general.x;
+      cb->rgba.green = gcolr.val.general.y;
+      cb->rgba.blue = gcolr.val.general.z;
+      cb->rgba.alpha = gcolr.val.general.a;
+      break;
+
+    };
     break;
 
   case PHG_ARGS_VIEWREP:

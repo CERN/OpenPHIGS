@@ -240,12 +240,19 @@ FTN_SUBROUTINE(pscr)(
 #ifdef DEBUG
   printf("DEBUG: PSCR workstation color representation %d\n", *wkid);
 #endif
-  if (ncc == 3) {
+  switch (ncc) {
+  case 3:
     rep.rgb.red   = FTN_REAL_ARRAY_GET(cspec, 0);
     rep.rgb.green = FTN_REAL_ARRAY_GET(cspec, 1);
     rep.rgb.blue  = FTN_REAL_ARRAY_GET(cspec, 2);
-  }
-  else {
+    break;
+  case 4:
+    rep.rgba.red   = FTN_REAL_ARRAY_GET(cspec, 0);
+    rep.rgba.green = FTN_REAL_ARRAY_GET(cspec, 1);
+    rep.rgba.blue  = FTN_REAL_ARRAY_GET(cspec, 2);
+    rep.rgba.alpha = FTN_REAL_ARRAY_GET(cspec, 3);
+    break;
+  default:
     rep.rgb.red = rep.rgb.green = rep.rgb.blue = FTN_REAL_ARRAY_GET(cspec, 0);
   }
   pset_colr_rep(ws_id, ind, &rep);
@@ -1155,10 +1162,21 @@ FTN_SUBROUTINE(pqcr)(
   if (buf_size >= 3){
     pinq_colr_rep(ws_id, colr_ind, type, err_ind, &colr_rep);
     if (*err_ind == 0){
-      *ol = 3;
-      cspec[0] = colr_rep.rgb.red;
-      cspec[1] = colr_rep.rgb.green;
-      cspec[2] = colr_rep.rgb.blue;
+      switch (buf_size) {
+      case 3:
+	*ol = 3;
+	cspec[0] = colr_rep.rgb.red;
+	cspec[1] = colr_rep.rgb.green;
+	cspec[2] = colr_rep.rgb.blue;
+	break;
+      case 4:
+      default:
+	cspec[0] = colr_rep.rgba.red;
+	cspec[1] = colr_rep.rgba.green;
+	cspec[2] = colr_rep.rgba.blue;
+	cspec[3] = colr_rep.rgba.alpha;
+	break;
+      }
     }
   } else {
     *err_ind = 1;

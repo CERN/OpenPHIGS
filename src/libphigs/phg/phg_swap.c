@@ -331,6 +331,13 @@ static void phg_swap_gcolr(
       (*swp->conv_float)((float *) &fdata[1]);
       (*swp->conv_float)((float *) &fdata[2]);
    }
+   else if (gcolr.type == PMODEL_RGBA) {
+      fdata = (Pfloat *) &idata[1];
+      (*swp->conv_float)((float *) &fdata[0]);
+      (*swp->conv_float)((float *) &fdata[1]);
+      (*swp->conv_float)((float *) &fdata[2]);
+      (*swp->conv_float)((float *) &fdata[3]);
+   }
 }
 
 /******************************************************************************

@@ -301,6 +301,7 @@ int phg_wsx_setup_tool_nodisp(
     background.val.general.x = (float) red / 65535.0;
     background.val.general.y = (float) green / 65535.0;
     background.val.general.z = (float) blue / 65535.0;
+    background.val.general.a = 1.0;
 
     glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, (GLint *)&(ws->fbuf));
 

@@ -63,7 +63,7 @@ static void init_output_ws_dt(
       case PWST_HCOPY_TRUE_PDF:
       case PWST_HCOPY_TRUE_SVG:
       case PWST_HCOPY_TRUE_OBJ:
-         wsdt->default_colour_model = PMODEL_RGB;
+	wsdt->default_colour_model = PMODEL_RGB; //FIXME what about RGBA
          wsdt->has_double_buffer    = FALSE;
          break;
       case PWST_OUTPUT_TRUE_DB:
@@ -82,6 +82,8 @@ static void init_output_ws_dt(
    fg.val.general.x = 1.0;
    fg.val.general.y = 1.0;
    fg.val.general.z = 1.0;
+   fg.val.general.a = 1.0;
+   /* FIXME: how to implement transparency here ? */
 
    /* Setup default attribute bundles */
    wsdt->num_predefined_polyline_indices = WST_MIN_PREDEF_LINE_REPS;

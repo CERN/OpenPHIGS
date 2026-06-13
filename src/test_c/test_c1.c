@@ -139,15 +139,17 @@ int main(int argc, char *argv[])
       printf("Use view: %d\n", view_index);
    }
 
-   green.type = PMODEL_RGB;
+   green.type = PMODEL_RGBA;
    green.val.general.x = 0.0;
    green.val.general.y = 1.0;
    green.val.general.z = 0.0;
+   green.val.general.a = 0.2;
 
-   yellow.type = PMODEL_RGB;
+   yellow.type = PMODEL_RGBA;
    yellow.val.general.x = 1.0;
    yellow.val.general.y = 1.0;
    yellow.val.general.z = 0.0;
+   yellow.val.general.a = 0.2;
 
    popen_phigs(NULL, 0);
 
@@ -215,29 +217,34 @@ int main(int argc, char *argv[])
    pset_ws_win3(0, &win);
    pset_hlhsr_mode(0, PHIGS_HLHSR_MODE_ZBUFF);
 
-   col_rep.rgb.red = 0.0;
-   col_rep.rgb.green = 0.25;
-   col_rep.rgb.blue = 0.25;
+   col_rep.rgba.red = 0.0;
+   col_rep.rgba.green = 0.25;
+   col_rep.rgba.blue = 0.25;
+   col_rep.rgba.alpha = 0.25;
    pset_colr_rep(0, 0, &col_rep);
 
-   col_rep.rgb.red = 0.0;
-   col_rep.rgb.green = 0.5;
-   col_rep.rgb.blue = 0.5;
+   col_rep.rgba.red = 0.0;
+   col_rep.rgba.green = 0.5;
+   col_rep.rgba.blue = 0.5;
+   col_rep.rgba.alpha = 0.25;
    pset_colr_rep(0, 1, &col_rep);
 
-   col_rep.rgb.red = 0.0;
-   col_rep.rgb.green = 1.0;
-   col_rep.rgb.blue = 1.0;
+   col_rep.rgba.red = 0.0;
+   col_rep.rgba.green = 1.0;
+   col_rep.rgba.blue = 1.0;
+   col_rep.rgba.alpha = 0.25;
    pset_colr_rep(0, 2, &col_rep);
 
-   col_rep.rgb.red = 1.0;
-   col_rep.rgb.green = 1.0;
-   col_rep.rgb.blue = 1.0;
+   col_rep.rgba.red = 1.0;
+   col_rep.rgba.green = 1.0;
+   col_rep.rgba.blue = 1.0;
+   col_rep.rgba.alpha = 0.25;
    pset_colr_rep(0, 3, &col_rep);
 
-   col_rep.rgb.red = 1.0;
-   col_rep.rgb.green = 0.0;
-   col_rep.rgb.blue = 0.0;
+   col_rep.rgba.red = 1.0;
+   col_rep.rgba.green = 0.0;
+   col_rep.rgba.blue = 0.0;
+   col_rep.rgba.alpha = 0.25;
    pset_colr_rep(0, 4, &col_rep);
    pset_disp_upd_st(0, PDEFER_BNIL, PMODE_UQUM);
 

@@ -454,20 +454,36 @@ void phg_get_colr_ind(
 
    gcolr->type = ws->current_colour_model;
 
-   if (ws->current_colour_model == PINDIRECT) {
-      gcolr->val.ind = ind;
-   }
-   else {
-      (*ws->inq_representation)(ws,
-                                ind,
-                                PINQ_REALIZED,
-                                PHG_ARGS_COREP,
-                                &ret);
-      if (ret.err == 0) {
-         gcolr->val.general.x = ret.data.rep.corep.rgb.red;
-         gcolr->val.general.y = ret.data.rep.corep.rgb.green;
-         gcolr->val.general.z = ret.data.rep.corep.rgb.blue;
-      }
+   switch (ws->current_colour_model){
+   case PINDIRECT:
+     gcolr->val.ind = ind;
+     break;
+   case PMODEL_RGB:
+     (*ws->inq_representation)(ws,
+			       ind,
+			       PINQ_REALIZED,
+			       PHG_ARGS_COREP,
+			       &ret);
+     if (ret.err == 0) {
+       gcolr->val.general.x = ret.data.rep.corep.rgb.red;
+       gcolr->val.general.y = ret.data.rep.corep.rgb.green;
+       gcolr->val.general.z = ret.data.rep.corep.rgb.blue;
+       gcolr->val.general.a = 1.0;
+     }
+     break;
+   case PMODEL_RGBA:
+     (*ws->inq_representation)(ws,
+			       ind,
+			       PINQ_REALIZED,
+			       PHG_ARGS_COREP,
+			       &ret);
+     if (ret.err == 0) {
+       gcolr->val.general.x = ret.data.rep.corep.rgba.red;
+       gcolr->val.general.y = ret.data.rep.corep.rgba.green;
+       gcolr->val.general.z = ret.data.rep.corep.rgba.blue;
+       gcolr->val.general.a = ret.data.rep.corep.rgba.alpha;
+     }
+     break;
    }
 }
 

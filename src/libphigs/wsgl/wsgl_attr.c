@@ -428,6 +428,26 @@ void wsgl_set_colr(
     }
     break;
 
+  case PMODEL_RGBA:
+#ifdef GLEW
+    if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
+#else
+    if (wsgl_use_shaders)
+#endif
+      {
+        glVertexAttrib4f(vCOLOR,
+                         colr->direct.rgba.red,
+                         colr->direct.rgba.green,
+                         colr->direct.rgba.blue,
+                         colr->direct.rgba.alpha);
+      } else {
+      glColor4f(colr->direct.rgba.red,
+                colr->direct.rgba.green,
+                colr->direct.rgba.blue,
+                colr->direct.rgba.alpha);
+    }
+    break;
+
   default:
     break;
   }
@@ -467,6 +487,26 @@ void wsgl_set_gcolr(
     }
     break;
 
+  case PMODEL_RGBA:
+#ifdef GLEW
+    if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
+#else
+    if (wsgl_use_shaders)
+#endif
+      {
+        glVertexAttrib4f(vCOLOR,
+                         gcolr->val.general.x,
+                         gcolr->val.general.y,
+                         gcolr->val.general.z,
+                         gcolr->val.general.a);
+      } else {
+      glColor4f(gcolr->val.general.x,
+                gcolr->val.general.y,
+                gcolr->val.general.z,
+                gcolr->val.general.a);
+    }
+    break;
+
   default:
     break;
   }
@@ -492,6 +532,13 @@ void wsgl_colr_from_gcolr(
     colr->direct.rgb.red = gcolr->val.general.x;
     colr->direct.rgb.green = gcolr->val.general.y;
     colr->direct.rgb.blue = gcolr->val.general.z;
+    break;
+
+  case PMODEL_RGBA:
+    colr->direct.rgba.red = gcolr->val.general.x;
+    colr->direct.rgba.green = gcolr->val.general.y;
+    colr->direct.rgba.blue = gcolr->val.general.z;
+    colr->direct.rgba.alpha = gcolr->val.general.a;
     break;
 
   default:

@@ -78,6 +78,7 @@ extern "C" {
 /* Color model */
 #define PINDIRECT                 0
 #define PMODEL_RGB                1
+#define PMODEL_RGBA               2
 
 /* HLHSR constants */
 #define PHIGS_HLHSR_MODE_NONE     0
@@ -534,6 +535,7 @@ typedef struct {
          Pfloat x;
          Pfloat y;
          Pfloat z;
+         Pfloat a;
       } general;
    } val;
 } Pgcolr;
@@ -759,14 +761,22 @@ typedef struct {
 } Prgb;
 
 typedef struct {
+   Pfloat red;
+   Pfloat green;
+   Pfloat blue;
+   Pfloat alpha;
+} Prgba;
+
+typedef struct {
    Pfloat hue;
    Pfloat satur;
    Pfloat value;
 } Phsv;
 
 typedef union {
-   Prgb rgb;
-   Phsv hsv;
+   Prgb  rgb;
+   Prgba rgba;
+   Phsv  hsv;
 } Pcolr_rep;
 
 typedef union {

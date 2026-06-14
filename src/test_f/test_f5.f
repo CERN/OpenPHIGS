@@ -206,8 +206,8 @@ C     Busy loop
                SELMRK=PP(1,1)
                CALL PSEDM (EDITMO)
                CALL PUWK (IWKMK,1)
-               MKIND = PP(2,1) / 100
-               MKSIZ = PP(2,1) - 100 * MKIND
+               MKIND = PP(2,1) / 400
+               MKSIZ = PP(2,1) - 400 * MKIND
                PRINT*, "Selected marker ", mkind, " with size ", mksiz
             ENDIF
  99         CALL PUWK(IWKMK,1)

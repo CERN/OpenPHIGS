@@ -67,6 +67,8 @@ typedef struct {
    Ptext_path    anno_text_path;
    Ptext_align   anno_text_align;
    Pvec          anno_char_up_vec;
+   Pfloat        alpha_channel;
+   Pfloat        color_model;
 } Ws_attr_st;
 
 typedef struct {

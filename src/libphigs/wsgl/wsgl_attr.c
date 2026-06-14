@@ -256,26 +256,6 @@ void wsgl_set_clip_ind(
 }
 
 /*******************************************************************************
- * wsgl_set_alpha_channel
- *
- * DESCR:	Setup alpha channel
- * RETURNS:	N/A
- */
-void wsgl_set_alpha_channel(
-                            Ws *ws,
-                            Pfloat alpha
-                            )
-{
-  Phg_ret ret;
-  Wsgl_handle wsgl = ws->render_context;
-#ifdef GLEW
-  if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects) glUniform1f(alpha_channel, alpha);
-#else
-  if (wsgl_use_shaders) glUniform1f(alpha_channel, alpha);
-#endif
-}
-
-/*******************************************************************************
  * wsgl_set_clip_vol3
  *
  * DESCR:	Setup view

@@ -42,7 +42,6 @@ GLint plane1, point1;
 GLint shading_mode;
 GLint vAmbient, vDiffuse, vSpecular, vPositional;
 GLint ModelViewMatrix, ProjectionMatrix;
-GLint alpha_channel;
 GLint lightSource0, lightSourceTyp0, lightSourceCol0, lightSourcePos0, lightSourceCoef0;
 GLint lightSource1, lightSourceTyp1, lightSourceCol1, lightSourcePos1, lightSourceCoef1;
 GLint lightSource2, lightSourceTyp2, lightSourceCol2, lightSourcePos2, lightSourceCoef2;
@@ -135,7 +134,6 @@ static const char* fragment_shader_text_130 =
 "uniform vec4 lightSourceCol6;\n"
 "uniform vec4 lightSourcePos6;\n"
 "uniform vec4 lightSourceCoef6;\n"
-"uniform float alpha_channel;\n"
 "\n"
 "in vec4 Color;\n"
 "in vec4 Normal;\n"
@@ -206,7 +204,6 @@ static const char* fragment_shader_text_130 =
 "  } else {\n"
 "    FragColor = Color;\n"
 "  };\n"
-"  FragColor.a = alpha_channel;\n"
 "}\n";
 
 static const char* vertex_shader_text_120 =
@@ -280,7 +277,7 @@ static const char* fragment_shader_text_120 =
 "uniform vec4 lightSourceCol6;\n"
 "uniform vec4 lightSourcePos6;\n"
 "uniform vec4 lightSourceCoef6;\n"
-"uniform float alpha_channel;\n"
+"\n"
 "varying vec4 Normal;\n"
 "varying vec4 Color;\n"
 "\n"
@@ -341,7 +338,6 @@ static const char* fragment_shader_text_120 =
 "  } else {\n"
 "    gl_FragColor = Color;\n"
 "  };\n"
-"  gl_FragColor.a = alpha_channel;\n"
 "}\n";
 
 /*******************************************************************************
@@ -444,8 +440,6 @@ void wsgl_shaders(Ws * ws){
     vPositional = glGetUniformLocation(ws->program, "vPositional");
     // set some default color
     glVertexAttrib4f(vCOLOR, 0.5, 0.5, 0.5, 1.0);
-    alpha_channel = glGetUniformLocation(ws->program, "alpha_channel");
-    glUniform1f(alpha_channel, 1.0);
     // init clipping
     num_clip_planes = glGetUniformLocation(ws->program, "num_clip_planes");
     clipping_ind = glGetUniformLocation(ws->program, "clipping_ind");

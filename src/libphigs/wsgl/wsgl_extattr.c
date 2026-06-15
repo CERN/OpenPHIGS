@@ -696,7 +696,7 @@ int wsgl_setup_int_attr_plus(
 #endif
    wsgl_setup_int_attr_nocol(ws, ast);
    wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast));
-   return wsgl_setup_int_colr(ws, ast->color_model, &colr, ast);
+   return wsgl_setup_int_colr(ws, ws->current_colour_model, &colr, ast);
 }
 
 /*******************************************************************************
@@ -752,5 +752,5 @@ int wsgl_setup_back_int_colr(
 
    wsgl_setup_back_int_attr_nocol(ws, ast);
    wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast));
-   return wsgl_setup_back_int_colr(ws, ast->color_model, &colr, ast);
+   return wsgl_setup_back_int_colr(ws, ws->current_colour_model, &colr, ast);
  }

@@ -1631,6 +1631,15 @@ void phg_wsb_set_rep(
       gcolr.val.general.y = rep->bundl.corep.rgba.green;
       gcolr.val.general.z = rep->bundl.corep.rgba.blue;
       gcolr.val.general.a = rep->bundl.corep.rgba.alpha;
+#ifdef DEBUG
+      printf("Index: %d colors %f %f %f %f\n",
+	     rep->index,
+	     gcolr.val.general.x,
+	     gcolr.val.general.y,
+	     gcolr.val.general.z,
+	     gcolr.val.general.a
+      );
+#endif
       break;
     }
     phg_wsb_set_LUT_entry(ws, type, rep, &gcolr);

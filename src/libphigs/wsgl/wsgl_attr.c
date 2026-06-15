@@ -474,6 +474,14 @@ void wsgl_set_gcolr(
     if (wsgl_use_shaders)
 #endif
       {
+#ifdef DEBUG
+	printf("wsgl_set_gcolr setting %f %f %f %f\n",
+	       gcolr->val.general.x,
+	       gcolr->val.general.y,
+	       gcolr->val.general.z,
+	       gcolr->val.general.a
+	       );
+#endif
         glVertexAttrib4f(vCOLOR,
                          gcolr->val.general.x,
                          gcolr->val.general.y,

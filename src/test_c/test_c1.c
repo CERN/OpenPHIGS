@@ -138,7 +138,6 @@ int main(int argc, char *argv[])
       view_index = atoi(argv[1]);
       printf("Use view: %d\n", view_index);
    }
-
    green.type = PMODEL_RGBA;
    green.val.general.x = 0.0;
    green.val.general.y = 1.0;
@@ -201,6 +200,7 @@ int main(int argc, char *argv[])
    pclose_struct();
 
    popen_ws(0, NULL, PWST_OUTPUT_TRUE_DB);
+   pset_colr_model(0, PMODEL_RGBA);
    vp.x_min = VP_X0;
    vp.x_max = VP_X1;
    vp.y_min = VP_Y0;
@@ -220,19 +220,19 @@ int main(int argc, char *argv[])
    col_rep.rgba.red = 0.0;
    col_rep.rgba.green = 0.25;
    col_rep.rgba.blue = 0.25;
-   col_rep.rgba.alpha = 0.25;
+   col_rep.rgba.alpha = 1.0;
    pset_colr_rep(0, 0, &col_rep);
 
    col_rep.rgba.red = 0.0;
    col_rep.rgba.green = 0.5;
    col_rep.rgba.blue = 0.5;
-   col_rep.rgba.alpha = 0.25;
+   col_rep.rgba.alpha = 0.5;
    pset_colr_rep(0, 1, &col_rep);
 
    col_rep.rgba.red = 0.0;
    col_rep.rgba.green = 1.0;
    col_rep.rgba.blue = 1.0;
-   col_rep.rgba.alpha = 0.25;
+   col_rep.rgba.alpha = 1.0;
    pset_colr_rep(0, 2, &col_rep);
 
    col_rep.rgba.red = 1.0;
@@ -244,11 +244,15 @@ int main(int argc, char *argv[])
    col_rep.rgba.red = 1.0;
    col_rep.rgba.green = 0.0;
    col_rep.rgba.blue = 0.0;
-   col_rep.rgba.alpha = 0.25;
+   col_rep.rgba.alpha = 0.2;
    pset_colr_rep(0, 4, &col_rep);
    pset_disp_upd_st(0, PDEFER_BNIL, PMODE_UQUM);
 
    ppost_struct(0, 1, 0);
+#ifdef DEBUG
+   Struct_handle structp = CSS_STRUCT_EXISTS(PHG_CSS, 1);
+   phg_css_print_struct(structp, 0);
+#endif
    pupd_ws(0, PFLAG_PERFORM);
 
    XSelectInput(PHG_WSID(0)->display,

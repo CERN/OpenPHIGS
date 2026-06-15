@@ -1574,6 +1574,17 @@ void pset_light_src_rep(
    );
 
 /*******************************************************************************
+ * pset_colr_model
+ *
+ * DESCR:       Set workstation colour model
+ * RETURNS:     N/A
+ */
+void pset_colr_model(
+    Pint ws_id,
+    Pint model
+  );
+
+/*******************************************************************************
  * pset_colr_rep
  *
  * DESCR:       Set workstation colour representation

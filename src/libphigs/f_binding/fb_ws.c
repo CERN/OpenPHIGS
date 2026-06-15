@@ -220,6 +220,23 @@ FTN_SUBROUTINE(ppost)(
 }
 
 /*******************************************************************************
+ * pscm
+ *
+ * DESCR:       Set colour model
+ * RETURNS:     N/A
+ */
+
+FTN_SUBROUTINE(pscm)(
+                     FTN_INTEGER(wkid),
+		     FTN_INTEGER(cmodel)
+		     )
+{
+  Pint ws_id = FTN_INTEGER_GET(wkid);
+  Pint model = FTN_INTEGER_GET(cmodel);
+  pset_colr_model(ws_id, model);
+}
+
+/*******************************************************************************
  * pscr
  *
  * DESCR:       Set colour representation
@@ -236,24 +253,31 @@ FTN_SUBROUTINE(pscr)(
   Pint ws_id = FTN_INTEGER_GET(wkid);
   Pint ind = FTN_INTEGER_GET(ci);
   Pint ncc = FTN_INTEGER_GET(nccs);
+  Pint color_model;
   Pcolr_rep rep;
+  Ws *wsh;
+  wsh = PHG_WSID(ws_id);
+  color_model = wsh->current_colour_model;
 #ifdef DEBUG
   printf("DEBUG: PSCR workstation color representation %d\n", *wkid);
 #endif
-  switch (ncc) {
-  case 3:
+  switch (color_model) {
+  case PMODEL_RGB:
     rep.rgb.red   = FTN_REAL_ARRAY_GET(cspec, 0);
     rep.rgb.green = FTN_REAL_ARRAY_GET(cspec, 1);
     rep.rgb.blue  = FTN_REAL_ARRAY_GET(cspec, 2);
     break;
-  case 4:
+  case PMODEL_RGBA:
     rep.rgba.red   = FTN_REAL_ARRAY_GET(cspec, 0);
     rep.rgba.green = FTN_REAL_ARRAY_GET(cspec, 1);
     rep.rgba.blue  = FTN_REAL_ARRAY_GET(cspec, 2);
     rep.rgba.alpha = FTN_REAL_ARRAY_GET(cspec, 3);
     break;
-  default:
+  case PINDIRECT:
     rep.rgb.red = rep.rgb.green = rep.rgb.blue = FTN_REAL_ARRAY_GET(cspec, 0);
+    break;
+  default:
+    printf("WARNING: Unknown color model %d. Ignoring function.\n", color_model);
   }
   pset_colr_rep(ws_id, ind, &rep);
 }

@@ -1112,6 +1112,36 @@ void pset_light_src_rep(
 }
 
 /*******************************************************************************
+ * pset_colr_model
+ *
+ * DESCR:       Set workstation colour model
+ * RETURNS:     N/A
+ */
+void pset_colr_model(
+		     Pint ws_id,
+		     Pint model
+		     )
+{
+  Ws *wsh;
+  wsh = PHG_WSID(ws_id);
+  switch (model){
+  case PINDIRECT:
+    wsh->current_colour_model = PINDIRECT;
+    break;
+  case PMODEL_RGB:
+    wsh->current_colour_model = PMODEL_RGB;
+    break;
+  case PMODEL_RGBA:
+    wsh->current_colour_model = PMODEL_RGBA;
+    break;
+  default:
+    wsh->current_colour_model = wsh->type->desc_tbl.phigs_dt.out_dt.default_colour_model;
+    printf("WARNING: pset_colr_model: Unknown color model, using default\n");
+    break;
+  }
+}
+
+/*******************************************************************************
  * pset_colr_rep
  *
  * DESCR:       Set workstation colour representation
@@ -2141,24 +2171,52 @@ void pinq_invis_filter(
  *
  **********************************/
 void pxset_color_map(Pint ws_id){
-  int i, j, k;
+  int i, j, k, l;
   int n = 5;
   int index = 0;
   float delta_n = 1.0/(n-1);
   Pcolr_rep rep;
-  for (i=0; i<5; i++){
-    for (j=0; j<5; j++){
-      for (k=0; k<5; k++){
-        rep.rgb.red   = i*delta_n;
-        rep.rgb.green = j*delta_n;
-        rep.rgb.blue  = k*delta_n;
-        pset_colr_rep(ws_id, 16+index, &rep);
+  Ws_handle wsh;
+  wsh = PHG_WSID(ws_id);
+  switch (wsh->current_colour_model){
+  case PMODEL_RGBA:
+    for (i=0; i<n; i++){
+      for (j=0; i<n; i++){
+	for (k=0; j<n; j++){
+	  for (l=0; k<n; k++){
+	    rep.rgba.alpha = i*delta_n;
+	    rep.rgba.red   = j*delta_n;
+	    rep.rgba.green = k*delta_n;
+	    rep.rgba.blue  = l*delta_n;
+	    pset_colr_rep(ws_id, 16+index, &rep);
 #ifdef DEBUG
-        printf("Defining color index %d as RGB %f %f %f\n", 16+index, rep.rgb.red, rep.rgb.green, rep.rgb.blue);
+	    printf("Defining color index %d as RGBA %f %f %f %f\n", 16+index, rep.rgba.red, rep.rgba.green, rep.rgba.blue, rep.rgba.alpha);
 #endif
-        index += 1;
+	    index += 1;
+	  }
+	}
       }
     }
+    break;
+  case PMODEL_RGB:
+  case PINDIRECT:
+    for (i=0; i<n; i++){
+      for (j=0; j<n; j++){
+	for (k=0; k<n; k++){
+	  rep.rgb.red   = i*delta_n;
+	  rep.rgb.green = j*delta_n;
+	  rep.rgb.blue  = k*delta_n;
+#ifdef DEBUG
+	  printf("Defining color index %d as RGB %f %f %f\n", 16+index, rep.rgb.red, rep.rgb.green, rep.rgb.blue);
+#endif
+	  pset_colr_rep(ws_id, 16+index, &rep);
+	  index += 1;
+	}
+      }
+    }
+    break;
+  default:
+    printf("WARNING in pxset_color_map: unknown color model %d. Ignoring function.\n");
   }
 }
 

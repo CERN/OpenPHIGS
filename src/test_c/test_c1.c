@@ -174,6 +174,7 @@ int main(int argc, char *argv[])
    pset_edgewidth(EDGE_WIDTH);
    pset_edgetype(PLINE_SOLID);
    pset_int_colr_ind(0);
+   //   pset_back_int_colr_ind(0);
    pset_int_style(FILL_STYLE);
    pset_int_style_ind(FILL_STYLE_IND);
    pset_marker_type(PMARKER_CROSS);
@@ -186,6 +187,7 @@ int main(int argc, char *argv[])
    pset_local_tran3(rot3, PTYPE_REPLACE);
    pset_local_tran3(tran3, PTYPE_POSTCONCAT);
    pset_int_colr_ind(1);
+   //   pset_back_int_colr_ind(1);
    pexec_struct(0);
    tvec3.delta_z += SPACE;
    ptranslate3(&tvec3, &errnum, tran3);
@@ -194,6 +196,7 @@ int main(int argc, char *argv[])
    plabel(10);
    pset_local_tran3(tran3, PTYPE_POSTCONCAT);
    pset_int_colr_ind(2);
+   //   pset_back_int_colr_ind(2);
    plabel(20);
    pexec_struct(0);
    plabel(30);
@@ -302,6 +305,7 @@ int main(int argc, char *argv[])
                pset_local_tran3(tran3, PTYPE_POSTCONCAT);
                poffset_elem_ptr(1);
                pset_int_colr_ind(4);
+               //               pset_back_int_colr_ind(4);
 #if 0
                pset_elem_ptr(0);
                //pdel_elem_range(19, 20);
@@ -319,6 +323,7 @@ int main(int argc, char *argv[])
                //pset_hlhsr_id(PHIGS_HLHSR_ID_OFF);
                pset_int_style(FILL_STYLE);
                pset_int_colr(&green);
+               pset_back_int_colr(&green);
                pset_edge_colr(&yellow);
                pcopy_all_elems_struct(0);
                pclose_struct();

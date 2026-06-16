@@ -2210,9 +2210,9 @@ void pxset_color_map(Pint ws_id){
             rep.rgba.red   = j*delta_n;
             rep.rgba.green = k*delta_n;
             rep.rgba.blue  = l*delta_n;
-            rep.rgba.alpha = 1.05-i*1.0/(float)n;
+            rep.rgba.alpha = 1.0-i*1.0/(float)(n-1);
             if (rep.rgba.alpha > 1.0) rep.rgba.alpha = 1.0;
-            if (rep.rgba.alpha < 0.0) rep.rgba.alpha = 0.0;
+            if (rep.rgba.alpha < 0.0) rep.rgba.alpha = 0.1;
             pset_colr_rep(ws_id, offset+index+200*i, &rep);
 #ifdef DEBUGA
             printf("Defining color index %d as RGBA %f %f %f %f\n",
@@ -2232,20 +2232,18 @@ void pxset_color_map(Pint ws_id){
       case PMODEL_RGB:
         break;
       case PMODEL_RGBA:
-        for (j=0;j<n;j++){
+        for (j=1;j<n;j++){
           rep.rgba.red   = gcolr.val.general.x;
           rep.rgba.green = gcolr.val.general.y;
           rep.rgba.blue  = gcolr.val.general.z;
-          rep.rgba.alpha = 1.05-i*1.0/(float)n;
+          rep.rgba.alpha = 1.0-j*1.0/(float)(n-1);
           if (rep.rgba.alpha > 1.0) rep.rgba.alpha = 1.0;
-          if (rep.rgba.alpha < 0.0) rep.rgba.alpha = 0.0;
-          if (i>0){
+          if (rep.rgba.alpha < 0.0) rep.rgba.alpha = 0.1;
 #ifdef DEBUGA
-            printf("Defining color index %d as RGBA %f %f %f %f\n",
-                   j+200*i, rep.rgba.red, rep.rgba.green, rep.rgba.blue, rep.rgba.alpha);
+          printf("Re-defining color index %d as RGBA %f %f %f %f\n",
+                 i+200*j, rep.rgba.red, rep.rgba.green, rep.rgba.blue, rep.rgba.alpha);
 #endif
-            pset_colr_rep(ws_id, j+200*i, &rep);
-          }
+          pset_colr_rep(ws_id, i+200*j, &rep);
         }
         break;
       break;

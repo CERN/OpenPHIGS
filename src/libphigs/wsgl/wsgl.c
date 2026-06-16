@@ -737,8 +737,11 @@ void wsgl_render_element(
            ELMT_CONTENT(el),
            sizeof(Pgcolr));
 #ifdef DEBUGA
-    printf("Col Colr type %d alpha %f\n",
+    printf("Setting INT COLR type %d colors %f %f %f %f\n",
            wsgl->cur_struct.ast.indiv_group.int_bundle.colr.type,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.val.general.x,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.val.general.y,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.val.general.z,
            wsgl->cur_struct.ast.indiv_group.int_bundle.colr.val.general.a
            );
 #endif
@@ -748,6 +751,15 @@ void wsgl_render_element(
     memcpy(&wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr,
            ELMT_CONTENT(el),
            sizeof(Pgcolr));
+#ifdef DEBUGA
+    printf("Setting BACK COLR type %d colors %f %f %f %f\n",
+           wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr.type,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr.val.general.x,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr.val.general.y,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr.val.general.z,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr.val.general.a
+           );
+#endif
     break;
 
   case PELEM_INT_STYLE:

@@ -474,13 +474,13 @@ void wsgl_set_gcolr(
     if (wsgl_use_shaders)
 #endif
       {
-#ifdef DEBUG
-	printf("wsgl_set_gcolr setting %f %f %f %f\n",
-	       gcolr->val.general.x,
-	       gcolr->val.general.y,
-	       gcolr->val.general.z,
-	       gcolr->val.general.a
-	       );
+#ifdef DEBUGA
+        printf("wsgl_set_gcolr setting %f %f %f %f\n",
+               gcolr->val.general.x,
+               gcolr->val.general.y,
+               gcolr->val.general.z,
+               gcolr->val.general.a
+               );
 #endif
         glVertexAttrib4f(vCOLOR,
                          gcolr->val.general.x,
@@ -665,9 +665,27 @@ Pgcolr* wsgl_get_int_colr(
 
   if (phg_nset_name_is_set(&ast->asf_nameset, (Pint) PASPECT_INT_COLR_IND)) {
     gcolr = &ast->indiv_group.int_bundle.colr;
+#ifdef DEBUGA
+    printf("gcolr from nameset %d colors %f %f %f %f\n",
+           gcolr->type,
+           gcolr->val.general.x,
+           gcolr->val.general.y,
+           gcolr->val.general.z,
+           gcolr->val.general.a
+           );
+#endif
   }
   else {
     gcolr = &ast->bundl_group.int_bundle.colr;
+#ifdef DEBUGA
+    printf("gcolr from bundle %d colors %f %f %f %f\n",
+           gcolr->type,
+           gcolr->val.general.x,
+           gcolr->val.general.y,
+           gcolr->val.general.z,
+           gcolr->val.general.a
+           );
+#endif
   }
   return gcolr;
 }

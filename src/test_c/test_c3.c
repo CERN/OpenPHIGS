@@ -157,6 +157,7 @@ void init_scene(void)
    pset_edgewidth(EDGE_WIDTH);
    pset_edgetype(PLINE_SOLID);
    pset_int_colr(&dark);
+   pset_back_int_colr(&dark); //us
    pset_int_style(FILL_STYLE);
    pset_int_style_ind(FILL_STYLE_IND);
    pset_marker_type(PMARKER_CROSS);

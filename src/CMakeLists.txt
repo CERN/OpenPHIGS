@@ -44,6 +44,7 @@ set(GLEW_VERBOSE ON)
 # for debugging
 add_definitions(-g)
 # add_definitions(-DTEST)
+#add_definitions(-DDEBUGA)
 # add_definitions(-DDEBUG)
 # add_definitions(-DDEBUGL)
 # add_definitions(-DDEBUGINP)

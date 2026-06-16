@@ -53,11 +53,27 @@ Pgcolr* wsgl_get_back_int_colr(
 
   if (phg_nset_name_is_set(&ast->asf_nameset, (Pint) PASPECT_BACK_INT_COLR)) {
     gcolr = &ast->indiv_group.int_bundle.back_colr;
-  }
-  else {
+#ifdef DEBUGA
+    printf("gcolr back from nameset %d colors %f %f %f %f\n",
+           gcolr->type,
+           gcolr->val.general.x,
+           gcolr->val.general.y,
+           gcolr->val.general.z,
+           gcolr->val.general.a
+           );
+#endif
+  } else {
     gcolr = &ast->bundl_group.int_bundle.back_colr;
+#ifdef DEBUGA
+    printf("gcolr back from bundle %d colors %f %f %f %f\n",
+           gcolr->type,
+           gcolr->val.general.x,
+           gcolr->val.general.y,
+           gcolr->val.general.z,
+           gcolr->val.general.a
+           );
+#endif
   }
-
   return gcolr;
 }
 
@@ -690,12 +706,15 @@ int wsgl_setup_int_attr_plus(
    )
 {
    Pcoval colr;
+   Pgcolr *gcolr;
 
 #ifdef DEBUGLIGHT
      printf("Setup int color plus\n");
 #endif
    wsgl_setup_int_attr_nocol(ws, ast);
-   wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast));
+   gcolr = wsgl_get_int_colr(ast);
+   wsgl_colr_from_gcolr(&colr, gcolr);
+   // fixme options ws->current_colour_model, gcolr->type or ast->color_model
    return wsgl_setup_int_colr(ws, ws->current_colour_model, &colr, ast);
 }
 
@@ -746,11 +765,14 @@ int wsgl_setup_back_int_colr(
                                    )
  {
    Pcoval colr;
+   Pgcolr *gcolr;
 #ifdef DEBUGLIGHT
      printf("Setup back int color plus\n");
 #endif
 
    wsgl_setup_back_int_attr_nocol(ws, ast);
-   wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast));
-   return wsgl_setup_back_int_colr(ws, ws->current_colour_model, &colr, ast);
+   gcolr = wsgl_get_back_int_colr(ast);
+   wsgl_colr_from_gcolr(&colr, gcolr);
+   // fixme options ws->current_colour_model, gcolr->type or ast->color_model
+   return wsgl_setup_back_int_colr(ws, ws->current_colour_model  , &colr, ast);
  }

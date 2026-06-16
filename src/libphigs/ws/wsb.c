@@ -1829,12 +1829,14 @@ void phg_wsb_inq_rep(
     /* Need to convert to current colour model. */
     phg_wsb_inq_LUT_entry(ws, index, how, rep_type, ret, &gcolr, NULL);
     if (ret->err == 0){
+#ifdef DEBUGA
       printf("inq_rep index %d rgba=%f %f %f %f\n",index,
              gcolr.type, gcolr.val.general.x,
              gcolr.type, gcolr.val.general.y,
              gcolr.type, gcolr.val.general.z,
              gcolr.type, gcolr.val.general.a
              );
+#endif
       /* NOTE:
        * Convert to correct colour model here if needed
        */

@@ -1313,10 +1313,17 @@ FTN_SUBROUTINE(pslsr)(
   switch (type) {
   case PLIGHT_AMBIENT:
     amblight.colr.type = col_type;
-    if (col_type == PINDIRECT){
+    switch (col_type){
+    case PINDIRECT:
       amblight.colr.val.ind = col_indx;
-    } else {
+      break;
+    case PMODEL_RGB:
       memcpy(&amblight.colr.val.general.x, &fhere[0], 3*sizeof(Pfloat));
+      amblight.colr.val.general.a = 1.0;
+      break;
+    case PMODEL_RGBA:
+      memcpy(&amblight.colr.val.general.x, &fhere[0], 4*sizeof(Pfloat));
+      break;
     }
     light_src_rep.type = type;
     light_src_rep.rec.ambient = amblight;
@@ -1325,10 +1332,17 @@ FTN_SUBROUTINE(pslsr)(
   case PLIGHT_DIRECTIONAL:
     dirlight.colr.type = col_type;
     memcpy(&dirlight.dir.delta_x, &fhere[0], 3*sizeof(Pfloat));
-    if (col_type == PINDIRECT){
+    switch (col_type){
+    case PINDIRECT:
       dirlight.colr.val.ind = col_indx;
-    } else {
+      break;
+    case PMODEL_RGB:
       memcpy(&dirlight.colr.val.general.x, &fhere[3], 3*sizeof(Pfloat));
+      dirlight.colr.val.general.a = 1.0;
+      break;
+    case PMODEL_RGBA:
+      memcpy(&dirlight.colr.val.general.x, &fhere[3], 4*sizeof(Pfloat));
+      break;
     }
     light_src_rep.type = type;
     light_src_rep.rec.directional = dirlight;
@@ -1338,10 +1352,17 @@ FTN_SUBROUTINE(pslsr)(
     poslight.colr.type = col_type;
     memcpy(&poslight.pos.x, &fhere[0], 3*sizeof(Pfloat));
     memcpy(&poslight.coef, &fhere[3], 2*sizeof(Pfloat));
-    if (col_type == PINDIRECT){
+    switch (col_type){
+    case PINDIRECT:
       poslight.colr.val.ind = col_indx;
-    } else {
+      break;
+    case PMODEL_RGB:
       memcpy(&poslight.colr.val.general.x, &fhere[5], 3*sizeof(Pfloat));
+      poslight.colr.val.general.a = 1.0;
+      break;
+    case PMODEL_RGBA:
+      memcpy(&poslight.colr.val.general.x, &fhere[5], 4*sizeof(Pfloat));
+      break;
     }
     light_src_rep.type = type;
     light_src_rep.rec.positional = poslight;

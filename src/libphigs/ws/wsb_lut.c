@@ -378,7 +378,8 @@ void phg_wsb_set_LUT_entry(
 	      printf("Setting gcolr for index=%d %f %f %f\n", rep->index,
 		     gcolr->val.general.x,
 		     gcolr->val.general.y,
-		     gcolr->val.general.z
+		     gcolr->val.general.z,
+		     gcolr->val.general.a
 		     );
 #endif
                 memcpy(data, gcolr, sizeof(Pgcolr));

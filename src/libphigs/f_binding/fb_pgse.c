@@ -43,12 +43,25 @@ FTN_SUBROUTINE(pxshlc)(
 #endif
   Pgcolr pgcolr;
   pgcolr.type = FTN_INTEGER_GET(ctype);
-  if (pgcolr.type == PINDIRECT){
+  switch (pgcolr.type){
+  case PINDIRECT:
     pgcolr.val.ind = FTN_INTEGER_GET(coli);
-  } else {
+    break;
+  case PMODEL_RGB:
     pgcolr.val.general.x = FTN_REAL_ARRAY_GET(colr, 0);
     pgcolr.val.general.y = FTN_REAL_ARRAY_GET(colr, 1);
     pgcolr.val.general.z = FTN_REAL_ARRAY_GET(colr, 2);
+    pgcolr.val.general.a = 1.0;
+    break;
+  case PMODEL_RGBA:
+    pgcolr.val.general.x = FTN_REAL_ARRAY_GET(colr, 0);
+    pgcolr.val.general.y = FTN_REAL_ARRAY_GET(colr, 1);
+    pgcolr.val.general.z = FTN_REAL_ARRAY_GET(colr, 2);
+    pgcolr.val.general.a = FTN_REAL_ARRAY_GET(colr, 3);
+    break;
+  default:
+    printf("WARNING in pxshlc: Unknown color model %d. Ignoring function.\n");
+    break;
   };
   pxset_highlight_colr(&pgcolr);
 };

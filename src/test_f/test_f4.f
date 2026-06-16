@@ -211,7 +211,7 @@ C      DATA       DROPX  / 0.4990, 0.5010, 0.5010, 0.4990, 0.4990/
       DATA COLB / 0., 1., 0., 0., 1., 0., 1., 1., 0.,  0., 1., 0.50/
 
       INTEGER IWK
-      REAL CSPEC(3)
+      REAL CSPEC(4)
       IWK1 = IWK
       CALL POPST (NSGSAB)
 *     Set color table
@@ -220,7 +220,8 @@ C      DATA       DROPX  / 0.4990, 0.5010, 0.5010, 0.4990, 0.4990/
          CSPEC(1) = COLR(I)
          CSPEC(2) = COLG(I)
          CSPEC(3) = COLB(I)
-         CALL PSCR (IWK1,I,3,CSPEC)
+         CSPEC(4) = 1.
+         CALL PSCR (IWK1,I,4,CSPEC)
  11   CONTINUE
       IBLACK=1
       IWHIT=2
@@ -274,6 +275,11 @@ C      Include PHIGS enumeration file
 C     Open PHIGS and a workstation
       CALL POPPH(0, 1)
       CALL POPWK(IWK, 0, 3)
+
+*  Set color model to PRGBA
+      CALL PSCM(IWK, PRGBA)
+* Re-Pre-define colors FIXME: maybe have a different workstation type
+      CALL PXSCM(IWK)
 
       CALL KYSABL(IWK)
 

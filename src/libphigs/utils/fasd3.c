@@ -222,7 +222,7 @@ void fasd3_normal3(
          c.delta_z = fasd3->vdata->vertex_data.points[2].z;
          break;
 
-      case PVERT_COORD_COLOUR:
+      case PVERT_COORD_COLOUR: //FIXME ?
          a.delta_x = fasd3->vdata->vertex_data.ptcolrs[0].point.x;
          a.delta_y = fasd3->vdata->vertex_data.ptcolrs[0].point.y;
          a.delta_z = fasd3->vdata->vertex_data.ptcolrs[0].point.z;

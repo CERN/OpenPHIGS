@@ -156,9 +156,6 @@ FTN_SUBROUTINE(psrfp)(
     int ncc = here[2];
     int index = here[3];
     refl_properties.specular_colr.type = col_type;
-    if (col_type == PINDIRECT){
-      refl_properties.specular_colr.val.ind = index;
-    }
     fp = (float*) &here[5];
     refl_properties.ambient_coef = fp[0];
     refl_properties.diffuse_coef = fp[1];
@@ -171,21 +168,28 @@ FTN_SUBROUTINE(psrfp)(
            refl_properties.specular_coef,
            refl_properties.specular_exp);
 #endif
-    if (col_type ==  PMODEL_RGB){
+    switch (col_type){
+    case  PINDIRECT:
+      refl_properties.specular_colr.val.ind = index;
+      break;
+    case PMODEL_RGB:
       refl_properties.specular_colr.val.general.x = fp[4];
       refl_properties.specular_colr.val.general.y = fp[5];
       refl_properties.specular_colr.val.general.z = fp[6];
       refl_properties.specular_colr.val.general.a = 1.0;
-    }
-    if (col_type ==  PMODEL_RGBA){
+      break;
+    case PMODEL_RGBA:
       refl_properties.specular_colr.val.general.x = fp[4];
       refl_properties.specular_colr.val.general.y = fp[5];
       refl_properties.specular_colr.val.general.z = fp[6];
       refl_properties.specular_colr.val.general.z = fp[7];
+      break;
+    default:
+      printf("ERROR in psrfp: unknown color model %d.", col_type);
     }
     pset_refl_props(&refl_properties);
   } else {
-    printf("PSRFP: unknown reflection type. Ignorning function.\n");
+    printf("ERROR in psrfp: unknown reflection type. Ignorning function.\n");
   }
 }
 

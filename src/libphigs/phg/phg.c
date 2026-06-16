@@ -261,20 +261,19 @@ void phg_del_struct(
    if (structh != NULL) {
       ws_list = CSS_GET_WS_ON(structh);
       if (ws_list != NULL) {
-         for (; ws_list->wsh != NULL; ws_list++) {
-	   if (*ws_list->wsh->delete_struct == NULL) {
-	     printf("ERROR: Cannot delete this structure as wsh->>delete_struct is NULL\n");
-	   } else if (ws_list->wsh->id <= 0 || ws_list->wsh->id > 10){
-	     printf("ERROR: Refusing to delete structure as the WS Id looks like garbage: %d.\n", ws_list->wsh->id);
-	   } else {
-	     if ((*ws_list->wsh->delete_struct)(ws_list->wsh, structh,
-						WS_PRE_CSS_DELETE)) {
-	       *wsp++ = ws_list->wsh;
-	     }
+        for (; ws_list->wsh != NULL; ws_list++) {
+          if (*ws_list->wsh->delete_struct == NULL) {
+            printf("ERROR: Cannot delete this structure as wsh->>delete_struct is NULL\n");
+          } else if (ws_list->wsh->id <= 0 || ws_list->wsh->id > 10){
+            printf("ERROR: Refusing to delete structure as the WS Id looks like garbage: %d.\n", ws_list->wsh->id);
+          } else {
+            if ((*ws_list->wsh->delete_struct)(ws_list->wsh, structh,
+                                               WS_PRE_CSS_DELETE)) {
+              *wsp++ = ws_list->wsh;
             }
-         }
+          }
+        }
       }
-
       phg_css_delete_struct(cssh, structh);
 
       while (wsp-- != cb_list) {
@@ -452,38 +451,45 @@ void phg_get_colr_ind(
 {
    Phg_ret ret;
 
-   gcolr->type = ws->current_colour_model;
-
-   switch (ws->current_colour_model){
-   case PINDIRECT:
-     gcolr->val.ind = ind;
-     break;
-   case PMODEL_RGB:
-     (*ws->inq_representation)(ws,
-			       ind,
-			       PINQ_REALIZED,
-			       PHG_ARGS_COREP,
-			       &ret);
-     if (ret.err == 0) {
+   (*ws->inq_representation)(ws,
+                             ind,
+                             PINQ_REALIZED,
+                             PHG_ARGS_COREP,
+                             &ret);
+   if (ret.err == 0) {
+     gcolr->type = ws->current_colour_model;
+     switch (ws->current_colour_model){
+     case PINDIRECT:
+       gcolr->val.ind = ind;
+       break;
+     case PMODEL_RGB:
        gcolr->val.general.x = ret.data.rep.corep.rgb.red;
        gcolr->val.general.y = ret.data.rep.corep.rgb.green;
        gcolr->val.general.z = ret.data.rep.corep.rgb.blue;
        gcolr->val.general.a = 1.0;
-     }
-     break;
-   case PMODEL_RGBA:
-     (*ws->inq_representation)(ws,
-			       ind,
-			       PINQ_REALIZED,
-			       PHG_ARGS_COREP,
-			       &ret);
-     if (ret.err == 0) {
+       break;
+     case PMODEL_RGBA:
        gcolr->val.general.x = ret.data.rep.corep.rgba.red;
        gcolr->val.general.y = ret.data.rep.corep.rgba.green;
        gcolr->val.general.z = ret.data.rep.corep.rgba.blue;
        gcolr->val.general.a = ret.data.rep.corep.rgba.alpha;
+       break;
+     default:
+       printf("WARNING in phg_get_colr_ind. Unknown color model %d\n", gcolr->type);
+       gcolr->type = -1;
+       gcolr->val.general.x = 0.;
+       gcolr->val.general.y = 0.;
+       gcolr->val.general.z = 0.;
+       gcolr->val.general.a = 1.0;
+       break;
      }
-     break;
+   } else {
+     printf("WARNING in phg_get_colr_ind. Index %d not defined\n", ind);
+     gcolr->type = -1;
+     gcolr->val.general.x = 0.;
+     gcolr->val.general.y = 0.;
+     gcolr->val.general.z = 0.;
+     gcolr->val.general.a = 1.0;
    }
 }
 

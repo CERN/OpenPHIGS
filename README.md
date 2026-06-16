@@ -139,7 +139,7 @@ where X is a floating point number between 0. (fully transparent) and 1. (fully 
 * PXSHCSF(INTEGER IWK, REAL VALUE): Set hardcopy scale factor for workstation ID WKID. Must be set before the workstation is being opened.
 * PXQHCSF(INTEGER IWK, REAL VALUE): Inquire the current scale factor for workstation ID WKID. The value is returned in the second argument.
 
-* PSALCH(REAL VALUE): set ALPHA channel to Value. Value is between 0(fully transparent) and 1 (opaque). Added to the current structure.
+* PSALCH(REAL VALUE): (deprecated) set ALPHA channel to Value. Value is between 0(fully transparent) and 1 (opaque). Added to the current structure.
 * PSFNAME(INTEGER IWK, CHARACTER FNAME): set output file name for workstation ID IWK
 
 ### C-bindings
@@ -159,3 +159,4 @@ where X is a floating point number between 0. (fully transparent) and 1. (fully 
 * v0.3-2:  C style fixings
 * v0.3-3:  test_f5 review, code improvements, clipping review
 * V0.4-1:  bug fixes, improve Wayland support, edge-cases on Mac and add support for a second clipping plane
+* V0.5-1:  Improved support for transparency

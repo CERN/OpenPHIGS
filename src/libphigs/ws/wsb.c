@@ -1633,12 +1633,12 @@ void phg_wsb_set_rep(
       gcolr.val.general.a = rep->bundl.corep.rgba.alpha;
 #ifdef DEBUG
       printf("Index: %d colors %f %f %f %f\n",
-	     rep->index,
-	     gcolr.val.general.x,
-	     gcolr.val.general.y,
-	     gcolr.val.general.z,
-	     gcolr.val.general.a
-      );
+             rep->index,
+             gcolr.val.general.x,
+             gcolr.val.general.y,
+             gcolr.val.general.z,
+             gcolr.val.general.a
+             );
 #endif
       break;
     }
@@ -1800,7 +1800,8 @@ void phg_wsb_inq_rep(
   Pgcolr gcolr;
   Pcolr_rep *cb;
   Pview_rep3 vrep;
-
+  int * crash;
+  crash = NULL;
   ret->err = 0;
   switch ( rep_type ) {
   case PHG_ARGS_LNREP:
@@ -1827,27 +1828,40 @@ void phg_wsb_inq_rep(
 
     /* Need to convert to current colour model. */
     phg_wsb_inq_LUT_entry(ws, index, how, rep_type, ret, &gcolr, NULL);
-
-    /* NOTE:
-     * Convert to correct colour model here if needed
-     */
-    switch (gcolr.type) {
-    case PMODEL_RGB:
-      cb->rgb.red = gcolr.val.general.x;
-      cb->rgb.green = gcolr.val.general.y;
-      cb->rgb.blue = gcolr.val.general.z;
+    if (ret->err == 0){
+      printf("inq_rep index %d rgba=%f %f %f %f\n",index,
+             gcolr.type, gcolr.val.general.x,
+             gcolr.type, gcolr.val.general.y,
+             gcolr.type, gcolr.val.general.z,
+             gcolr.type, gcolr.val.general.a
+             );
+      /* NOTE:
+       * Convert to correct colour model here if needed
+       */
+      switch (gcolr.type) {
+      case PMODEL_RGB:
+        cb->rgb.red = gcolr.val.general.x;
+        cb->rgb.green = gcolr.val.general.y;
+        cb->rgb.blue = gcolr.val.general.z;
+        break; 
+      case PMODEL_RGBA:
+        cb->rgba.red = gcolr.val.general.x;
+        cb->rgba.green = gcolr.val.general.y;
+        cb->rgba.blue = gcolr.val.general.z;
+        cb->rgba.alpha = gcolr.val.general.a;
+        break;
+      default:
+#ifdef DEBUGA
+        printf("FATA: Provoking crash: %d\n", gcolr.type);
+        *crash = 0;
+#endif
+        break;
+      };
       break;
-
-    case PMODEL_RGBA:
-      cb->rgba.red = gcolr.val.general.x;
-      cb->rgba.green = gcolr.val.general.y;
-      cb->rgba.blue = gcolr.val.general.z;
-      cb->rgba.alpha = gcolr.val.general.a;
-      break;
-
-    };
-    break;
-
+    } else {
+      gcolr.type = -1;
+      printf("ERROR: Color index %d is not defined.\n", index);      
+    }
   case PHG_ARGS_VIEWREP:
     phg_wsb_inq_LUT_entry(ws, index, how, rep_type, ret, NULL, &vrep);
     memcpy(&ret->data.rep.viewrep, &vrep, sizeof(Pview_rep3));

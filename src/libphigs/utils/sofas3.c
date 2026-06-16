@@ -277,7 +277,7 @@ void sofas3_normal3(
          c.delta_z = sofas3->vdata.vertex_data.points[vert3].z;
          break;
 
-      case PVERT_COORD_COLOUR:
+      case PVERT_COORD_COLOUR: // FIXME ?
          a.delta_x = sofas3->vdata.vertex_data.ptcolrs[vert1].point.x;
          a.delta_y = sofas3->vdata.vertex_data.ptcolrs[vert1].point.y;
          a.delta_z = sofas3->vdata.vertex_data.ptcolrs[vert1].point.z;
@@ -345,33 +345,52 @@ void sofas3_print(
    for (i = 0; i < sofas3->num_sets; i++) {
       printf("Set #%d\t", i);
       switch (sofas3->fflag) {
-         case PFACET_COLOUR:
-            printf("Colour: %g, %g, %g\n",
-                   sofas3->fdata.colrs[i].direct.rgb.red,
-                   sofas3->fdata.colrs[i].direct.rgb.green,
-                   sofas3->fdata.colrs[i].direct.rgb.blue);
-            break;
-
-         case PFACET_NORMAL:
-            printf("Normal: %g, %g, %g\n",
-                   sofas3->fdata.norms[i].delta_x,
-                   sofas3->fdata.norms[i].delta_y,
-                   sofas3->fdata.norms[i].delta_z);
-            break;
-
-         case PFACET_COLOUR_NORMAL:
-            printf("Colour: %g, %g, %g\n",
-                   sofas3->fdata.conorms[i].colr.direct.rgb.red,
-                   sofas3->fdata.conorms[i].colr.direct.rgb.green,
-                   sofas3->fdata.conorms[i].colr.direct.rgb.blue);
-            printf("Normal: %g, %g, %g\n",
-                   sofas3->fdata.conorms[i].norm.delta_x,
-                   sofas3->fdata.conorms[i].norm.delta_y,
-                   sofas3->fdata.conorms[i].norm.delta_z);
-            break;
-
-         default:
-            break;
+      case PFACET_COLOUR:
+	if ( sofas3->colr_type == PMODEL_RGB){
+	  printf("Colour: %g, %g, %g\n",
+		 sofas3->fdata.colrs[i].direct.rgb.red,
+		 sofas3->fdata.colrs[i].direct.rgb.green,
+		 sofas3->fdata.colrs[i].direct.rgb.blue
+		 );
+	} else {
+	  printf("Colour: %g, %g, %g %g\n",
+		 sofas3->fdata.colrs[i].direct.rgba.red,
+		 sofas3->fdata.colrs[i].direct.rgba.green,
+		 sofas3->fdata.colrs[i].direct.rgba.blue,
+		 sofas3->fdata.colrs[i].direct.rgba.alpha
+		 );
+	}
+	break;
+	
+      case PFACET_NORMAL:
+	printf("Normal: %g, %g, %g\n",
+	       sofas3->fdata.norms[i].delta_x,
+	       sofas3->fdata.norms[i].delta_y,
+	       sofas3->fdata.norms[i].delta_z);
+	break;
+	
+      case PFACET_COLOUR_NORMAL:
+	if ( sofas3->colr_type == PMODEL_RGB){
+	  printf("Colour: %g, %g, %g\n",
+		 sofas3->fdata.conorms[i].colr.direct.rgb.red,
+		 sofas3->fdata.conorms[i].colr.direct.rgb.green,
+		 sofas3->fdata.conorms[i].colr.direct.rgb.blue);
+	} else {
+	  printf("Colour: %g, %g, %g %g\n",
+		 sofas3->fdata.conorms[i].colr.direct.rgba.red,
+		 sofas3->fdata.conorms[i].colr.direct.rgba.green,
+		 sofas3->fdata.conorms[i].colr.direct.rgba.blue,
+		 sofas3->fdata.conorms[i].colr.direct.rgba.alpha
+		 );
+	}
+	printf("Normal: %g, %g, %g\n",
+	       sofas3->fdata.conorms[i].norm.delta_x,
+	       sofas3->fdata.conorms[i].norm.delta_y,
+	       sofas3->fdata.conorms[i].norm.delta_z);
+	break;
+	
+      default:
+	break;
       }
    }
 

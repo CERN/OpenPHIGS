@@ -374,6 +374,7 @@ FTN_SUBROUTINE(pqeco)(
                   ra[0] = elem_data->colr.val.general.x;
                   ra[1] = elem_data->colr.val.general.y;
                   ra[3] = elem_data->colr.val.general.z;
+                  ra[4] = 1.0;
                   *rl = 3;
 		  break;
 		case PMODEL_RGBA:

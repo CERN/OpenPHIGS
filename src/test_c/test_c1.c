@@ -142,13 +142,13 @@ int main(int argc, char *argv[])
    green.val.general.x = 0.0;
    green.val.general.y = 1.0;
    green.val.general.z = 0.0;
-   green.val.general.a = 0.2;
+   green.val.general.a = 1.0;
 
    yellow.type = PMODEL_RGBA;
    yellow.val.general.x = 1.0;
    yellow.val.general.y = 1.0;
    yellow.val.general.z = 0.0;
-   yellow.val.general.a = 0.2;
+   yellow.val.general.a = 1.0;
 
    popen_phigs(NULL, 0);
 
@@ -247,6 +247,7 @@ int main(int argc, char *argv[])
    col_rep.rgba.alpha = 0.2;
    pset_colr_rep(0, 4, &col_rep);
    pset_disp_upd_st(0, PDEFER_BNIL, PMODE_UQUM);
+   pxset_color_map(0);
 
    ppost_struct(0, 1, 0);
 #ifdef DEBUG

@@ -210,10 +210,12 @@ void wsgl_clear(
     wsgl->background.val.general.x = gcolr.val.general.x;
     wsgl->background.val.general.y = gcolr.val.general.y;
     wsgl->background.val.general.z = gcolr.val.general.z;
+    wsgl->background.val.general.a = gcolr.val.general.a;
   } else {
     wsgl->background.val.general.x = 0.;
     wsgl->background.val.general.y = 0.;
     wsgl->background.val.general.z = 0.;
+    wsgl->background.val.general.a = 1.;
 #ifdef DEBUG
     printf("INFO: background color index 0 not defined. Using default black.\n");
 #endif
@@ -721,12 +723,25 @@ void wsgl_render_element(
     phg_get_colr_ind(ws,
                      &wsgl->cur_struct.ast.indiv_group.int_bundle.colr,
                      PHG_INT(el));
+#ifdef DEBUGA
+    printf("Col Indx %d type %d alpha %f\n",
+           PHG_INT(el),
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.type,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.val.general.a
+           );
+#endif
     break;
 
   case PELEM_INT_COLR:
     memcpy(&wsgl->cur_struct.ast.indiv_group.int_bundle.colr,
            ELMT_CONTENT(el),
            sizeof(Pgcolr));
+#ifdef DEBUGA
+    printf("Col Colr type %d alpha %f\n",
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.type,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.val.general.a
+           );
+#endif
     break;
 
   case PELEM_BACK_INT_COLR:
@@ -762,6 +777,13 @@ void wsgl_render_element(
     phg_get_colr_ind(ws,
                      &wsgl->cur_struct.ast.indiv_group.edge_bundle.colr,
                      PHG_INT(el));
+#ifdef DEBUGA
+    printf("Edge Col Indx %d type %d alpha %f\n",
+           PHG_INT(el),
+           wsgl->cur_struct.ast.indiv_group.edge_bundle.colr.type,
+           wsgl->cur_struct.ast.indiv_group.edge_bundle.colr.val.general.a
+           );
+#endif
     break;
 
   case PELEM_EDGE_COLR:
@@ -791,6 +813,13 @@ void wsgl_render_element(
     phg_get_colr_ind(ws,
                      &wsgl->cur_struct.ast.indiv_group.marker_bundle.colr,
                      PHG_INT(el));
+#ifdef DEBUGA
+    printf("Marker Col Indx %d type %d alpha %f\n",
+           PHG_INT(el),
+           wsgl->cur_struct.ast.indiv_group.marker_bundle.colr.type,
+           wsgl->cur_struct.ast.indiv_group.marker_bundle.colr.val.general.a
+           );
+#endif
     break;
 
   case PELEM_MARKER_COLR:
@@ -815,6 +844,13 @@ void wsgl_render_element(
     phg_get_colr_ind(ws,
                      &wsgl->cur_struct.ast.indiv_group.text_bundle.colr,
                      PHG_INT(el));
+#ifdef DEBUGA
+    printf("Text Col Indx %d type %d alpha %f\n",
+           PHG_INT(el),
+           wsgl->cur_struct.ast.indiv_group.text_bundle.colr.type,
+           wsgl->cur_struct.ast.indiv_group.text_bundle.colr.val.general.a
+           );
+#endif
     break;
 
   case PELEM_TEXT_COLR:
@@ -878,6 +914,13 @@ void wsgl_render_element(
         phg_get_colr_ind(ws,
                          &wsgl->cur_struct.ast.indiv_group.line_bundle.colr,
                          PHG_INT(el));
+#ifdef DEBUGA
+        printf("Line Col Indx %d type %d alpha %f\n",
+               PHG_INT(el),
+               wsgl->cur_struct.ast.indiv_group.line_bundle.colr.type,
+               wsgl->cur_struct.ast.indiv_group.line_bundle.colr.val.general.a
+               );
+#endif
       }
     break;
 

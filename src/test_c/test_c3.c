@@ -516,6 +516,7 @@ int main(void)
    print_size(PWST_OUTIN_TRUE_DB);
 
    popen_ws(WS_1, NULL, PWST_OUTIN_TRUE_DB);
+   pset_colr_model(WS_1, PMODEL_RGB);
 
    pset_ws_win(WS_1, &win);
    pset_invis_filter(WS_1, &invis_filter);

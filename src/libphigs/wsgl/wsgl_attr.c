@@ -818,7 +818,7 @@ void wsgl_setup_int_attr_nocol(
       glDisable(GL_LIGHTING);
     }
   }
-  //  glCullFace(GL_BACK);
+  glCullFace(GL_BACK);
 }
 
 /*******************************************************************************

@@ -34,7 +34,8 @@ extern "C" {
     char filename[512];   /* Output filename for hard copies */
     int  set_window_pos;
     Plimit vpos;
-    Pcolr_rep background_color;
+    Pcolr_rep background_color_rgb;
+    Pcolr_rep background_color_rgba;
     unsigned int display_width;
     unsigned int display_height;
     unsigned int border_width;

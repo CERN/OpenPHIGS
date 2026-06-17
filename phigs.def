@@ -13,6 +13,8 @@ Parameters set for all workstations: kept for historical reasons
 %fp 6x13
 %cm 3
 %pa 2
+%bg  0. 0. 0.         Background color R G B
+%bga 0. 0. 0. 0.5     Background color R G B A
 
 Per workstation configurations
 %wk 4                 workstation for rendering
@@ -20,13 +22,15 @@ Per workstation configurations
 %wn Markers           workstation name
 %in Markers           workstation icon name
 %wg 512 512 0 0 1     Window width height px py border
-%bg 0. 0. 0.          Background color R G B
+%bg  0. 0. 0.         Background color R G B
+%bga 0. 0. 0. 0.5     Background color R G B A
 
 Workstation example for output as tga
 %wk 99                Workstation for hardcopy
 %wg 1024 1024 0 0 1   Window width height px py border
 %wp 0.0 1.0 0.0 1.    position
 %bg 0. 0. 0.          Background color R G B
+%bga 0. 0. 0. 0.5     Background color R G B A
 %hs 3.                scale factor for hardcopy
 
 Workstation example for output png
@@ -34,6 +38,7 @@ Workstation example for output png
 %wg 1024 1024 0 0 1   Window width height px py border
 %wp 0.0 1.0 0.0 1.    position
 %bg 0. 0. 0.          Background color R G B
+%bga 0. 0. 0. 0.5     Background color R G B A
 %hs 2.                scale factor for hardcopy
 
 Workstation example for output pnga
@@ -42,6 +47,7 @@ Workstation example for output pnga
 %wp 0.0 1.0 0.0 1.    position
 %hs 1.                scale factor for hardcopy
 %bg 0. 0. 0.          Background color R G B
+%bga 0. 0. 0. 0.5     Background color R G B A
 
 Workstation example for output eps
 %wk 96                Workstation for hardcopy
@@ -49,6 +55,7 @@ Workstation example for output eps
 %wp 0.0 1.0 0.0 1.    position
 %hs 1.                scale factor for hardcopy
 %bg 0. 0. 0.          Background color R G B
+%bga 0. 0. 0. 0.5     Background color R G B A
 
 Workstation example for output pdf
 %wk 95                Workstation for hardcopy
@@ -56,6 +63,7 @@ Workstation example for output pdf
 %wp 0.0 1.0 0.0 1.    position
 %hs 1.                scale factor for hardcopy
 %bg 0. 0. 0.          Background color R G B
+%bga 0. 0. 0. 0.5     Background color R G B A
 
 Workstation example for output svg
 %wk 94                Workstation for hardcopy
@@ -63,6 +71,7 @@ Workstation example for output svg
 %wp 0.0 1.0 0.0 1.    position
 %hs 1.                scale factor for hardcopy
 %bg 0. 0. 0.          Background color R G B
+%bga 0. 0. 0. 0.5     Background color R G B A
 
 Workstation example for output obj
 %wk 93                Workstation for hardcopy
@@ -70,3 +79,4 @@ Workstation example for output obj
 %wp 0.0 1.0 0.0 1.    position
 %hs 1.                scale factor for hardcopy
 %bg 0. 0. 0.          Background color R G B
+%bga 0. 0. 0. 0.5     Background color R G B A

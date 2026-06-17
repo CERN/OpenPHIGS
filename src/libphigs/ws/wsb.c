@@ -1845,7 +1845,7 @@ void phg_wsb_inq_rep(
         cb->rgb.red = gcolr.val.general.x;
         cb->rgb.green = gcolr.val.general.y;
         cb->rgb.blue = gcolr.val.general.z;
-        break; 
+        break;
       case PMODEL_RGBA:
         cb->rgba.red = gcolr.val.general.x;
         cb->rgba.green = gcolr.val.general.y;
@@ -1862,7 +1862,9 @@ void phg_wsb_inq_rep(
       break;
     } else {
       gcolr.type = -1;
-      printf("ERROR: Color index %d is not defined.\n", index);      
+#ifdef DEBUGA
+      printf("INFO: Color index %d is not defined.\n", index);
+#endif
     }
   case PHG_ARGS_VIEWREP:
     phg_wsb_inq_LUT_entry(ws, index, how, rep_type, ret, NULL, &vrep);

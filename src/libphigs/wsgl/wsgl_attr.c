@@ -1060,11 +1060,20 @@ void wsgl_setup_background(
                        wsgl->background.val.general.x,
                        wsgl->background.val.general.y,
                        wsgl->background.val.general.z,
-                       1.0);
+                       wsgl->background.val.general.a);
     } else {
-    glColor3f(wsgl->background.val.general.x,
-              wsgl->background.val.general.y,
-              wsgl->background.val.general.z);
+    if (ws->current_colour_model == PMODEL_RGBA){
+      glColor4f(wsgl->background.val.general.x,
+                wsgl->background.val.general.y,
+                wsgl->background.val.general.z,
+                wsgl->background.val.general.a
+                );
+    } else {
+      glColor3f(wsgl->background.val.general.x,
+                wsgl->background.val.general.y,
+                wsgl->background.val.general.z
+                );
+    }
   }
   /* Need to restore polygon mode */
   wsgl->dev_st.int_style = -1;

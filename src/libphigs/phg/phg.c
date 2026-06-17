@@ -484,7 +484,9 @@ void phg_get_colr_ind(
        break;
      }
    } else {
+#ifdef DEBUGA
      printf("WARNING in phg_get_colr_ind. Index %d not defined\n", ind);
+#endif
      gcolr->type = -1;
      gcolr->val.general.x = 0.;
      gcolr->val.general.y = 0.;

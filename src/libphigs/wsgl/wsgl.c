@@ -82,11 +82,12 @@ int wsgl_init(
     return FALSE;
   }
 #ifdef DEBUG
-  printf("wsgl_init: background color type %d (%f %f %f)\n",
+  printf("wsgl_init: background color type %d (%f %f %f %f)\n",
          background->type,
          background->val.general.x,
          background->val.general.y,
-         background->val.general.z
+         background->val.general.z,
+         background->val.general.a
          );
 #endif
   phg_nset_init(&wsgl->cur_struct.ast.asf_nameset,
@@ -221,7 +222,10 @@ void wsgl_clear(
 #endif
   }
 #ifdef DEBUG
-  printf("wsgl_setup_background: Setting background to (%f %f %f)\n",  gcolr.val.general.x,gcolr.val.general.y,gcolr.val.general.z);
+  printf("wsgl_setup_background: Setting background to (%f %f %f %f)\n",
+         gcolr.val.general.x,gcolr.val.general.y,gcolr.val.general.z,
+         gcolr.val.general.a
+         );
 #endif
   if (ws->drawable_id != 0){
     glXMakeContextCurrent(ws->display, ws->drawable_id, ws->drawable_id, ws->glx_context);
@@ -341,12 +345,13 @@ void wsgl_flush(
   glClearColor(wsgl->background.val.general.x,
                wsgl->background.val.general.y,
                wsgl->background.val.general.z,
-               0.0);
+               wsgl->background.val.general.a);
 #ifdef DEBUG
-  printf("wsgl: clear to background color %f %f %f\n",
+  printf("wsgl: clear to background color %f %f %f %f\n",
          wsgl->background.val.general.x,
          wsgl->background.val.general.y,
-         wsgl->background.val.general.z
+         wsgl->background.val.general.z,
+         wsgl->background.val.general.a
          );
 #endif
   if (clear_flag) {

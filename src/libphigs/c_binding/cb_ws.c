@@ -157,12 +157,16 @@ void popen_ws(
         }
         /* predefine some colors */
         pxset_color_map(ws_id);
-        /* set background as specified in configuration file */
-        pset_colr_rep(ws_id, 0, &(config[ws_id].background_color));
         wsinfo = phg_psl_get_ws_info(PHG_PSL, ws_id);
         dt = &wsinfo->wstype->desc_tbl.phigs_dt;
         /* init the file name */
         wsh = PHG_WSID(ws_id);
+        /* set background as specified in configuration file */
+        if (wsh->current_colour_model == PMODEL_RGBA){
+          pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgba));
+        } else {
+          pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgb));
+        }
         if (strlen(config[ws_id].filename) == 0){
           switch (dt->ws_category){
           case PCAT_TGA:
@@ -383,7 +387,11 @@ void pclose_ws(
       /* redefine colors and redraw */
       ctrl_flag = 0;
       pxset_color_map(ws_id);
-      pset_colr_rep(ws_id, 0, &(config[ws_id].background_color));
+      if (wsh->current_colour_model == PMODEL_RGBA){
+        pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgba));
+      } else {
+        pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgb));
+      }
       predraw_all_structs(ws_id, ctrl_flag);
       int state = gl2psEndPage();
       if (state == GL2PS_OVERFLOW) {
@@ -1118,12 +1126,14 @@ void pset_light_src_rep(
  * RETURNS:     N/A
  */
 void pset_colr_model(
-		     Pint ws_id,
-		     Pint model
-		     )
+                     Pint ws_id,
+                     Pint model
+                     )
 {
   Ws *wsh;
+  Pint original_model;
   wsh = PHG_WSID(ws_id);
+  original_model = wsh->current_colour_model;
   switch (model){
   case PINDIRECT:
     wsh->current_colour_model = PINDIRECT;
@@ -1139,6 +1149,15 @@ void pset_colr_model(
     printf("WARNING: pset_colr_model: Unknown color model, using default\n");
     break;
   }
+  /* if the model has changed we should update the background */
+  if (original_model != model){
+    if (wsh->current_colour_model == PMODEL_RGBA){
+      pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgba));
+    } else {
+      pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgb));
+    }
+  }
+
 }
 
 /*******************************************************************************
@@ -2248,7 +2267,9 @@ void pxset_color_map(Pint ws_id){
         break;
       break;
       default:
+#ifdef DEBUGA
         printf("WARNING in pxset_color_map: Skipping non-exiting color index %d\n", i);
+#endif
         break;
       }
     }

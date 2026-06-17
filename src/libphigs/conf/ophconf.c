@@ -42,9 +42,15 @@ void set_defaults(Pophconf* config){
     strcpy(config->window_title, phg_default_window_name);
     strcpy(config->window_icon, phg_default_icon_name);
     memset(config->filename, 0, sizeof(config->filename));
-    config->background_color.rgb.red = 0.;
-    config->background_color.rgb.green = 0.;
-    config->background_color.rgb.blue = 0.;
+    config->background_color_rgb.rgb.red = 0.;
+    config->background_color_rgb.rgb.green = 0.;
+    config->background_color_rgb.rgb.blue = 0.;
+
+    config->background_color_rgba.rgba.red = 0.;
+    config->background_color_rgba.rgba.green = 0.;
+    config->background_color_rgba.rgba.blue = 0.;
+    config->background_color_rgba.rgba.alpha = 0.5;
+
     config->display_width = DISPLAY_WIDTH;
     config->display_height = DISPLAY_HEIGHT;
     config->border_width = 1;
@@ -76,9 +82,15 @@ void query_settings(){
       printf("Workstation   ID %d:\n", cf->wkid);
       printf("  Title:         %s\n", cf->window_title);
       printf("  Background rgb %f %f %f\n",
-             cf->background_color.rgb.red,
-             cf->background_color.rgb.green,
-             cf->background_color.rgb.blue);
+             cf->background_color_rgb.rgb.red,
+             cf->background_color_rgb.rgb.green,
+             cf->background_color_rgb.rgb.blue);
+      printf("  Background rgba %f %f %f %f\n",
+             cf->background_color_rgba.rgba.red,
+             cf->background_color_rgba.rgba.green,
+             cf->background_color_rgba.rgba.blue,
+             cf->background_color_rgba.rgba.alpha
+             );
       printf("  Width, height: %d %d\n", cf->display_width, cf->display_height);
       printf("  Position x, y: %d %d\n", cf->xpos, cf->ypos);
       printf("  Border width:  %d\n", cf->border_width);
@@ -102,7 +114,7 @@ void read_config(char * config_file){
   int wk;
   int i;
   float xmin,  xmax, ymin, ymax;
-  float red, green, blue;
+  float red, green, blue, alpha;
   float hcsf;
   unsigned int width, height, border;
   int xpos, ypos;
@@ -180,9 +192,15 @@ void read_config(char * config_file){
           newconfig.border_width = border;
         }
         if (sscanf(line, "%%bg %f %f %f", &red, &green, &blue) > 0){
-          newconfig.background_color.rgb.red = red;
-          newconfig.background_color.rgb.green = green;
-          newconfig.background_color.rgb.blue = blue;
+          newconfig.background_color_rgb.rgb.red = red;
+          newconfig.background_color_rgb.rgb.green = green;
+          newconfig.background_color_rgb.rgb.blue = blue;
+        }
+        if (sscanf(line, "%%bga %f %f %f %f", &red, &green, &blue, &alpha) > 0){
+          newconfig.background_color_rgba.rgba.red = red;
+          newconfig.background_color_rgba.rgba.green = green;
+          newconfig.background_color_rgba.rgba.blue = blue;
+          newconfig.background_color_rgba.rgba.alpha = alpha;
         }
         if (sscanf(line, "%%hs %f", &hcsf) > 0){
           newconfig.hcsf = hcsf;

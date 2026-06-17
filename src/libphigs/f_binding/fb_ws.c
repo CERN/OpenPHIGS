@@ -165,10 +165,14 @@ FTN_SUBROUTINE(popwk)(
       }
       /* predefine some colors */
       pxset_color_map(ws_id);
-      /* set background as specified in configuration file */
-      pset_colr_rep(ws_id, 0, &(config[ws_id].background_color));
       /* init output file name */
       wsh = PHG_WSID(ws_id);
+      /* set background as specified in configuration file */
+      if (wsh->current_colour_model == PMODEL_RGBA){
+        pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgba));
+      } else {
+        pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgb));
+      }
       if (strlen(config[ws_id].filename) == 0){
         sprintf(filename, "fort.%d", lun);
         strncpy(wsh->filename, filename, strlen(filename));

@@ -1,24 +1,24 @@
 /******************************************************************************
-*   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
-*
-*   This file is part of Open PHIGS
-*   Copyright (C) 2014 Surplus Users Ham Society
-*
-*   Open PHIGS is free software: you can redistribute it and/or modify
-*   it under the terms of the GNU Lesser General Public License as published by
-*   the Free Software Foundation, either version 2.1 of the License, or
-*   (at your option) any later version.
-*
-*   Open PHIGS is distributed in the hope that it will be useful,
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*   GNU Lesser General Public License for more details.
-*
-*   You should have received a copy of the GNU Lesser General Public License
-*   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
-******************************************************************************
-* Changes:   Copyright (C) 2022-2023 CERN
-******************************************************************************/
+ *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
+ *
+ *   This file is part of Open PHIGS
+ *   Copyright (C) 2014 Surplus Users Ham Society
+ *
+ *   Open PHIGS is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Lesser General Public License as published by
+ *   the Free Software Foundation, either version 2.1 of the License, or
+ *   (at your option) any later version.
+ *
+ *   Open PHIGS is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Lesser General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public License
+ *   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************
+ * Changes:   Copyright (C) 2022-2023 CERN
+ ******************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,15 +46,15 @@
 #include "private/sofas3P.h"
 
 short int wsgl_use_shaders = 1;
-#define LOG_INT(DATA) \
-   css_print_eltype(ELMT_HEAD(DATA)->elementType); \
-   printf(":\tSIZE: %d\t", ELMT_HEAD(DATA)->length); \
-   printf("CONTENT: %d\n", PHG_INT(DATA));
+#define LOG_INT(DATA)                                   \
+  css_print_eltype(ELMT_HEAD(DATA)->elementType);       \
+  printf(":\tSIZE: %d\t", ELMT_HEAD(DATA)->length);     \
+  printf("CONTENT: %d\n", PHG_INT(DATA));
 
-#define LOG_FLOAT(DATA) \
-   css_print_eltype(ELMT_HEAD(DATA)->elementType); \
-   printf(":\tSIZE: %d\t", ELMT_HEAD(DATA)->length); \
-   printf("CONTENT: %f\n", PHG_FLOAT(DATA));
+#define LOG_FLOAT(DATA)                                 \
+  css_print_eltype(ELMT_HEAD(DATA)->elementType);       \
+  printf(":\tSIZE: %d\t", ELMT_HEAD(DATA)->length);     \
+  printf("CONTENT: %f\n", PHG_FLOAT(DATA));
 
 /*******************************************************************************
  * wsgl_init
@@ -318,26 +318,27 @@ void wsgl_flush(
     if (wsgl->win_changed) {
       wsgl->win_changed = 0;
     }
-
     clear_flag = 1;
   }
 
   if (wsgl->hlhsr_changed) {
-    if (wsgl->hlhsr_mode == PHIGS_HLHSR_MODE_ZBUFF) {
+    switch (wsgl->hlhsr_mode){
+    case PHIGS_HLHSR_MODE_ZBUFF:
 #ifdef DEBUG
       printf("Enable z-buffer\n");
 #endif
       glEnable(GL_DEPTH_TEST);
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glAlphaFunc (GL_GREATER, 0.1);
+      glAlphaFunc (GL_GREATER, 0.01);
       glEnable(GL_ALPHA_TEST);
-    }
-    else if (wsgl->hlhsr_mode == PHIGS_HLHSR_MODE_NONE) {
+      break;
+    case PHIGS_HLHSR_MODE_NONE:
 #ifdef DEBUG
       printf("Disable z-buffer\n");
 #endif
       glDisable(GL_DEPTH_TEST);
+      break;
     }
     wsgl->hlhsr_changed = 0;
   }
@@ -643,28 +644,28 @@ void wsgl_end_structure(
   printf("End structure element: %d\n", wsgl->cur_struct.id);
 #endif
 
-   stack_pop(wsgl->struct_stack, (caddr_t) &wsgl->cur_struct);
-   wsgl_update_hlhsr_id(ws);
-   wsgl_update_projection(ws);
-   wsgl_update_modelview(ws);
-   wsgl_update_light_src_state(ws);
+  stack_pop(wsgl->struct_stack, (caddr_t) &wsgl->cur_struct);
+  wsgl_update_hlhsr_id(ws);
+  wsgl_update_projection(ws);
+  wsgl_update_modelview(ws);
+  wsgl_update_light_src_state(ws);
 
 #ifdef DEBUG
-   printf("Pop: id = %d, offset = %d\n",
-          wsgl->cur_struct.id,
-          wsgl->cur_struct.offset);
-   printf("View:\n");
-   phg_mat_print(wsgl->cur_struct.view_rep.map_matrix);
-   printf("\n");
+  printf("Pop: id = %d, offset = %d\n",
+         wsgl->cur_struct.id,
+         wsgl->cur_struct.offset);
+  printf("View:\n");
+  phg_mat_print(wsgl->cur_struct.view_rep.map_matrix);
+  printf("\n");
 #endif
 
-   if (wsgl->render_mode == WS_RENDER_MODE_SELECT) {
+  if (wsgl->render_mode == WS_RENDER_MODE_SELECT) {
 #ifdef DEBUG
-     printf("\tPop name\n");
+    printf("\tPop name\n");
 #endif
-     glPopName();
-      glPopName();
-   }
+    glPopName();
+    glPopName();
+  }
 }
 
 /*******************************************************************************
@@ -955,7 +956,7 @@ void wsgl_render_element(
     wsgl->cur_struct.ast.indiv_group.line_bundle.type = PHG_INT(el);
     break;
 
-   case PELEM_FILL_AREA:
+  case PELEM_FILL_AREA:
     if (check_draw_primitive(ws)) {
       if (wsgl_get_int_style(&wsgl->cur_struct.ast) != PSTYLE_EMPTY) {
         wsgl_fill_area(ws, ELMT_CONTENT(el), &wsgl->cur_struct.ast);

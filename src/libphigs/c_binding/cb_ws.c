@@ -2201,7 +2201,7 @@ void pxset_color_map(Pint ws_id){
   Ws_handle wsh;
   Pgcolr gcolr;
   Pfloat def_alpha[n];
-  memcpy(def_alpha, (int[]) { 1.0, 0.7, 0.5, 0.3, 0.1}, sizeof def_alpha);
+  memcpy(def_alpha, (float[]) { 1.0, 0.7, 0.5, 0.3, 0.1}, sizeof def_alpha);
 
   wsh = PHG_WSID(ws_id);
   switch (wsh->current_colour_model){
@@ -2232,8 +2232,7 @@ void pxset_color_map(Pint ws_id){
             rep.rgba.red   = j*delta_n;
             rep.rgba.green = k*delta_n;
             rep.rgba.blue  = l*delta_n;
-            rep.rgba.alpha = 1.0-i*1.0/(float)(n-1);
-            rep.rgba.alpha = def_alpha[j];
+            rep.rgba.alpha = def_alpha[i];
             pset_colr_rep(ws_id, offset+index+200*i, &rep);
 #ifdef DEBUGA
             printf("Defining color index %d as RGBA %f %f %f %f\n",

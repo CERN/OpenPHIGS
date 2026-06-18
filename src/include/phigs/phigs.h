@@ -86,6 +86,7 @@ extern "C" {
 
 #define PHIGS_HLHSR_ID_OFF        0
 #define PHIGS_HLHSR_ID_ON         1
+#define PHIGS_HLHSR_ID_ON_NZ      2
 
   /* Facet data flags */
 #define PFACET_NONE               0

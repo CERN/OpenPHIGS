@@ -672,10 +672,16 @@ FTN_SUBROUTINE(pshrid)(
 #ifdef DEBUG
   printf("DEBUG: PSHRID set hlrs id to %d.\n", hrmode);
 #endif
-  if (hrmode == 0) {
+  switch(hrmode){
+  case 0:
     pset_hlhsr_id(PHIGS_HLHSR_ID_OFF);
-  } else {
+    break;
+  case 1:
     pset_hlhsr_id(PHIGS_HLHSR_ID_ON);
+    break;
+  case 2:
+    pset_hlhsr_id(PHIGS_HLHSR_ID_ON_NZ);
+    break;
   }
 }
 

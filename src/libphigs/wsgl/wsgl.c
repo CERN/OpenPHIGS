@@ -249,6 +249,7 @@ void wsgl_clear(
 #endif
     glFlush();
   }
+  glDepthMask (GL_TRUE);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -327,6 +328,7 @@ void wsgl_flush(
 #ifdef DEBUG
       printf("Enable z-buffer\n");
 #endif
+      glDepthMask (GL_TRUE);
       glEnable(GL_DEPTH_TEST);
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -337,7 +339,9 @@ void wsgl_flush(
 #ifdef DEBUG
       printf("Disable z-buffer\n");
 #endif
-      glDisable(GL_DEPTH_TEST);
+      glDepthMask (GL_TRUE);
+      glDepthFunc(GL_LESS);
+      glEnable(GL_DEPTH_TEST);
       break;
     }
     wsgl->hlhsr_changed = 0;
@@ -437,6 +441,7 @@ void wsgl_begin_rendering(
   if (ws->drawable_id != 0){
     glXMakeContextCurrent(ws->display, ws->drawable_id, ws->drawable_id, ws->glx_context);
   }
+  glDepthMask (GL_TRUE);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   init_rendering_state(ws);
 }

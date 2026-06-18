@@ -2200,6 +2200,9 @@ void pxset_color_map(Pint ws_id){
   Pcolr_rep rep;
   Ws_handle wsh;
   Pgcolr gcolr;
+  Pfloat def_alpha[n];
+  memcpy(def_alpha, (int[]) { 1.0, 0.7, 0.5, 0.3, 0.1}, sizeof def_alpha);
+
   wsh = PHG_WSID(ws_id);
   switch (wsh->current_colour_model){
   case PINDIRECT:
@@ -2230,8 +2233,7 @@ void pxset_color_map(Pint ws_id){
             rep.rgba.green = k*delta_n;
             rep.rgba.blue  = l*delta_n;
             rep.rgba.alpha = 1.0-i*1.0/(float)(n-1);
-            if (rep.rgba.alpha > 1.0) rep.rgba.alpha = 1.0;
-            if (rep.rgba.alpha < 0.0) rep.rgba.alpha = 0.1;
+            rep.rgba.alpha = def_alpha[j];
             pset_colr_rep(ws_id, offset+index+200*i, &rep);
 #ifdef DEBUGA
             printf("Defining color index %d as RGBA %f %f %f %f\n",
@@ -2255,9 +2257,7 @@ void pxset_color_map(Pint ws_id){
           rep.rgba.red   = gcolr.val.general.x;
           rep.rgba.green = gcolr.val.general.y;
           rep.rgba.blue  = gcolr.val.general.z;
-          rep.rgba.alpha = 1.0-j*1.0/(float)(n-1);
-          if (rep.rgba.alpha > 1.0) rep.rgba.alpha = 1.0;
-          if (rep.rgba.alpha < 0.0) rep.rgba.alpha = 0.1;
+          rep.rgba.alpha = def_alpha[j];
 #ifdef DEBUGA
           printf("Re-defining color index %d as RGBA %f %f %f %f\n",
                  i+200*j, rep.rgba.red, rep.rgba.green, rep.rgba.blue, rep.rgba.alpha);

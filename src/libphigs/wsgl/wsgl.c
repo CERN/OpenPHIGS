@@ -324,6 +324,14 @@ void wsgl_flush(
 
   if (wsgl->hlhsr_changed) {
     switch (wsgl->hlhsr_mode){
+    case PHIGS_HLHSR_MODE_NONE:
+#ifdef DEBUG
+      printf("Disable z-buffer\n");
+#endif
+      glDisable(GL_DEPTH_TEST);
+      glDepthMask (GL_TRUE);
+      glDepthFunc(GL_LESS);
+      break;
     case PHIGS_HLHSR_MODE_ZBUFF:
 #ifdef DEBUG
       printf("Enable z-buffer\n");
@@ -334,14 +342,6 @@ void wsgl_flush(
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glAlphaFunc (GL_GREATER, 0.01);
       glEnable(GL_ALPHA_TEST);
-      break;
-    case PHIGS_HLHSR_MODE_NONE:
-#ifdef DEBUG
-      printf("Disable z-buffer\n");
-#endif
-      glDepthMask (GL_TRUE);
-      glDepthFunc(GL_LESS);
-      glEnable(GL_DEPTH_TEST);
       break;
     }
     wsgl->hlhsr_changed = 0;
@@ -998,7 +998,7 @@ void wsgl_render_element(
   case PELEM_FILL_AREA3:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
+      if ((wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON ||(wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON_NZ)  && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
           wsgl_clear_area3(ws, ELMT_CONTENT(el), &wsgl->cur_struct.ast);
         }
@@ -1037,7 +1037,7 @@ void wsgl_render_element(
   case PELEM_FILL_AREA_SET3:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
+      if ((wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON || (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON_NZ)  && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
           wsgl_clear_area_set3(ws,
                                ELMT_CONTENT(el),
@@ -1056,7 +1056,7 @@ void wsgl_render_element(
   case PELEM_FILL_AREA_SET_DATA:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
+      if ((wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON || (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON_NZ)  && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
           wsgl_clear_area_set_data(ws,
                                    ELMT_CONTENT(el),
@@ -1099,7 +1099,7 @@ void wsgl_render_element(
   case PELEM_FILL_AREA_SET3_DATA:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
+      if ((wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON || (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON_NZ)  && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
           wsgl_clear_area_set3_data(ws,
                                     ELMT_CONTENT(el),
@@ -1142,8 +1142,7 @@ void wsgl_render_element(
   case PELEM_SET_OF_FILL_AREA_SET3_DATA:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
-        if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
+      if ((wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON || (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON_NZ)  && wsgl->hlhsr_mode > 0) {
           wsgl_set_of_clear_area_set3_data(ws,
                                            ELMT_CONTENT(el),
                                            &wsgl->cur_struct.ast);

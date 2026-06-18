@@ -1,24 +1,24 @@
 /******************************************************************************
-*   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
-*
-*   This file is part of Open PHIGS
-*   Copyright (C) 2014 Surplus Users Ham Society
-*
-*   Open PHIGS is free software: you can redistribute it and/or modify
-*   it under the terms of the GNU Lesser General Public License as published by
-*   the Free Software Foundation, either version 2.1 of the License, or
-*   (at your option) any later version.
-*
-*   Open PHIGS is distributed in the hope that it will be useful,
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*   GNU Lesser General Public License for more details.
-*
-*   You should have received a copy of the GNU Lesser General Public License
-*   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
-******************************************************************************
-* Changes:   Copyright (C) 2022-2023 CERN
-******************************************************************************/
+ *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
+ *
+ *   This file is part of Open PHIGS
+ *   Copyright (C) 2014 Surplus Users Ham Society
+ *
+ *   Open PHIGS is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Lesser General Public License as published by
+ *   the Free Software Foundation, either version 2.1 of the License, or
+ *   (at your option) any later version.
+ *
+ *   Open PHIGS is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Lesser General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public License
+ *   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************
+ * Changes:   Copyright (C) 2022-2023 CERN
+ ******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -281,36 +281,36 @@ void pclose_ws(
       }
       for (i=0; i<height; i++){
         png_rows[i] = &(pixel_buffer[ (height - i - 1) * width * channels]);
-        }
-        png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-        if (png) {
-          png_infop info = png_create_info_struct(png);
-          if (info){
-            wsh->fd = fopen(wsh->filename, "w+");
-            setjmp(png_jmpbuf(png));
-            png_init_io(png, wsh->fd);
-            png_set_IHDR(
-                         png,
-                         info,
-                         width, height,
-                         8,
-                         PNG_COLOR_TYPE_RGB,
-                         PNG_INTERLACE_NONE,
-                         PNG_COMPRESSION_TYPE_DEFAULT,
-                         PNG_FILTER_TYPE_DEFAULT
-                         );
-            png_write_info(png, info);
-            png_write_image(png, png_rows);
-            png_write_end(png, NULL);
-            fclose(wsh->fd);
-          } else {
-            printf("PNG export error: failed to create info structure\n");
-          }
-          png_destroy_write_struct(&png, &info);
+      }
+      png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+      if (png) {
+        png_infop info = png_create_info_struct(png);
+        if (info){
+          wsh->fd = fopen(wsh->filename, "w+");
+          setjmp(png_jmpbuf(png));
+          png_init_io(png, wsh->fd);
+          png_set_IHDR(
+                       png,
+                       info,
+                       width, height,
+                       8,
+                       PNG_COLOR_TYPE_RGB,
+                       PNG_INTERLACE_NONE,
+                       PNG_COMPRESSION_TYPE_DEFAULT,
+                       PNG_FILTER_TYPE_DEFAULT
+                       );
+          png_write_info(png, info);
+          png_write_image(png, png_rows);
+          png_write_end(png, NULL);
+          fclose(wsh->fd);
         } else {
-          printf("PNG export error: failed to create write structure\n");
+          printf("PNG export error: failed to create info structure\n");
         }
-        free(pixel_buffer);
+        png_destroy_write_struct(&png, &info);
+      } else {
+        printf("PNG export error: failed to create write structure\n");
+      }
+      free(pixel_buffer);
       free(png_rows);
       clean_fb = TRUE;
       break;
@@ -544,43 +544,43 @@ void pset_ws_win(
                  Plimit *window
                  )
 {
-   Psl_ws_info *wsinfo;
-   Wst_phigs_dt *dt;
-   Ws_handle wsh;
-   Plimit3 win;
+  Psl_ws_info *wsinfo;
+  Wst_phigs_dt *dt;
+  Ws_handle wsh;
+  Plimit3 win;
 
-   ERR_SET_CUR_FUNC(PHG_ERH, Pfn_set_ws_win);
+  ERR_SET_CUR_FUNC(PHG_ERH, Pfn_set_ws_win);
 
-   if (PSL_WS_STATE(PHG_PSL) != PWS_ST_WSOP) {
-     ERR_REPORT(PHG_ERH, ERR3);
-   }
-   else if ((wsinfo = phg_psl_get_ws_info(PHG_PSL, ws_id)) == NULL) {
-     ERR_REPORT(PHG_ERH, ERR54);
-   }
-   else {
-     dt = &wsinfo->wstype->desc_tbl.phigs_dt;
-     if (dt->ws_category == PCAT_MI) {
-       ERR_REPORT(PHG_ERH, ERR57);
-     }
-     else if (!PHG_IN_RANGE(PDT_NPC_XMIN, PDT_NPC_XMAX, window->x_min) ||
-              !PHG_IN_RANGE(PDT_NPC_XMIN, PDT_NPC_XMAX, window->x_max) ||
-              !PHG_IN_RANGE(PDT_NPC_YMIN, PDT_NPC_YMAX, window->y_min) ||
-              !PHG_IN_RANGE(PDT_NPC_YMIN, PDT_NPC_YMAX, window->y_max)) {
-       ERR_REPORT(PHG_ERH, ERR156);
-     }
-     else if (!(window->x_min < window->x_max) ||
-              !(window->y_min < window->y_max)) {
-       ERR_REPORT(PHG_ERH, ERR151);
-     }
-     else {
-       wsh = PHG_WSID(ws_id);
-       win.x_min = window->x_min;
-       win.x_max = window->x_max;
-       win.y_min = window->y_min;
-       win.y_max = window->y_max;
-       (*wsh->set_ws_window)(wsh, 1, &win);
-     }
-   }
+  if (PSL_WS_STATE(PHG_PSL) != PWS_ST_WSOP) {
+    ERR_REPORT(PHG_ERH, ERR3);
+  }
+  else if ((wsinfo = phg_psl_get_ws_info(PHG_PSL, ws_id)) == NULL) {
+    ERR_REPORT(PHG_ERH, ERR54);
+  }
+  else {
+    dt = &wsinfo->wstype->desc_tbl.phigs_dt;
+    if (dt->ws_category == PCAT_MI) {
+      ERR_REPORT(PHG_ERH, ERR57);
+    }
+    else if (!PHG_IN_RANGE(PDT_NPC_XMIN, PDT_NPC_XMAX, window->x_min) ||
+             !PHG_IN_RANGE(PDT_NPC_XMIN, PDT_NPC_XMAX, window->x_max) ||
+             !PHG_IN_RANGE(PDT_NPC_YMIN, PDT_NPC_YMAX, window->y_min) ||
+             !PHG_IN_RANGE(PDT_NPC_YMIN, PDT_NPC_YMAX, window->y_max)) {
+      ERR_REPORT(PHG_ERH, ERR156);
+    }
+    else if (!(window->x_min < window->x_max) ||
+             !(window->y_min < window->y_max)) {
+      ERR_REPORT(PHG_ERH, ERR151);
+    }
+    else {
+      wsh = PHG_WSID(ws_id);
+      win.x_min = window->x_min;
+      win.x_max = window->x_max;
+      win.y_min = window->y_min;
+      win.y_max = window->y_max;
+      (*wsh->set_ws_window)(wsh, 1, &win);
+    }
+  }
 }
 
 /*******************************************************************************
@@ -2264,7 +2264,7 @@ void pxset_color_map(Pint ws_id){
           pset_colr_rep(ws_id, i+200*j, &rep);
         }
         break;
-      break;
+        break;
       default:
 #ifdef DEBUGA
         printf("WARNING in pxset_color_map: Skipping non-exiting color index %d\n", i);

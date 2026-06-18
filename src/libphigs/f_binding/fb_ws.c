@@ -1,24 +1,24 @@
 /******************************************************************************
-*   Do NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
-*
-*   This file is part of Open PHIGS
-*   Copyright (C) 2014 Surplus Users Ham Society
-*
-*   Open PHIGS is free software: you can redistribute it and/or modify
-*   it under the terms of the GNU Lesser General Public License as published by
-*   the Free Software Foundation, either version 2.1 of the License, or
-*   (at your option) any later version.
-*
-*   Open PHIGS is distributed in the hope that it will be useful,
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*   GNU Lesser General Public License for more details.
-*
-*   You should have received a copy of the GNU Lesser General Public License
-*   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
-******************************************************************************
-* Changes:   Copyright (C) 2022-2023 CERN
-******************************************************************************/
+ *   Do NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
+ *
+ *   This file is part of Open PHIGS
+ *   Copyright (C) 2014 Surplus Users Ham Society
+ *
+ *   Open PHIGS is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Lesser General Public License as published by
+ *   the Free Software Foundation, either version 2.1 of the License, or
+ *   (at your option) any later version.
+ *
+ *   Open PHIGS is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Lesser General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public License
+ *   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************
+ * Changes:   Copyright (C) 2022-2023 CERN
+ ******************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -232,8 +232,8 @@ FTN_SUBROUTINE(ppost)(
 
 FTN_SUBROUTINE(pscm)(
                      FTN_INTEGER(wkid),
-		     FTN_INTEGER(cmodel)
-		     )
+                     FTN_INTEGER(cmodel)
+                     )
 {
   Pint ws_id = FTN_INTEGER_GET(wkid);
   Pint model = FTN_INTEGER_GET(cmodel);
@@ -931,9 +931,9 @@ FTN_SUBROUTINE(pqwkpo)(
                        )
 {
   /*
-This needs to loop over all work stations and all their posted structures, and if the given structure is found,
-remember that WKID and the number of matches we had. Then we return the WKID of the N'th match in wkid and the number of matches in ol
-FIXME: this one does not seem to find anything for some reason.
+    This needs to loop over all work stations and all their posted structures, and if the given structure is found,
+    remember that WKID and the number of matches we had. Then we return the WKID of the N'th match in wkid and the number of matches in ol
+    FIXME: this one does not seem to find anything for some reason.
 
   */
   Pint struct_id = FTN_INTEGER_GET(strid);
@@ -1192,18 +1192,18 @@ FTN_SUBROUTINE(pqcr)(
     if (*err_ind == 0){
       switch (buf_size) {
       case 3:
-	*ol = 3;
-	cspec[0] = colr_rep.rgb.red;
-	cspec[1] = colr_rep.rgb.green;
-	cspec[2] = colr_rep.rgb.blue;
-	break;
+        *ol = 3;
+        cspec[0] = colr_rep.rgb.red;
+        cspec[1] = colr_rep.rgb.green;
+        cspec[2] = colr_rep.rgb.blue;
+        break;
       case 4:
       default:
-	cspec[0] = colr_rep.rgba.red;
-	cspec[1] = colr_rep.rgba.green;
-	cspec[2] = colr_rep.rgba.blue;
-	cspec[3] = colr_rep.rgba.alpha;
-	break;
+        cspec[0] = colr_rep.rgba.red;
+        cspec[1] = colr_rep.rgba.green;
+        cspec[2] = colr_rep.rgba.blue;
+        cspec[3] = colr_rep.rgba.alpha;
+        break;
       }
     }
   } else {

@@ -346,7 +346,7 @@ void wsgl_update_hlhsr_id(
   case PHIGS_HLHSR_ID_ON:
     glDepthFunc(GL_LESS);
     glDepthMask(GL_TRUE);
-    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     break;
 
   case PHIGS_HLHSR_ID_ON_NZ:

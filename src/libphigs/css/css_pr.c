@@ -240,7 +240,7 @@ void css_print_eltype(Pelem_type eltype)
   case PELEM_MODEL_CLIP_IND: name = "PELEM_MODEL_CLIP_IND"; break;
   case PELEM_GSE: name = "PELEM_GSE"; break;
   case PELEM_ALPHA_CHANNEL: name = "PELEM_ALPHA_CHANNEL"; break;
-  case PELEM_INT_REFL_MODEL: name = "PELEM_INT_REFL_MODEL"; break
+  case PELEM_INT_REFL_MODEL: name = "PELEM_INT_REFL_MODEL"; break;
 
   default:
     fprintf(stderr, "UNKNOWN TYPE: %d\n", eltype);

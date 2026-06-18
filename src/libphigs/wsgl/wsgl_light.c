@@ -90,7 +90,7 @@ static void setup_ambient_light(
    amb[0] = rec->colr.val.general.x;
    amb[1] = rec->colr.val.general.y;
    amb[2] = rec->colr.val.general.z;
-   amb[3] = 1.0;
+   amb[3] = rec->colr.val.general.a;
 
 #ifdef DEBUGL
    printf("Ambient light: %f %f %f\n", amb[0], amb[1], amb[2]);
@@ -171,7 +171,7 @@ static void setup_directional_light(
    dif[0] = rec->colr.val.general.x;
    dif[1] = rec->colr.val.general.y;
    dif[2] = rec->colr.val.general.z;
-   dif[3] = 1.0;
+   dif[3] = rec->colr.val.general.a;
 
    pos[0] = rec->dir.delta_x;
    pos[1] = rec->dir.delta_y;
@@ -268,7 +268,7 @@ static void setup_positional_light(
    dif[0] = rec->colr.val.general.x;
    dif[1] = rec->colr.val.general.y;
    dif[2] = rec->colr.val.general.z;
-   dif[3] = 1.0;
+   dif[3] = rec->colr.val.general.a;
 
    pos[0] = rec->pos.x;
    pos[1] = rec->pos.y;

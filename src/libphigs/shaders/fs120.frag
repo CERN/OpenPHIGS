@@ -65,14 +65,14 @@ vec4 getLight(int type, vec4 color, vec4 pos, vec4 coef){
   if (tot <= 0) tot = 0.2;
   light = vec4(0.5, 0.5, 0.5, 1.0);
   if (type == 1) {
-      light = color * vAmbient * vec4(1.0/tot, 1.0/tot, 1.0/tot, 1.0);
+    light = color * vAmbient * vec4(1.0/tot, 1.0/tot, 1.0/tot, 1.0);
   };
   if (type == 2) {
-      light = color * vDiffuse * vec4(1.0/tot, 1.0/tot, 1.0/tot, 1.0) * angle;
+    light = color * vDiffuse * vec4(1.0/tot, 1.0/tot, 1.0/tot, 1.0) * angle;
   };
   if (type == 3) {
-      refl = coef.x * pow(angle, coef.y);
-      light = vSpecular/tot * vec4(refl/tot, refl/tot, refl/tot, 1.0);
+    refl = coef.x * pow(angle, coef.y);
+    light = vSpecular/tot * vec4(refl/tot, refl/tot, refl/tot, 1.0);
   };
   return light;
 }

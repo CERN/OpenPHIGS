@@ -65,19 +65,19 @@ vec4 getLight(int type, vec4 color, vec4 pos, vec4 coef){
   if (lenpos == 0.0) lenpos = 1.0;
   angle = max(angle/lennorm/lenpos, 0.0);
   switch (type) {
-    case 1:
-      light = color * vAmbient * vec4(1.0/tot, 1.0/tot, 1.0/tot, 1.0);
-      break;
-    case 2:
-      light = color * vDiffuse * angle * vec4(1.0/tot, 1.0/tot, 1.0/tot, 1.0);;
-      break;
-    case 3:
-      refl = coef.x * pow(angle, coef.y);
-      light = vSpecular * vec4(refl/tot, refl/tot, refl/tot, 1.0);
-      break;
-    default:
-      light = vec4(0.5, 0.5, 0.5, 1.0);
-      break;
+  case 1:
+    light = color * vAmbient * vec4(1.0/tot, 1.0/tot, 1.0/tot, 1.0);
+    break;
+  case 2:
+    light = color * vDiffuse * angle * vec4(1.0/tot, 1.0/tot, 1.0/tot, 1.0);;
+    break;
+  case 3:
+    refl = coef.x * pow(angle, coef.y);
+    light = vSpecular * vec4(refl/tot, refl/tot, refl/tot, 1.0);
+    break;
+  default:
+    light = vec4(0.5, 0.5, 0.5, 1.0);
+    break;
   };
   return light;
 }

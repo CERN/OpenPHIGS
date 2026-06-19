@@ -46,6 +46,9 @@
 #include "private/sofas3P.h"
 
 short int wsgl_use_shaders = 1;
+short int wsgl_vert_shader_version = 120;
+short int wsgl_frag_shader_version = 120;
+
 #define LOG_INT(DATA)                                   \
   css_print_eltype(ELMT_HEAD(DATA)->elementType);       \
   printf(":\tSIZE: %d\t", ELMT_HEAD(DATA)->length);     \

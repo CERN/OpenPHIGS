@@ -120,6 +120,8 @@ void read_config(char * config_file){
   int xpos, ypos;
   Pophconf newconfig;
   int use_shaders;
+  int vertex_shader;
+  int fragment_shader;
 
   /* initialize output */
   newconfig.wkid = -1;
@@ -214,6 +216,12 @@ void read_config(char * config_file){
             wsgl_use_shaders = 1;
             printf("Shaders are ENABLED by configuration\n");
           }
+        }
+        if (sscanf(line, "%%vs %d", &vertex_shader) > 0){
+          wsgl_vert_shader_version = (short)vertex_shader;
+        }
+        if (sscanf(line, "%%fs %d", &fragment_shader) > 0){
+          wsgl_frag_shader_version = (short)fragment_shader;
         }
         if (sscanf(line, "%%pc %d", &printconf) > 0){
           if (printconf == 0){

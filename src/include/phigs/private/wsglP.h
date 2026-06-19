@@ -34,6 +34,8 @@ extern "C" {
 
 /* option to switch usage of shaders on or off */
 extern short int wsgl_use_shaders;
+extern short int wsgl_vert_shader_version;
+extern short int wsgl_frag_shader_version;
 
 typedef struct {
    Pint x, y;

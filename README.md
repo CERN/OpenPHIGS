@@ -127,27 +127,49 @@ Extensions:
   * echo area is given as a fraction of the root window
 
 ## Transparency
+
+### PSALCH (DEPRECATED)
 The ALPHA channel in a structure can be set with
 
 CALL PSALCH(X)
 
 where X is a floating point number between 0. (fully transparent) and 1. (fully opaque).
 
+### RGBA Color mode
+This version supports colors with 4 components. To switch to this mode, use PMODEL_RGBA instead of PMODEL_RGB which is the default. This
+can be done via a call to PSCM(WKID, COLORMODE). Note that this call should be done directly after the workstation has been opened.
+Use
+
+COLORMODE=0 for PINDIRECT
+COLORMODE=1 for PMODEL_RGB
+COLORMODE=2 for PMODEL_RGBA
+
+### Default colors
+To pre-define some colors you can use
+
+CALL PXSCM(WKID)
+
+In COLORMODE=1 create 125 colors starting with index 16. Any colors with lower indices will not be touched.
+In COLORMODE=2 same as above. In addition, it will create 5 levels of transparent colors for all colors, with offset 200 with decreasing transparency. This is done as well for any existing colors with indices between 1 and 15.
+
 ## Extensions
 ### Fortran bindings
 * PXNDEF(STRING NAME): set the configuration location and file name
 * PXSHCSF(INTEGER IWK, REAL VALUE): Set hardcopy scale factor for workstation ID WKID. Must be set before the workstation is being opened.
 * PXQHCSF(INTEGER IWK, REAL VALUE): Inquire the current scale factor for workstation ID WKID. The value is returned in the second argument.
-
 * PSALCH(REAL VALUE): (deprecated) set ALPHA channel to Value. Value is between 0(fully transparent) and 1 (opaque). Added to the current structure.
 * PSFNAME(INTEGER IWK, CHARACTER FNAME): set output file name for workstation ID IWK
+* PXSCM(): Set color map
 
 ### C-bindings
 * pxset_conf_file_name(char* path): set the configuration location and file name
-* pxset_conf_hcsf(WKID, Pfloat value): Set hardcopy scale factor for workstation ID WKID. Must be set before the workstation is being opened
-* Pfloat pxinq_conf_hcsf(WKID): Inquire the current hardcopy scale factor for workstation ID WKID.
-
+* pxset_conf_hcsf(int wkid, Pfloat value): Set hardcopy scale factor for workstation ID WKID. Must be set before the workstation is being opened
+* Pfloat pxinq_conf_hcsf(int wkid): Inquire the current hardcopy scale factor for workstation ID WKID.
 * pset_alpha_channel(float value): C-Binding for PSALCH. Added to the current structure.
+* pxset_color_map(int wkid): set color map
+
+### Configuration file
+By default, OpenPHIGS will look for a file named phigs.def in the current directly, and use it to apply default values. This is where you can set window names, backgrounds etc. Explanations can be found in the template shipped with the distribution.
 
 ## Versions
 * 0.0.1-1: Revised code from upstream

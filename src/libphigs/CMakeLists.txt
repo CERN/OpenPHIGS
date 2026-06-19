@@ -156,9 +156,10 @@ SET(OPHIGS_ALL
   ${P_CP_SRCS}
 )
 
-
 add_library(phigs STATIC ${OPHIGS_ALL})
 add_library(phigs-shared SHARED ${OPHIGS_ALL})
+ADD_SUBDIRECTORY(shaders)
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include/phigs)
 if (APPLE)
   set_target_properties(phigs-shared PROPERTIES OUTPUT_NAME phigs LINK_FLAGS "-undefined dynamic_lookup -flat_namespace")
 else()

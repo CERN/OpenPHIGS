@@ -60,7 +60,7 @@ FTN_SUBROUTINE(pxshlc)(
     pgcolr.val.general.a = FTN_REAL_ARRAY_GET(colr, 3);
     break;
   default:
-    printf("WARNING in pxshlc: Unknown color model %d. Ignoring function.\n");
+    printf("WARNING in pxshlc: Unknown color model %d. Ignoring function.\n", pgcolr.type);
     break;
   };
   pxset_highlight_colr(&pgcolr);

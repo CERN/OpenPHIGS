@@ -2274,7 +2274,7 @@ void pxset_color_map(Pint ws_id){
     }
     break;
   default:
-    printf("WARNING in pxset_color_map: unknown color model %d. Ignoring function.\n");
+    printf("WARNING in pxset_color_map: unknown color model %d. Ignoring function.\n", gcolr.type);
   }
 }
 

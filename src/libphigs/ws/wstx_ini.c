@@ -39,8 +39,8 @@
 /*******************************************************************************
  * init_output_ws_dt
  *
- * DESCR:	Helper initialization function for output ws dt
- * RETURNS:	N/A
+ * DESCR:    Helper initialization function for output ws dt
+ * RETURNS:    N/A
  */
 
 static void init_output_ws_dt(
@@ -63,9 +63,9 @@ static void init_output_ws_dt(
       case PWST_HCOPY_TRUE_PDF:
       case PWST_HCOPY_TRUE_SVG:
       case PWST_HCOPY_TRUE_OBJ:
-	wsdt->default_colour_model = PMODEL_RGB; //FIXME what about RGBA
-         wsdt->has_double_buffer    = FALSE;
-         break;
+        wsdt->default_colour_model = PMODEL_RGB; //FIXME what about RGBA
+        wsdt->has_double_buffer    = FALSE;
+        break;
       case PWST_OUTPUT_TRUE_DB:
       case PWST_OUTIN_TRUE_DB:
          wsdt->default_colour_model = PMODEL_RGB;
@@ -78,7 +78,7 @@ static void init_output_ws_dt(
    }
 
    /* Set foreground colour */
-   fg.type = PMODEL_RGB;
+   fg.type = PMODEL_RGBA;
    fg.val.general.x = 1.0;
    fg.val.general.y = 1.0;
    fg.val.general.z = 1.0;
@@ -115,6 +115,7 @@ static void init_output_ws_dt(
    memcpy(&wsdt->default_interior_bundle_table[0].colr,
           &fg,
           sizeof(Pgcolr));
+
    wsdt->default_interior_bundle_table[0].refl_eqn = PREFL_AMB_DIFF;
    wsdt->default_interior_bundle_table[0].shad_meth = PSD_COLOUR;
    wsdt->default_interior_bundle_table[0].refl_props.ambient_coef = 1.0;
@@ -141,8 +142,8 @@ static void init_output_ws_dt(
 /*******************************************************************************
  * init_views
  *
- * DESCR:	Helper function to initialize default views
- * RETURNS:	N/A
+ * DESCR:    Helper function to initialize default views
+ * RETURNS:    N/A
  */
 
 static void init_views(

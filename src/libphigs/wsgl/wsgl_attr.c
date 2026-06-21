@@ -242,15 +242,17 @@ void wsgl_set_clip_ind(
 #endif
     {
       glUniform1i(clipping_ind, ind);
-      if (ind == 1) {
-        glEnable(GL_CLIP_PLANE0);
-        glDisable(GL_CLIP_PLANE1);
-      } else if (ind == 2) {
-        glEnable(GL_CLIP_PLANE0);
-        glEnable(GL_CLIP_PLANE1);
-      } else {
-        glDisable(GL_CLIP_PLANE0);
-        glDisable(GL_CLIP_PLANE1);
+      if (! wsgl_use_shaders){
+        if (ind == 1) {
+          glEnable(GL_CLIP_PLANE0);
+          glDisable(GL_CLIP_PLANE1);
+        } else if (ind == 2) {
+          glEnable(GL_CLIP_PLANE0);
+          glEnable(GL_CLIP_PLANE1);
+        } else {
+          glDisable(GL_CLIP_PLANE0);
+          glDisable(GL_CLIP_PLANE1);
+        }
       }
     }
 }
@@ -275,7 +277,7 @@ void wsgl_set_clip_vol3(
   Ppoint3 nn1, pt1; /* second plane if any */
   Ppoint3 vol3, point3, pwc;
   Pmatrix3  vrc2wc, unity;
-
+  // FIXME check against what the standard says
 #ifdef GLEW
   if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
 #else
@@ -392,6 +394,7 @@ void wsgl_set_colr(
                    Pcoval *colr
                    )
 {
+  int* crash = 0;
   switch(colr_type) {
   case PINDIRECT:
     glIndexi(colr->ind);
@@ -429,6 +432,17 @@ void wsgl_set_colr(
                          colr->direct.rgba.blue,
                          colr->direct.rgba.alpha);
       } else {
+#ifdef DEBUGA
+      printf("DEBUG wsgl_set_colr: Color model rgba, %f %f %f %f\n",
+             colr->direct.rgba.red,
+             colr->direct.rgba.green,
+             colr->direct.rgba.blue,
+             colr->direct.rgba.alpha);
+      if (colr->direct.rgba.alpha <= 0 || colr->direct.rgba.alpha > 1.) {
+        printf("Alpha value out of bounds. Crashing.\n");
+        *crash = 1;
+      }
+#endif
       glColor4f(colr->direct.rgba.red,
                 colr->direct.rgba.green,
                 colr->direct.rgba.blue,

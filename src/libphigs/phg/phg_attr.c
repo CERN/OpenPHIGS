@@ -188,5 +188,9 @@ void phg_attr_group_set_int_bundle(
                        &attr_group->int_bundle.colr,
                        attr_group->int_bundle.colr.val.ind);
    }
+   if (attr_group->int_bundle.back_colr.type == PINDIRECT) {
+      phg_get_colr_ind(ws,
+                       &attr_group->int_bundle.back_colr,
+                       attr_group->int_bundle.back_colr.val.ind);
+   }
 }
-

@@ -265,6 +265,9 @@ FTN_SUBROUTINE(pscr)(
 #ifdef DEBUG
   printf("DEBUG: PSCR workstation color representation %d\n", *wkid);
 #endif
+  if (ncc<3 || ncc>4){
+    printf("WARNING: PSCR not enough or too many color components %d. Ignoring function.\n", ncc);
+  };
   switch (color_model) {
   case PMODEL_RGB:
     rep.rgb.red   = FTN_REAL_ARRAY_GET(cspec, 0);
@@ -275,7 +278,18 @@ FTN_SUBROUTINE(pscr)(
     rep.rgba.red   = FTN_REAL_ARRAY_GET(cspec, 0);
     rep.rgba.green = FTN_REAL_ARRAY_GET(cspec, 1);
     rep.rgba.blue  = FTN_REAL_ARRAY_GET(cspec, 2);
-    rep.rgba.alpha = FTN_REAL_ARRAY_GET(cspec, 3);
+    if (ncc == 4) {
+      rep.rgba.alpha = FTN_REAL_ARRAY_GET(cspec, 3);
+    } else {
+      printf("INFO: psrc no alpha component specified in RGBA mode. Using 1.\n");
+      rep.rgba.alpha = 1,0;
+    };
+    printf("INFO: psrc set color RGBA %f%f %f %f\n",
+           rep.rgba.red,
+           rep.rgba.green,
+           rep.rgba.blue,
+           rep.rgba.alpha
+           );
     break;
   case PINDIRECT:
     rep.rgb.red = rep.rgb.green = rep.rgb.blue = FTN_REAL_ARRAY_GET(cspec, 0);

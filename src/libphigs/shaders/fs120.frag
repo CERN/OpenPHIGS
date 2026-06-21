@@ -3,54 +3,67 @@ uniform int ShadingMode;
 uniform vec4 vAmbient;
 uniform vec4 vDiffuse;
 uniform vec4 vSpecular;
-
 uniform int lightSource0;
 uniform int lightSourceTyp0;
 uniform vec4 lightSourceCol0;
 uniform vec4 lightSourcePos0;
 uniform vec4 lightSourceCoef0;
-
 uniform int lightSource1;
 uniform int lightSourceTyp1;
 uniform vec4 lightSourceCol1;
 uniform vec4 lightSourcePos1;
 uniform vec4 lightSourceCoef1;
-
 uniform int lightSource2;
 uniform int lightSourceTyp2;
 uniform vec4 lightSourceCol2;
 uniform vec4 lightSourcePos2;
 uniform vec4 lightSourceCoef2;
-
 uniform int lightSource3;
 uniform int lightSourceTyp3;
 uniform vec4 lightSourceCol3;
 uniform vec4 lightSourcePos3;
 uniform vec4 lightSourceCoef3;
-
 uniform int lightSource4;
 uniform int lightSourceTyp4;
 uniform vec4 lightSourceCol4;
 uniform vec4 lightSourcePos4;
 uniform vec4 lightSourceCoef4;
-
 uniform int lightSource5;
 uniform int lightSourceTyp5;
 uniform vec4 lightSourceCol5;
 uniform vec4 lightSourcePos5;
 uniform vec4 lightSourceCoef5;
-
 uniform int lightSource6;
 uniform int lightSourceTyp6;
 uniform vec4 lightSourceCol6;
 uniform vec4 lightSourcePos6;
 uniform vec4 lightSourceCoef6;
-
 varying vec4 Normal;
 varying vec4 Color;
+varying float v_clipDist0;
+varying float v_clipDist1;
 
+/*
+ * getLight: returns the RGB contribution of a single light source.
+ *
+ * Fix 1 (darkness): removed the global "/tot" normalization that divided
+ *   every light's contribution by the combined magnitude of vAmbient +
+ *   vDiffuse + vSpecular. That division could easily exceed 4.0 for
+ *   ordinary material colors, crushing brightness well below intended
+ *   levels, especially with few lights active. Standard ambient+diffuse+
+ *   specular summation does not require this step; the final min(...,1.0)
+ *   clamp in main() already guards against over-brightening when many
+ *   lights are summed.
+ *
+ * Fix 2 (alpha): alpha is no longer computed here at all. Previously each
+ *   light contributed its own alpha value (vAmbient.w, vDiffuse.w, or a
+ *   hardcoded 1.0 for specular), and main() summed these across every
+ *   active light, so final alpha depended on how many lights were on
+ *   rather than on the material's actual transparency. Alpha is now
+ *   handled once in main(), from Color.a.
+ */
 vec4 getLight(int type, vec4 color, vec4 pos, vec4 coef){
-  vec4 light;
+  vec3 light = vec3(0.5, 0.5, 0.5);
   float refl = 0.0;
   float angle = Normal.x*pos.x+Normal.y*pos.y+Normal.z*pos.z;
   float lennorm = sqrt(Normal.x*Normal.x+Normal.y*Normal.y+Normal.z*Normal.z);
@@ -58,30 +71,35 @@ vec4 getLight(int type, vec4 color, vec4 pos, vec4 coef){
   if (lennorm == 0.0) lennorm = 1.0;
   if (lenpos == 0.0) lenpos = 1.0;
   angle = max(angle/lennorm/lenpos, 0.0);
-  float atot = sqrt(vAmbient.x*vAmbient.x+vAmbient.y*vAmbient.y+vAmbient.z*vAmbient.z+vAmbient.w*vAmbient.w);
-  float dtot = sqrt(vDiffuse.x*vDiffuse.x+vDiffuse.y*vDiffuse.y+vDiffuse.z*vDiffuse.z+vDiffuse.w*vDiffuse.w);
-  float stot = sqrt(vSpecular.x*vSpecular.x+vSpecular.y*vSpecular.y+vSpecular.z*vSpecular.z+vSpecular.w*vSpecular.w);
-  float tot = atot+dtot+stot;
-  if (tot <= 0) tot = 0.2;
-  light = vec4(0.5, 0.5, 0.5, 1.0);
+
   if (type == 1) {
-    light = color * vAmbient * vec4(1.0/tot, 1.0/tot, 1.0/tot, 1.0);
+    /* ambient: flat contribution, independent of angle */
+    light = color.rgb * vAmbient.rgb;
   };
   if (type == 2) {
-    light = color * vDiffuse * vec4(1.0/tot, 1.0/tot, 1.0/tot, 1.0) * angle;
+    /* diffuse: falls off with angle between normal and light direction */
+    light = color.rgb * vDiffuse.rgb * angle;
   };
   if (type == 3) {
+    /* specular: NOTE this still uses N.L ("angle"), not a true reflection
+       or half-vector dot product, so it behaves like a sharpened diffuse
+       term rather than a physically-correct specular highlight. Left
+       unchanged from the original behavior; flagging in case you want to
+       revisit it separately. */
     refl = coef.x * pow(angle, coef.y);
-    light = vSpecular/tot * vec4(refl/tot, refl/tot, refl/tot, 1.0);
+    light = vSpecular.rgb * refl;
   };
-  return light;
+  return vec4(light, 0.0);
 }
+
 void main()
 {
   int i;
+  /* clipping */
+  if (v_clipDist0 < 0.0 || v_clipDist1 < 0.0) discard;
   if (ShadingMode > 0) {
     int n = 0;
-    gl_FragColor = vec4(0., 0., 0, 1.);
+    gl_FragColor = vec4(0., 0., 0., 0.);
     for (i=0; i<7; i++){
       if (i==0) {
         if (lightSource0 > 0){ gl_FragColor += getLight(lightSourceTyp0, lightSourceCol0, lightSourcePos0, lightSourceCoef0);n += 1;};
@@ -106,7 +124,8 @@ void main()
       }
     };
     if (n > 0){
-      gl_FragColor = min(gl_FragColor, vec4(1., 1., 1., 1.));
+      gl_FragColor.rgb = min(gl_FragColor.rgb, vec3(1., 1., 1.));
+      gl_FragColor.a = Color.a;
     } else { gl_FragColor = Color;};
   } else {
     gl_FragColor = Color;

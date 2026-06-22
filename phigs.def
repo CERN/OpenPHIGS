@@ -2,7 +2,7 @@ Example Parameters for workstation 1
 Enabled switches: %XX, Comment by replacing the % by some other character
 
 Global flags:
-%gs 0                 Use shaders (1) or not (0)
+%gs 1                   Use shaders (1) or not (0)
 %vs 120               Vertex shader version 1.30
 %fs 120               Fragment shader version 1.30
 %pc 1                 print configuration. Set to 0 to disable.

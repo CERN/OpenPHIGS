@@ -70,7 +70,6 @@ void popen_ws(
     read_config("phigs.def");
   };
   /* save the current shader settings */
-  printf("popen_ws: %d %d\n", wsgl_use_shaders, wsgl_use_shaders_settings);
   wsgl_use_shaders_settings = wsgl_use_shaders;
   if (phg_entry_check(PHG_ERH, ERR2, Pfn_open_ws)) {
     if ((ws_id < 0) || (ws_id > MAX_NO_OPEN_WS)) {

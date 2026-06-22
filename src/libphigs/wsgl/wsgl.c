@@ -827,8 +827,7 @@ void wsgl_render_element(
     break;
 
   case PELEM_EDGE_FLAG:
-    wsgl->cur_struct.ast.indiv_group.edge_bundle.flag =
-      (Pedge_flag) PHG_INT(el);
+    wsgl->cur_struct.ast.indiv_group.edge_bundle.flag = (Pedge_flag) PHG_INT(el);
     break;
 
   case PELEM_MARKER_IND:

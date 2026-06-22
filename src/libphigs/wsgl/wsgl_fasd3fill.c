@@ -328,6 +328,7 @@ void wsgl_fill_area_set3_data_front(
   Pcoval colr;
   Pvec3 norm;
   Pint colr_type;
+  Pgcolr *gcolr;
 
   fasd3.edata = &edata;
   fasd3.vdata = &vdata;
@@ -337,7 +338,6 @@ void wsgl_fill_area_set3_data_front(
   glEnable(GL_POLYGON_OFFSET_FILL);
   glEnable(GL_POLYGON_OFFSET_LINE);
   wsgl_setup_int_attr_nocol(ws, ast);
-
   switch (fasd3.vflag) {
   case PVERT_COORD:
     if (fasd3.fflag == PFACET_COLOUR_NORMAL) {
@@ -403,9 +403,18 @@ void wsgl_fill_area_set3_data_front(
       }
     }
     else {
-      colr_type = wsgl_get_int_colr(ast)->type;
-      wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast), ws->current_colour_model);
-      wsgl_setup_int_colr(ws, colr_type, &colr, ast);
+      gcolr = wsgl_get_int_colr(ast);
+      wsgl_colr_from_gcolr(&colr, gcolr, ws->current_colour_model);
+      wsgl_setup_int_colr(ws, gcolr->type, &colr, ast);
+#ifdef DEBUGA
+      printf("fasd3fill: Setup color type %d: %f %f %f %f\n",
+             gcolr->type,
+             colr.direct.rgba.red,
+             colr.direct.rgba.green,
+             colr.direct.rgba.blue,
+             colr.direct.rgba.alpha
+      );
+#endif
       fasd3_normal3(&norm, &fasd3);
       glNormal3f(norm.delta_x, norm.delta_y, norm.delta_z);
       wsgl_set_current_normal(norm.delta_x, norm.delta_y, norm.delta_z);

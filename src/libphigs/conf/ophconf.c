@@ -49,7 +49,7 @@ void set_defaults(Pophconf* config){
     config->background_color_rgba.rgba.red = 0.;
     config->background_color_rgba.rgba.green = 0.;
     config->background_color_rgba.rgba.blue = 0.;
-    config->background_color_rgba.rgba.alpha = 0.5;
+    config->background_color_rgba.rgba.alpha = 1.0;
 
     config->display_width = DISPLAY_WIDTH;
     config->display_height = DISPLAY_HEIGHT;

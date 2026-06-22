@@ -132,11 +132,25 @@ void phg_css_print_eldata(El_handle elptr, int arflag)
   case PELEM_EDGE_COLR_IND:
   case PELEM_INT_COLR_IND:
   case PELEM_INT_SHAD_METH:
-  case PELEM_INT_REFL_EQN:
   case PELEM_MODEL_CLIP_IND:
+  case PELEM_FACE_CULL_MODE:
+  case PELEM_INT_STYLE_IND:
+  case PELEM_FACE_DISTING_MODE:
+  case PELEM_INT_REFL_MODEL:
+  case PELEM_EDGE_FLAG:
+  case PELEM_INT_REFL_EQN:
+  case PELEM_BACK_INT_REFL_EQN:
+  case PELEM_EDGETYPE:
     fprintf(stderr, "%d", PHG_INT(elptr));
+    break;
+  case PELEM_EDGEWIDTH:
   case PELEM_ALPHA_CHANNEL:
+  case PELEM_ANNO_CHAR_HT:
+  case  PELEM_MARKER_SIZE:
+  case  PELEM_CHAR_HT:
+  case PELEM_CHAR_SPACE:PELEM_LINEWIDTH:
     fprintf(stderr, "%f", PHG_FLOAT(elptr));
+    break;
   case PELEM_NIL:
   default:
     /* no data */

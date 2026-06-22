@@ -127,28 +127,17 @@ void wsgl_update_projection(
     phg_mat_mul(wsgl->model_tran,
                 wsgl->pick_tran,
                 wsgl->cur_struct.view_rep.map_matrix);
-#ifdef GLEW
-    if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-      if (wsgl_use_shaders)
-#endif
-        {
-          wsgl_set_projection_matrix(wsgl->model_tran);
-        } else {
-        wsgl_set_matrix(wsgl->model_tran, FALSE);
-      }
-  }
-  else {
-#ifdef GLEW
-    if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-      if (wsgl_use_shaders)
-#endif
-        {
-          wsgl_set_projection_matrix(wsgl->cur_struct.view_rep.map_matrix);
-        } else {
-        wsgl_set_matrix(wsgl->cur_struct.view_rep.map_matrix, FALSE);
-      }
+    if (wsgl_use_shaders){
+      wsgl_set_projection_matrix(wsgl->model_tran);
+    } else {
+      wsgl_set_matrix(wsgl->model_tran, FALSE);
+    }
+  } else {
+    if (wsgl_use_shaders){
+      wsgl_set_projection_matrix(wsgl->cur_struct.view_rep.map_matrix);
+    } else {
+      wsgl_set_matrix(wsgl->cur_struct.view_rep.map_matrix, FALSE);
+    }
   }
 }
 
@@ -181,16 +170,11 @@ void wsgl_update_modelview(
   phg_mat_mul(wsgl->model_tran,
               wsgl->cur_struct.view_rep.ori_matrix,
               wsgl->composite_tran);
-#ifdef GLEW
-  if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-    if (wsgl_use_shaders)
-#endif
-      {
-        wsgl_set_model_view_matrix(wsgl->model_tran);
-      } else {
-      wsgl_set_matrix(wsgl->model_tran, FALSE);
-    }
+  if (wsgl_use_shaders){
+    wsgl_set_model_view_matrix(wsgl->model_tran);
+  } else {
+    wsgl_set_matrix(wsgl->model_tran, FALSE);
+  }
 }
 
 /*******************************************************************************
@@ -235,26 +219,21 @@ void wsgl_set_clip_ind(
 {
   Phg_ret ret;
   Wsgl_handle wsgl = ws->render_context;
-#ifdef GLEW
-  if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-    if (wsgl_use_shaders)
-#endif
-      {
-        glUniform1i(clipping_ind, ind);
-        if (! wsgl_use_shaders){
-          if (ind == 1) {
-            glEnable(GL_CLIP_PLANE0);
-            glDisable(GL_CLIP_PLANE1);
-          } else if (ind == 2) {
-            glEnable(GL_CLIP_PLANE0);
-            glEnable(GL_CLIP_PLANE1);
-          } else {
-            glDisable(GL_CLIP_PLANE0);
-            glDisable(GL_CLIP_PLANE1);
-          }
-        }
+  if (wsgl_use_shaders){
+    glUniform1i(clipping_ind, ind);
+    if (! wsgl_use_shaders){
+      if (ind == 1) {
+        glEnable(GL_CLIP_PLANE0);
+        glDisable(GL_CLIP_PLANE1);
+      } else if (ind == 2) {
+        glEnable(GL_CLIP_PLANE0);
+        glEnable(GL_CLIP_PLANE1);
+      } else {
+        glDisable(GL_CLIP_PLANE0);
+        glDisable(GL_CLIP_PLANE1);
       }
+    }
+  }
 }
 
 /*******************************************************************************
@@ -278,54 +257,63 @@ void wsgl_set_clip_vol3(
   Ppoint3 vol3, point3, pwc;
   Pmatrix3  vrc2wc, unity;
   // FIXME check against what the standard says
-#ifdef GLEW
-  if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-    if (wsgl_use_shaders)
-#endif
-      {
-        /* invert to transform from VRC to WC */
-        op = int_data[0];
-        num = int_data[1];
-        list = (Phalf_space3 *)(&int_data[2]);
-        if (1 == num || 2 ==num){
-          glUniform1i(num_clip_planes, num);
-          /* first plane */
-          volume0 = list[0];
-          /* take a local copy of the data */
-          nn0.x = volume0.norm.delta_x;
-          nn0.y = volume0.norm.delta_y;
-          nn0.z = volume0.norm.delta_z;
+  op = int_data[0];
+  num = int_data[1];
+  list = (Phalf_space3 *)(&int_data[2]);
+  if (num >=1 && num <=2){
+    /* invert to transform from VRC to WC */
+    /* first plane */
+    volume0 = list[0];
+    /* take a local copy of the data */
+    nn0.x = volume0.norm.delta_x;
+    nn0.y = volume0.norm.delta_y;
+    nn0.z = volume0.norm.delta_z;
 
-          pt0.x = volume0.point.x;
-          pt0.y = volume0.point.y;
-          pt0.z = volume0.point.z;
+    pt0.x = volume0.point.x;
+    pt0.y = volume0.point.y;
+    pt0.z = volume0.point.z;
 
-          glUniform4f(plane0, nn0.x, nn0.y, nn0.z, 0.);
-          GLdouble eqn0[4] = {nn0.x, nn0.y, nn0.z, 0.};
-          glClipPlane(GL_CLIP_PLANE0, eqn0);
-          glUniform4f(point0, pt0.x, pt0.y, pt0.z, 0.);
-          if (2 ==num){
-            /* first plane */
-            volume1 = list[1];
-            /* take a local copy of the data */
-            nn1.x = volume1.norm.delta_x;
-            nn1.y = volume1.norm.delta_y;
-            nn1.z = volume1.norm.delta_z;
+    glUniform4f(plane0, nn0.x, nn0.y, nn0.z, 0.);
+    glUniform4f(point0, pt0.x, pt0.y, pt0.z, 0.);
+    if (2 ==num){
+      /* first plane */
+      volume1 = list[1];
+      /* take a local copy of the data */
+      nn1.x = volume1.norm.delta_x;
+      nn1.y = volume1.norm.delta_y;
+      nn1.z = volume1.norm.delta_z;
 
-            pt1.x = volume1.point.x;
-            pt1.y = volume1.point.y;
-            pt1.z = volume1.point.z;
+      pt1.x = volume1.point.x;
+      pt1.y = volume1.point.y;
+      pt1.z = volume1.point.z;
 
-            glUniform4f(plane1, nn1.x, nn1.y, nn1.z, 0.);
-            GLdouble eqn1[4] = {nn1.x, nn1.y, nn1.z, 0.};
-            glClipPlane(GL_CLIP_PLANE1, eqn1);
-            glUniform4f(point1, pt1.x, pt1.y, pt1.z, 0.);
-          }
-        } else {
-          glUniform1i(num_clip_planes, 0); /* ignore the call */
-        }
+      glUniform4f(plane1, nn1.x, nn1.y, nn1.z, 0.);
+      glUniform4f(point1, pt1.x, pt1.y, pt1.z, 0.);
+    }
+  };
+  if (wsgl_use_shaders) {
+    glUniform1i(num_clip_planes, num);
+    if (num >= 1){
+      glUniform4f(plane0, nn0.x, nn0.y, nn0.z, 0.);
+      glUniform4f(point0, pt0.x, pt0.y, pt0.z, 0.);
+      if (num == 2){
+        glUniform4f(plane1, nn1.x, nn1.y, nn1.z, 0.);
+        glUniform4f(point1, pt1.x, pt1.y, pt1.z, 0.);
       }
+    } else {
+      glUniform1i(num_clip_planes, 0); /* ignore the call */
+      return;
+    }
+  } else {
+    if (num >1){
+      GLdouble eqn0[4] = {nn0.x, nn0.y, nn0.z, 0.};
+      glClipPlane(GL_CLIP_PLANE0, eqn0);
+      if (num == 2){
+        GLdouble eqn1[4] = {nn1.x, nn1.y, nn1.z, 0.};
+        glClipPlane(GL_CLIP_PLANE1, eqn1);
+      }
+    }
+  }
 }
 
 /*******************************************************************************
@@ -395,6 +383,9 @@ void wsgl_set_colr(
                    )
 {
   int* crash = 0;
+#ifdef DEBUGA
+  printf("wsgl_set_colr: setting color of type %d\n",  colr_type);
+#endif
   switch(colr_type) {
   case PINDIRECT:
     glIndexi(colr->ind);
@@ -422,8 +413,8 @@ void wsgl_set_colr(
                        colr->direct.rgba.green,
                        colr->direct.rgba.blue,
                        colr->direct.rgba.alpha);
-#ifdef DEBUGA
     } else {
+#ifdef DEBUGA
       printf("DEBUG wsgl_set_colr: Color model rgba, %f %f %f %f\n",
              colr->direct.rgba.red,
              colr->direct.rgba.green,
@@ -511,9 +502,9 @@ void wsgl_set_gcolr(
  * RETURNS:    N/A
  */
 void wsgl_convert_gcolr(
-                      Pgcolr *gcolr,
-                      int model
-                      ){
+                        Pgcolr *gcolr,
+                        int model
+                        ){
   switch (gcolr->type){
   case PINDIRECT:
     break;
@@ -997,16 +988,11 @@ void wsgl_setup_edge_attr(
     glDisable(GL_LINE_STIPPLE);
     break;
   }
-#ifdef GLEW
-  if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-    if (wsgl_use_shaders)
-#endif
-      {
-        glUniform1i(shading_mode, 0);
-      } else {
-      glDisable(GL_LIGHTING);
-    }
+  if (wsgl_use_shaders) {
+    glUniform1i(shading_mode, 0);
+  } else {
+    glDisable(GL_LIGHTING);
+  }
 }
 
 /*******************************************************************************

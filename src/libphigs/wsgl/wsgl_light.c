@@ -90,16 +90,12 @@ static void setup_ambient_light(
    amb[0] = rec->colr.val.general.x;
    amb[1] = rec->colr.val.general.y;
    amb[2] = rec->colr.val.general.z;
-   amb[3] = rec->colr.val.general.a;
+   amb[3] = 1.0;
 
 #ifdef DEBUGL
    printf("Ambient light: %f %f %f\n", amb[0], amb[1], amb[2]);
 #endif
-#ifdef GLEW
-   if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
-#else
    if (wsgl_use_shaders){
-#endif
 #ifdef DEBUGL
      printf("Ambient light Using shaders %d\n", ind);
 #endif
@@ -171,7 +167,7 @@ static void setup_directional_light(
    dif[0] = rec->colr.val.general.x;
    dif[1] = rec->colr.val.general.y;
    dif[2] = rec->colr.val.general.z;
-   dif[3] = rec->colr.val.general.a;
+   dif[3] = 1.0;
 
    pos[0] = rec->dir.delta_x;
    pos[1] = rec->dir.delta_y;
@@ -183,11 +179,7 @@ static void setup_directional_light(
           dif[0], dif[1], dif[2],
           pos[0], pos[1], pos[2]);
 #endif
-#ifdef GLEW
-   if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
-#else
    if (wsgl_use_shaders){
-#endif
 #ifdef DEBUGL
      printf("Directional light Using shaders %d\n", ind);
 #endif
@@ -268,7 +260,7 @@ static void setup_positional_light(
    dif[0] = rec->colr.val.general.x;
    dif[1] = rec->colr.val.general.y;
    dif[2] = rec->colr.val.general.z;
-   dif[3] = rec->colr.val.general.a;
+   dif[3] = 1.0;
 
    pos[0] = rec->pos.x;
    pos[1] = rec->pos.y;
@@ -286,11 +278,7 @@ static void setup_positional_light(
           pos[0], pos[1], pos[2],
           coef[0], coef[1]);
 #endif
-#ifdef GLEW
-   if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
-#else
    if (wsgl_use_shaders){
-#endif
 #ifdef DEBUGL
      printf("Positional light Using shaders %d\n", ind);
 #endif
@@ -352,8 +340,8 @@ static void setup_positional_light(
      }
    } else {
      id = get_light_id(ind);
-     glLightfv(id, GL_DIFFUSE, dif);
      glLightfv(id, GL_POSITION, pos);
+     glLightfv(id, GL_SPECULAR, dif);
      glEnable(id);
    }
 }
@@ -419,11 +407,7 @@ void wsgl_update_light_src_state(
         }
       }
     } else {
-#ifdef GLEW
-      if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects){
-#else
       if (wsgl_use_shaders){
-#endif
         switch (i){
         case 1:
           glUniform1i(lightSource0, 0);
@@ -452,11 +436,7 @@ void wsgl_update_light_src_state(
       }
       }
     }
-#ifdef GLEW
-   if (!wsgl_use_shaders || !GLEW_ARB_vertex_shader || !GLEW_ARB_fragment_shader || !GLEW_ARB_shader_objects) glPopMatrix();
-#else
    if (!wsgl_use_shaders) glPopMatrix();
-#endif
 }
 
 /*******************************************************************************

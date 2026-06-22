@@ -284,12 +284,14 @@ FTN_SUBROUTINE(pscr)(
       printf("INFO: psrc no alpha component specified in RGBA mode. Using 1.\n");
       rep.rgba.alpha = 1,0;
     };
+#ifdef DEBUGA
     printf("INFO: psrc set color RGBA %f%f %f %f\n",
            rep.rgba.red,
            rep.rgba.green,
            rep.rgba.blue,
            rep.rgba.alpha
            );
+#endif
     break;
   case PINDIRECT:
     rep.rgb.red = rep.rgb.green = rep.rgb.blue = FTN_REAL_ARRAY_GET(cspec, 0);

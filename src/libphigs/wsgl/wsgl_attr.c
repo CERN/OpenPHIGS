@@ -1,24 +1,24 @@
 /******************************************************************************
-*   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
-*
-*   This file is part of Open PHIGS
-*   Copyright (C) 2014 Surplus Users Ham Society
-*
-*   Open PHIGS is free software: you can redistribute it and/or modify
-*   it under the terms of the GNU Lesser General Public License as published by
-*   the Free Software Foundation, either version 2.1 of the License, or
-*   (at your option) any later version.
-*
-*   Open PHIGS is distributed in the hope that it will be useful,
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*   GNU Lesser General Public License for more details.
-*
-*   You should have received a copy of the GNU Lesser General Public License
-*   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
-******************************************************************************
-* Changes:   Copyright (C) 2022-2023 CERN
-******************************************************************************/
+ *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
+ *
+ *   This file is part of Open PHIGS
+ *   Copyright (C) 2014 Surplus Users Ham Society
+ *
+ *   Open PHIGS is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Lesser General Public License as published by
+ *   the Free Software Foundation, either version 2.1 of the License, or
+ *   (at your option) any later version.
+ *
+ *   Open PHIGS is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Lesser General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public License
+ *   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************
+ * Changes:   Copyright (C) 2022-2023 CERN
+ ******************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,8 +45,8 @@ extern GLint alpha_channel;
 /*******************************************************************************
  * wsgl_set_matrix
  *
- * DESCR:	Setup matrix
- * RETURNS:	N/A
+ * DESCR:    Setup matrix
+ * RETURNS:    N/A
  */
 
 static void wsgl_set_matrix(
@@ -109,8 +109,8 @@ static void wsgl_set_projection_matrix(
 /*******************************************************************************
  * wsgl_update_projection
  *
- * DESCR:	Update projection matrix
- * RETURNS:	N/A
+ * DESCR:    Update projection matrix
+ * RETURNS:    N/A
  */
 void wsgl_update_projection(
                             Ws *ws
@@ -155,8 +155,8 @@ void wsgl_update_projection(
 /*******************************************************************************
  * wsgl_update_modelview
  *
- * DESCR:	Update modelview matrix
- * RETURNS:	N/A
+ * DESCR:    Update modelview matrix
+ * RETURNS:    N/A
  */
 
 void wsgl_update_modelview(
@@ -196,8 +196,8 @@ void wsgl_update_modelview(
 /*******************************************************************************
  * wsgl_set_view_ind
  *
- * DESCR:	Setup view
- * RETURNS:	N/A
+ * DESCR:    Setup view
+ * RETURNS:    N/A
  */
 void wsgl_set_view_ind(
                        Ws *ws,
@@ -224,8 +224,8 @@ void wsgl_set_view_ind(
 /*******************************************************************************
  * wsgl_set_clip_ind
  *
- * DESCR:	Setup clip index
- * RETURNS:	N/A
+ * DESCR:    Setup clip index
+ * RETURNS:    N/A
  */
 
 void wsgl_set_clip_ind(
@@ -238,30 +238,30 @@ void wsgl_set_clip_ind(
 #ifdef GLEW
   if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
 #else
-  if (wsgl_use_shaders)
+    if (wsgl_use_shaders)
 #endif
-    {
-      glUniform1i(clipping_ind, ind);
-      if (! wsgl_use_shaders){
-        if (ind == 1) {
-          glEnable(GL_CLIP_PLANE0);
-          glDisable(GL_CLIP_PLANE1);
-        } else if (ind == 2) {
-          glEnable(GL_CLIP_PLANE0);
-          glEnable(GL_CLIP_PLANE1);
-        } else {
-          glDisable(GL_CLIP_PLANE0);
-          glDisable(GL_CLIP_PLANE1);
+      {
+        glUniform1i(clipping_ind, ind);
+        if (! wsgl_use_shaders){
+          if (ind == 1) {
+            glEnable(GL_CLIP_PLANE0);
+            glDisable(GL_CLIP_PLANE1);
+          } else if (ind == 2) {
+            glEnable(GL_CLIP_PLANE0);
+            glEnable(GL_CLIP_PLANE1);
+          } else {
+            glDisable(GL_CLIP_PLANE0);
+            glDisable(GL_CLIP_PLANE1);
+          }
         }
       }
-    }
 }
 
 /*******************************************************************************
  * wsgl_set_clip_vol3
  *
- * DESCR:	Setup view
- * RETURNS:	N/A
+ * DESCR:    Setup view
+ * RETURNS:    N/A
  */
 void wsgl_set_clip_vol3(
                         Ws *ws,
@@ -281,58 +281,58 @@ void wsgl_set_clip_vol3(
 #ifdef GLEW
   if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
 #else
-  if (wsgl_use_shaders)
+    if (wsgl_use_shaders)
 #endif
-    {
-      /* invert to transform from VRC to WC */
-      op = int_data[0];
-      num = int_data[1];
-      list = (Phalf_space3 *)(&int_data[2]);
-      if (1 == num || 2 ==num){
-        glUniform1i(num_clip_planes, num);
-        /* first plane */
-        volume0 = list[0];
-        /* take a local copy of the data */
-        nn0.x = volume0.norm.delta_x;
-        nn0.y = volume0.norm.delta_y;
-        nn0.z = volume0.norm.delta_z;
-
-        pt0.x = volume0.point.x;
-        pt0.y = volume0.point.y;
-        pt0.z = volume0.point.z;
-
-        glUniform4f(plane0, nn0.x, nn0.y, nn0.z, 0.);
-        GLdouble eqn0[4] = {nn0.x, nn0.y, nn0.z, 0.};
-        glClipPlane(GL_CLIP_PLANE0, eqn0);
-        glUniform4f(point0, pt0.x, pt0.y, pt0.z, 0.);
-        if (2 ==num){
+      {
+        /* invert to transform from VRC to WC */
+        op = int_data[0];
+        num = int_data[1];
+        list = (Phalf_space3 *)(&int_data[2]);
+        if (1 == num || 2 ==num){
+          glUniform1i(num_clip_planes, num);
           /* first plane */
-          volume1 = list[1];
+          volume0 = list[0];
           /* take a local copy of the data */
-          nn1.x = volume1.norm.delta_x;
-          nn1.y = volume1.norm.delta_y;
-          nn1.z = volume1.norm.delta_z;
+          nn0.x = volume0.norm.delta_x;
+          nn0.y = volume0.norm.delta_y;
+          nn0.z = volume0.norm.delta_z;
 
-          pt1.x = volume1.point.x;
-          pt1.y = volume1.point.y;
-          pt1.z = volume1.point.z;
+          pt0.x = volume0.point.x;
+          pt0.y = volume0.point.y;
+          pt0.z = volume0.point.z;
 
-          glUniform4f(plane1, nn1.x, nn1.y, nn1.z, 0.);
-          GLdouble eqn1[4] = {nn1.x, nn1.y, nn1.z, 0.};
-          glClipPlane(GL_CLIP_PLANE1, eqn1);
-          glUniform4f(point1, pt1.x, pt1.y, pt1.z, 0.);
+          glUniform4f(plane0, nn0.x, nn0.y, nn0.z, 0.);
+          GLdouble eqn0[4] = {nn0.x, nn0.y, nn0.z, 0.};
+          glClipPlane(GL_CLIP_PLANE0, eqn0);
+          glUniform4f(point0, pt0.x, pt0.y, pt0.z, 0.);
+          if (2 ==num){
+            /* first plane */
+            volume1 = list[1];
+            /* take a local copy of the data */
+            nn1.x = volume1.norm.delta_x;
+            nn1.y = volume1.norm.delta_y;
+            nn1.z = volume1.norm.delta_z;
+
+            pt1.x = volume1.point.x;
+            pt1.y = volume1.point.y;
+            pt1.z = volume1.point.z;
+
+            glUniform4f(plane1, nn1.x, nn1.y, nn1.z, 0.);
+            GLdouble eqn1[4] = {nn1.x, nn1.y, nn1.z, 0.};
+            glClipPlane(GL_CLIP_PLANE1, eqn1);
+            glUniform4f(point1, pt1.x, pt1.y, pt1.z, 0.);
+          }
+        } else {
+          glUniform1i(num_clip_planes, 0); /* ignore the call */
         }
-      } else {
-        glUniform1i(num_clip_planes, 0); /* ignore the call */
       }
-    }
 }
 
 /*******************************************************************************
  * wsgl_update_hlhsr_id
  *
- * DESCR:	Update depth buffer checking flag
- * RETURNS:	N/A
+ * DESCR:    Update depth buffer checking flag
+ * RETURNS:    N/A
  */
 void wsgl_update_hlhsr_id(
                           Ws *ws
@@ -365,8 +365,8 @@ void wsgl_update_hlhsr_id(
 /*******************************************************************************
  * wsgl_set_asf
  *
- * DESCR:	Setup asf
- * RETURNS:	N/A
+ * DESCR:    Setup asf
+ * RETURNS:    N/A
  */
 void wsgl_set_asf(
                   Ws_attr_st *ast,
@@ -386,8 +386,8 @@ void wsgl_set_asf(
 /*******************************************************************************
  * wsgl_set_colr
  *
- * DESCR:	Set colour value
- * RETURNS:	N/A
+ * DESCR:    Set colour value
+ * RETURNS:    N/A
  */
 void wsgl_set_colr(
                    Pint colr_type,
@@ -401,38 +401,29 @@ void wsgl_set_colr(
     break;
 
   case PMODEL_RGB:
-#ifdef GLEW
-    if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-    if (wsgl_use_shaders)
-#endif
-      {
-        glVertexAttrib4f(vCOLOR,
-                         colr->direct.rgb.red,
-                         colr->direct.rgb.green,
-                         colr->direct.rgb.blue,
-                         1.0);
-      } else {
-      glColor3f(colr->direct.rgb.red,
+    if (wsgl_use_shaders) {
+      glVertexAttrib4f(vCOLOR,
+                       colr->direct.rgb.red,
+                       colr->direct.rgb.green,
+                       colr->direct.rgb.blue,
+                       1.0);
+    } else {
+      glColor4f(colr->direct.rgb.red,
                 colr->direct.rgb.green,
-                colr->direct.rgb.blue);
+                colr->direct.rgb.blue,
+                1.0);
     }
     break;
 
   case PMODEL_RGBA:
-#ifdef GLEW
-    if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-    if (wsgl_use_shaders)
-#endif
-      {
-        glVertexAttrib4f(vCOLOR,
-                         colr->direct.rgba.red,
-                         colr->direct.rgba.green,
-                         colr->direct.rgba.blue,
-                         colr->direct.rgba.alpha);
-      } else {
+    if (wsgl_use_shaders){
+      glVertexAttrib4f(vCOLOR,
+                       colr->direct.rgba.red,
+                       colr->direct.rgba.green,
+                       colr->direct.rgba.blue,
+                       colr->direct.rgba.alpha);
 #ifdef DEBUGA
+    } else {
       printf("DEBUG wsgl_set_colr: Color model rgba, %f %f %f %f\n",
              colr->direct.rgba.red,
              colr->direct.rgba.green,
@@ -458,8 +449,8 @@ void wsgl_set_colr(
 /*******************************************************************************
  * wsgl_set_gcolr
  *
- * DESCR:	Set colour
- * RETURNS:	N/A
+ * DESCR:    Set colour
+ * RETURNS:    N/A
  */
 void wsgl_set_gcolr(
                     Pgcolr *gcolr
@@ -471,45 +462,36 @@ void wsgl_set_gcolr(
     break;
 
   case PMODEL_RGB:
-#ifdef GLEW
-    if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-    if (wsgl_use_shaders)
-#endif
-      {
-        glVertexAttrib4f(vCOLOR,
-                         gcolr->val.general.x,
-                         gcolr->val.general.y,
-                         gcolr->val.general.z,
-                         1.0);
-      } else {
-      glColor3f(gcolr->val.general.x,
+    if (wsgl_use_shaders) {
+      glVertexAttrib4f(vCOLOR,
+                       gcolr->val.general.x,
+                       gcolr->val.general.y,
+                       gcolr->val.general.z,
+                       1.0);
+    } else {
+      glColor4f(gcolr->val.general.x,
                 gcolr->val.general.y,
-                gcolr->val.general.z);
+                gcolr->val.general.z,
+                1.0);
     }
     break;
 
   case PMODEL_RGBA:
-#ifdef GLEW
-    if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-    if (wsgl_use_shaders)
-#endif
-      {
+    if (wsgl_use_shaders) {
 #ifdef DEBUGA
-        printf("wsgl_set_gcolr setting %f %f %f %f\n",
-               gcolr->val.general.x,
-               gcolr->val.general.y,
-               gcolr->val.general.z,
-               gcolr->val.general.a
-               );
+      printf("wsgl_set_gcolr setting %f %f %f %f\n",
+             gcolr->val.general.x,
+             gcolr->val.general.y,
+             gcolr->val.general.z,
+             gcolr->val.general.a
+             );
 #endif
-        glVertexAttrib4f(vCOLOR,
-                         gcolr->val.general.x,
-                         gcolr->val.general.y,
-                         gcolr->val.general.z,
-                         gcolr->val.general.a);
-      } else {
+      glVertexAttrib4f(vCOLOR,
+                       gcolr->val.general.x,
+                       gcolr->val.general.y,
+                       gcolr->val.general.z,
+                       gcolr->val.general.a);
+    } else {
       glColor4f(gcolr->val.general.x,
                 gcolr->val.general.y,
                 gcolr->val.general.z,
@@ -523,32 +505,81 @@ void wsgl_set_gcolr(
 }
 
 /*******************************************************************************
+ * wsgl_convert_gcolr
+ *
+ * DESCR:      convert gcolr to target model
+ * RETURNS:    N/A
+ */
+void wsgl_convert_gcolr(
+                      Pgcolr *gcolr,
+                      int model
+                      ){
+  switch (gcolr->type){
+  case PINDIRECT:
+    break;
+  case PMODEL_RGB:
+    if (model == PMODEL_RGBA){
+      gcolr->val.general.a = 1.0;
+      gcolr->type = PMODEL_RGBA;
+    }
+    break;
+  case PMODEL_RGBA:
+    gcolr->type = PMODEL_RGB;
+    break;
+  default:
+    break;
+  }
+}
+
+/*******************************************************************************
  * wsgl_colr_from_gcolr
  *
- * DESCR:	Get colour value from Pgcolr
- * RETURNS:	N/A
+ * DESCR:    Get colour value from Pgcolr
+ * RETURNS:    N/A
  */
 void wsgl_colr_from_gcolr(
                           Pcoval *colr,
-                          Pgcolr *gcolr
+                          Pgcolr *gcolr,
+                          Pint mode
                           )
 {
+  /* mode is the global color mode */
+
+
+  colr->direct.rgba.alpha = 1.0;
+
+  /* check the type of the given color */
   switch(gcolr->type) {
   case PINDIRECT:
     colr->ind = gcolr->val.ind;
     break;
 
   case PMODEL_RGB:
-    colr->direct.rgb.red = gcolr->val.general.x;
-    colr->direct.rgb.green = gcolr->val.general.y;
-    colr->direct.rgb.blue = gcolr->val.general.z;
+    if (mode == PMODEL_RGB){
+      colr->direct.rgb.red = gcolr->val.general.x;
+      colr->direct.rgb.green = gcolr->val.general.y;
+      colr->direct.rgb.blue = gcolr->val.general.z;
+    } else {
+      /* have RGB but want rbga */
+      colr->direct.rgba.red = gcolr->val.general.x;
+      colr->direct.rgba.green = gcolr->val.general.y;
+      colr->direct.rgba.blue = gcolr->val.general.z;
+      colr->direct.rgba.alpha = 1.0;
+    }
     break;
 
   case PMODEL_RGBA:
-    colr->direct.rgba.red = gcolr->val.general.x;
-    colr->direct.rgba.green = gcolr->val.general.y;
-    colr->direct.rgba.blue = gcolr->val.general.z;
-    colr->direct.rgba.alpha = gcolr->val.general.a;
+    if (mode == PMODEL_RGBA){
+      colr->direct.rgba.red = gcolr->val.general.x;
+      colr->direct.rgba.green = gcolr->val.general.y;
+      colr->direct.rgba.blue = gcolr->val.general.z;
+      colr->direct.rgba.alpha = gcolr->val.general.a;
+    } else {
+      /* have RGBA but want RGB */
+      colr->direct.rgb.red = gcolr->val.general.x;
+      colr->direct.rgb.green = gcolr->val.general.y;
+      colr->direct.rgb.blue = gcolr->val.general.z;
+    }
     break;
 
   default:
@@ -559,8 +590,8 @@ void wsgl_colr_from_gcolr(
 /*******************************************************************************
  * wsgl_set_line_ind
  *
- * DESCR:	Setup line index
- * RETURNS:	N/A
+ * DESCR:    Setup line index
+ * RETURNS:    N/A
  */
 void wsgl_set_line_ind(
                        Ws *ws,
@@ -585,8 +616,8 @@ void wsgl_set_line_ind(
 /*******************************************************************************
  * wsgl_setup_line_attr
  *
- * DESCR:	Setup line attributes
- * RETURNS:	N/A
+ * DESCR:    Setup line attributes
+ * RETURNS:    N/A
  */
 void wsgl_setup_line_attr(
                           Ws_attr_st *ast
@@ -634,15 +665,10 @@ void wsgl_setup_line_attr(
   else {
     glLineWidth(ast->bundl_group.line_bundle.width);
   }
-#ifdef GLEW
-  if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-  if (wsgl_use_shaders)
-#endif
-    {
-      glEnable(GL_LINE_SMOOTH);
-      glUniform1i(shading_mode, 0);
-    } else {
+  if (wsgl_use_shaders){
+    glEnable(GL_LINE_SMOOTH);
+    glUniform1i(shading_mode, 0);
+  } else {
     glDisable(GL_LIGHTING);
   }
 }
@@ -650,8 +676,8 @@ void wsgl_setup_line_attr(
 /*******************************************************************************
  * wsgl_set_int_ind
  *
- * DESCR:	Setup interior index
- * RETURNS:	N/A
+ * DESCR:    Setup interior index
+ * RETURNS:    N/A
  */
 void wsgl_set_int_ind(
                       Ws *ws,
@@ -676,8 +702,8 @@ void wsgl_set_int_ind(
 /*******************************************************************************
  * wsgl_get_int_colr
  *
- * DESCR:	Get interior colour
- * RETURNS:	Pointer to interiour colour
+ * DESCR:    Get interior colour
+ * RETURNS:    Pointer to interiour colour
  */
 Pgcolr* wsgl_get_int_colr(
                           Ws_attr_st *ast
@@ -715,8 +741,8 @@ Pgcolr* wsgl_get_int_colr(
 /*******************************************************************************
  * wsgl_get_int_style
  *
- * DESCR:	Get interior style
- * RETURNS:	Interiour style
+ * DESCR:    Get interior style
+ * RETURNS:    Interiour style
  */
 Pint_style wsgl_get_int_style(
                               Ws_attr_st *ast
@@ -737,8 +763,8 @@ Pint_style wsgl_get_int_style(
 /*******************************************************************************
  * wsgl_setup_int_style
  *
- * DESCR:	Setup interior style
- * RETURNS:	N/A
+ * DESCR:    Setup interior style
+ * RETURNS:    N/A
  */
 void wsgl_setup_int_style(
                           Pint_style style
@@ -770,8 +796,8 @@ void wsgl_setup_int_style(
 /*******************************************************************************
  * wsgl_setup_int_attr_nocol
  *
- * DESCR:	Setup interior attributes without color
- * RETURNS:	N/A
+ * DESCR:    Setup interior attributes without color
+ * RETURNS:    N/A
  */
 void wsgl_setup_int_attr_nocol(
                                Ws *ws,
@@ -820,19 +846,14 @@ void wsgl_setup_int_attr_nocol(
     wsgl->dev_st.int_shad_meth = shad_meth;
   }
 
-#ifdef GLEW
-  if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-  if (wsgl_use_shaders)
-#endif
-    {
-      if (wsgl->cur_struct.lighting) {
-        glUniform1i(shading_mode, 1);
-      }
-      else {
-        glUniform1i(shading_mode, 0);
-      }
-    } else {
+  if (wsgl_use_shaders){
+    if (wsgl->cur_struct.lighting) {
+      glUniform1i(shading_mode, 1);
+    }
+    else {
+      glUniform1i(shading_mode, 0);
+    }
+  } else {
     if (wsgl->cur_struct.lighting) {
       glEnable(GL_LIGHTING);
     }
@@ -846,8 +867,8 @@ void wsgl_setup_int_attr_nocol(
 /*******************************************************************************
  * wsgl_setup_int_attr
  *
- * DESCR:	Setup interior attributes
- * RETURNS:	N/A
+ * DESCR:    Setup interior attributes
+ * RETURNS:    N/A
  */
 void wsgl_setup_int_attr(
                          Ws *ws,
@@ -861,8 +882,8 @@ void wsgl_setup_int_attr(
 /*******************************************************************************
  * wsgl_set_edge_ind
  *
- * DESCR:	Setup edge index
- * RETURNS:	N/A
+ * DESCR:    Setup edge index
+ * RETURNS:    N/A
  */
 void wsgl_set_edge_ind(
                        Ws *ws,
@@ -887,8 +908,8 @@ void wsgl_set_edge_ind(
 /*******************************************************************************
  * wsgl_get_edge_flag
  *
- * DESCR:	Get edge flag
- * RETURNS:	Edge flag
+ * DESCR:    Get edge flag
+ * RETURNS:    Edge flag
  */
 Pedge_flag wsgl_get_edge_flag(
                               Ws_attr_st *ast
@@ -908,8 +929,8 @@ Pedge_flag wsgl_get_edge_flag(
 /*******************************************************************************
  * wsgl_get_edge_width
  *
- * DESCR:	Get edge width
- * RETURNS:	Edge width
+ * DESCR:    Get edge width
+ * RETURNS:    Edge width
  */
 Pfloat wsgl_get_edge_width(
                            Ws_attr_st *ast
@@ -930,8 +951,8 @@ Pfloat wsgl_get_edge_width(
 /*******************************************************************************
  * wsgl_setup_edge_attr
  *
- * DESCR:	Setup edge attributes
- * RETURNS:	N/A
+ * DESCR:    Setup edge attributes
+ * RETURNS:    N/A
  */
 void wsgl_setup_edge_attr(
                           Ws_attr_st *ast
@@ -979,20 +1000,20 @@ void wsgl_setup_edge_attr(
 #ifdef GLEW
   if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
 #else
-  if (wsgl_use_shaders)
+    if (wsgl_use_shaders)
 #endif
-    {
-      glUniform1i(shading_mode, 0);
-    } else {
-    glDisable(GL_LIGHTING);
-  }
+      {
+        glUniform1i(shading_mode, 0);
+      } else {
+      glDisable(GL_LIGHTING);
+    }
 }
 
 /*******************************************************************************
  * wsgl_set_marker_ind
  *
- * DESCR:	Setup marker index
- * RETURNS:	N/A
+ * DESCR:    Setup marker index
+ * RETURNS:    N/A
  */
 void wsgl_set_marker_ind(
                          Ws *ws,
@@ -1017,8 +1038,8 @@ void wsgl_set_marker_ind(
 /*******************************************************************************
  * wsgl_setup_marker_attr
  *
- * DESCR:	Setup marker attributes
- * RETURNS:	N/A
+ * DESCR:    Setup marker attributes
+ * RETURNS:    N/A
  */
 void wsgl_setup_marker_attr(
                             Ws_attr_st *ast,
@@ -1047,23 +1068,18 @@ void wsgl_setup_marker_attr(
   else {
     *size = ast->bundl_group.marker_bundle.size;
   }
-#ifdef GLEW
-  if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-    if (wsgl_use_shaders)
-#endif
-      {
-        glUniform1i(shading_mode, 0);
-      } else {
-      glDisable(GL_LIGHTING);
-    }
+  if (wsgl_use_shaders){
+    glUniform1i(shading_mode, 0);
+  } else {
+    glDisable(GL_LIGHTING);
+  }
 }
 
 /*******************************************************************************
  * wsgl_setup_background
  *
- * DESCR:	Setup background colour
- * RETURNS:	N/A
+ * DESCR:    Setup background colour
+ * RETURNS:    N/A
  */
 void wsgl_setup_background(
                            Ws *ws
@@ -1072,18 +1088,13 @@ void wsgl_setup_background(
   Wsgl_handle wsgl = ws->render_context;
   glDisable(GL_POLYGON_STIPPLE);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-#ifdef GLEW
-  if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-  if (wsgl_use_shaders)
-#endif
-    {
-      glVertexAttrib4f(vCOLOR,
-                       wsgl->background.val.general.x,
-                       wsgl->background.val.general.y,
-                       wsgl->background.val.general.z,
-                       wsgl->background.val.general.a);
-    } else {
+  if (wsgl_use_shaders) {
+    glVertexAttrib4f(vCOLOR,
+                     wsgl->background.val.general.x,
+                     wsgl->background.val.general.y,
+                     wsgl->background.val.general.z,
+                     wsgl->background.val.general.a);
+  } else {
     if (ws->current_colour_model == PMODEL_RGBA){
       glColor4f(wsgl->background.val.general.x,
                 wsgl->background.val.general.y,
@@ -1091,9 +1102,10 @@ void wsgl_setup_background(
                 wsgl->background.val.general.a
                 );
     } else {
-      glColor3f(wsgl->background.val.general.x,
+      glColor4f(wsgl->background.val.general.x,
                 wsgl->background.val.general.y,
-                wsgl->background.val.general.z
+                wsgl->background.val.general.z,
+                1.0
                 );
     }
   }
@@ -1104,8 +1116,8 @@ void wsgl_setup_background(
 /*******************************************************************************
  * wsgl_set_text_ind
  *
- * DESCR:	Setup text index
- * RETURNS:	N/A
+ * DESCR:    Setup text index
+ * RETURNS:    N/A
  */
 void wsgl_set_text_ind(
                        Ws *ws,
@@ -1130,8 +1142,8 @@ void wsgl_set_text_ind(
 /*******************************************************************************
  * wsgl_get_text_prec
  *
- * DESCR:	Get text precision
- * RETURNS:	Text precision
+ * DESCR:    Get text precision
+ * RETURNS:    Text precision
  */
 Ptext_prec wsgl_get_text_prec(
                               Ws_attr_st *ast
@@ -1152,8 +1164,8 @@ Ptext_prec wsgl_get_text_prec(
 /*******************************************************************************
  * wsgl_setup_text_attr
  *
- * DESCR:	Setup text attributes
- * RETURNS:	N/A
+ * DESCR:    Setup text attributes
+ * RETURNS:    N/A
  */
 
 void wsgl_setup_text_attr(
@@ -1192,26 +1204,21 @@ void wsgl_setup_text_attr(
     *char_expan = ast->bundl_group.text_bundle.char_expan;
   }
 
-#ifdef GLEW
-   if (wsgl_use_shaders && GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)
-#else
-   if (wsgl_use_shaders)
-#endif
-     {
-       glUniform1i(shading_mode, 0);
-     }
-   else
-     {
-       glDisable(GL_LIGHTING);
-       glLineWidth(2.0);
-     }
+  if (wsgl_use_shaders){
+    glUniform1i(shading_mode, 0);
+  }
+  else
+    {
+      glDisable(GL_LIGHTING);
+      glLineWidth(2.0);
+    }
 }
 
 /*******************************************************************************
  * wsgl_get_char_space
  *
- * DESCR:	Get char spacing
- * RETURNS:	Character spacing
+ * DESCR:    Get char spacing
+ * RETURNS:    Character spacing
  */
 Pfloat wsgl_get_char_space(
                            Ws_attr_st *ast
@@ -1232,8 +1239,8 @@ Pfloat wsgl_get_char_space(
 /*******************************************************************************
  * wsgl_add_names_set
  *
- * DESCR:	Add names to nameset
- * RETURNS:	N/A
+ * DESCR:    Add names to nameset
+ * RETURNS:    N/A
  */
 void wsgl_add_names_set(
                         Ws *ws,
@@ -1255,8 +1262,8 @@ void wsgl_add_names_set(
 /*******************************************************************************
  * wsgl_remove_names_set
  *
- * DESCR:	Remove names from nameset
- * RETURNS:	N/A
+ * DESCR:    Remove names from nameset
+ * RETURNS:  N/A
  */
 void wsgl_remove_names_set(
                            Ws *ws,

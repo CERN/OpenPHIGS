@@ -381,7 +381,7 @@ void wsgl_set_of_fill_area_set3_data_front(
       }
     }
     else if (sofas3.fflag == PFACET_NORMAL) {
-      wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast));
+      wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast), ws->current_colour_model);
       wsgl_setup_int_colr(ws, sofas3.colr_type, &colr, ast);
       for (i = 0; i < sofas3.num_sets; i++) {
         num_lists = sofas3_num_vlists(&sofas3);
@@ -417,7 +417,7 @@ void wsgl_set_of_fill_area_set3_data_front(
       }
     }
     else {
-      wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast));
+      wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast), ws->current_colour_model);
       wsgl_setup_int_colr(ws, sofas3.colr_type, &colr, ast);
       for (i = 0; i < sofas3.num_sets; i++) {
         num_lists = sofas3_num_vlists(&sofas3);
@@ -489,7 +489,7 @@ void wsgl_set_of_fill_area_set3_data_front(
       }
     }
     else {
-      wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast));
+      wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast), ws->current_colour_model);
       wsgl_setup_int_colr(ws, sofas3.colr_type, &colr, ast);
       for (i = 0; i < sofas3.num_sets; i++) {
         num_lists = sofas3_num_vlists(&sofas3);
@@ -574,7 +574,7 @@ void wsgl_set_of_fill_area_set3_data_back(
       }
     }
     else if (sofas3.fflag == PFACET_NORMAL) {
-      wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast));
+      wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast), ws->current_colour_model);
       wsgl_setup_back_int_colr(ws, sofas3.colr_type, &colr, ast);
       for (i = 0; i < sofas3.num_sets; i++) {
         num_lists = sofas3_num_vlists(&sofas3);
@@ -610,7 +610,7 @@ void wsgl_set_of_fill_area_set3_data_back(
       }
     }
     else {
-      wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast));
+      wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast), ws->current_colour_model);
       wsgl_setup_back_int_colr(ws, sofas3.colr_type, &colr, ast);
       for (i = 0; i < sofas3.num_sets; i++) {
         num_lists = sofas3_num_vlists(&sofas3);
@@ -682,7 +682,7 @@ void wsgl_set_of_fill_area_set3_data_back(
       }
     }
     else {
-      wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast));
+      wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast), ws->current_colour_model);
       wsgl_setup_back_int_colr(ws, sofas3.colr_type, &colr, ast);
       for (i = 0; i < sofas3.num_sets; i++) {
         num_lists = sofas3_num_vlists(&sofas3);

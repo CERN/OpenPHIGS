@@ -81,13 +81,11 @@ void wsgl_shaders(Ws * ws){
     fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
     abort();
   }
+  if (! (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)) wsgl_use_shaders = 0;
 #endif
-#ifdef GLEW
-  if (! wsgl_use_shaders || !GLEW_ARB_vertex_shader ||! GLEW_ARB_fragment_shader ||! GLEW_ARB_shader_objects) {
-#else
-  if (! wsgl_use_shaders) {
-#endif
-    fprintf(stderr, "WARNING: Shaders are not available or not wanted.\nSome functionality will not work, e.g. clipping\n");
+
+   if (! wsgl_use_shaders) {
+      fprintf(stderr, "WARNING: Shaders are not available or not wanted.\nSome functionality will not work, e.g. clipping\n");
     glUseProgram(0);
   } else {
     char NewerVersion[] = "1.30";

@@ -364,7 +364,7 @@ void wsgl_fill_area_set3_data_front(
     }
     else if (fasd3.fflag == PFACET_NORMAL) {
       colr_type = wsgl_get_int_colr(ast)->type;
-      wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast));
+      wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast), ws->current_colour_model);
       wsgl_setup_int_colr(ws, colr_type, &colr, ast);
       glNormal3f(fasd3.fdata.norm.delta_x,
                  fasd3.fdata.norm.delta_y,
@@ -404,7 +404,7 @@ void wsgl_fill_area_set3_data_front(
     }
     else {
       colr_type = wsgl_get_int_colr(ast)->type;
-      wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast));
+      wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast), ws->current_colour_model);
       wsgl_setup_int_colr(ws, colr_type, &colr, ast);
       fasd3_normal3(&norm, &fasd3);
       glNormal3f(norm.delta_x, norm.delta_y, norm.delta_z);
@@ -483,7 +483,7 @@ void wsgl_fill_area_set3_data_front(
     }
     else {
       colr_type = wsgl_get_int_colr(ast)->type;
-      wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast));
+      wsgl_colr_from_gcolr(&colr, wsgl_get_int_colr(ast), ws->current_colour_model);
       wsgl_setup_int_colr(ws, colr_type, &colr, ast);
       for (i = 0; i < fasd3.nfa; i++) {
         priv_fill_area3_ptnorms(fasd3.vdata->num_vertices,
@@ -578,7 +578,7 @@ void wsgl_fill_area_set3_data_back(
     }
     else if (fasd3.fflag == PFACET_NORMAL) {
       colr_type = wsgl_get_back_int_colr(ast)->type;
-      wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast));
+      wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast), ws->current_colour_model);
       wsgl_setup_back_int_colr(ws, colr_type, &colr, ast);
       glNormal3f(fasd3.fdata.norm.delta_x,
                  fasd3.fdata.norm.delta_y,
@@ -618,7 +618,7 @@ void wsgl_fill_area_set3_data_back(
     }
     else {
       colr_type = wsgl_get_back_int_colr(ast)->type;
-      wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast));
+      wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast), ws->current_colour_model);
       wsgl_setup_back_int_colr(ws, colr_type, &colr, ast);
       fasd3_normal3(&norm, &fasd3);
       glNormal3f(norm.delta_x, norm.delta_y, norm.delta_z);
@@ -697,7 +697,7 @@ void wsgl_fill_area_set3_data_back(
     }
     else {
       colr_type = wsgl_get_back_int_colr(ast)->type;
-      wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast));
+      wsgl_colr_from_gcolr(&colr, wsgl_get_back_int_colr(ast), ws->current_colour_model);
       wsgl_setup_back_int_colr(ws, colr_type, &colr, ast);
       for (i = 0; i < fasd3.nfa; i++) {
         priv_fill_area3_ptnorms(fasd3.vdata->num_vertices,

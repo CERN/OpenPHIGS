@@ -59,13 +59,14 @@ static GLuint get_light_id(
 {
    GLuint id;
    switch (ind) {
-      case 1:  id = GL_LIGHT1; break;
-      case 2:  id = GL_LIGHT2; break;
-      case 3:  id = GL_LIGHT3; break;
-      case 4:  id = GL_LIGHT4; break;
-      case 5:  id = GL_LIGHT5; break;
-      case 6:  id = GL_LIGHT6; break;
-      case 7:  id = GL_LIGHT7; break;
+      case 1:  id = GL_LIGHT0; break;
+      case 2:  id = GL_LIGHT1; break;
+      case 3:  id = GL_LIGHT2; break;
+      case 4:  id = GL_LIGHT3; break;
+      case 5:  id = GL_LIGHT4; break;
+      case 6:  id = GL_LIGHT5; break;
+      case 7:  id = GL_LIGHT6; break;
+      case 8:  id = GL_LIGHT7; break;
       default: id = GL_LIGHT0; break;
    }
 
@@ -102,6 +103,7 @@ static void setup_ambient_light(
      switch (ind){
      case 0:
        glUniform1i(lightSource0, 0);
+       break;
      case 1:
        glUniform1i(lightSource0, 1);
        glUniform1i(lightSourceTyp0, PLIGHT_AMBIENT);
@@ -172,7 +174,7 @@ static void setup_directional_light(
    pos[0] = rec->dir.delta_x;
    pos[1] = rec->dir.delta_y;
    pos[2] = rec->dir.delta_z;
-   pos[3] = 1.0;
+   pos[3] = 0.0;
 
 #ifdef DEBUGL
    printf("Directional light: %f %f %f @(%f, %f %f)\n",
@@ -186,6 +188,7 @@ static void setup_directional_light(
      switch (ind){
      case 0:
        glUniform1i(lightSource0, 0);
+       break;
      case 1:
        glUniform1i(lightSource0, 1);
        glUniform1i(lightSourceTyp0, PLIGHT_DIRECTIONAL);
@@ -285,6 +288,7 @@ static void setup_positional_light(
      switch (ind){
      case 0:
        glUniform1i(lightSource0, 0);
+       break;
      case 1:
        glUniform1i(lightSource0, 1);
        glUniform1i(lightSourceTyp0, PLIGHT_POSITIONAL);
@@ -341,7 +345,7 @@ static void setup_positional_light(
    } else {
      id = get_light_id(ind);
      glLightfv(id, GL_POSITION, pos);
-     glLightfv(id, GL_SPECULAR, dif);
+     glLightfv(id, GL_DIFFUSE, dif);
      glEnable(id);
    }
 }
@@ -365,7 +369,7 @@ void wsgl_update_light_src_state(
   glLoadIdentity();
 
   /* Activate light sources */
-  for (i = 0; i < WS_MAX_LIGHT_SRC; i++) {
+  for (i = 1; i <= WS_MAX_LIGHT_SRC; i++) {
     if (phg_nset_name_is_set(&wsgl->cur_struct.lightstat, i)) {
 #ifdef DEBUGL
       printf("Setup light source: %d\n", i);
@@ -436,7 +440,7 @@ void wsgl_update_light_src_state(
       }
       }
     }
-   if (!wsgl_use_shaders) glPopMatrix();
+   glPopMatrix();
 }
 
 /*******************************************************************************

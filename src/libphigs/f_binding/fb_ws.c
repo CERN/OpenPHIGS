@@ -1208,17 +1208,24 @@ FTN_SUBROUTINE(pqcr)(
     if (*err_ind == 0){
       switch (buf_size) {
       case 3:
-        *ol = 3;
         cspec[0] = colr_rep.rgb.red;
         cspec[1] = colr_rep.rgb.green;
         cspec[2] = colr_rep.rgb.blue;
         break;
       case 4:
-      default:
+        *ol = 4;
         cspec[0] = colr_rep.rgba.red;
         cspec[1] = colr_rep.rgba.green;
         cspec[2] = colr_rep.rgba.blue;
         cspec[3] = colr_rep.rgba.alpha;
+        break;
+      default:
+        *ol = 0;
+        cspec[0] = 0;
+        cspec[1] = 0;
+        cspec[2] = 0;
+        cspec[3] = 1;
+        printf("Error in pqcr: Given buffer is too small\n");
         break;
       }
     }

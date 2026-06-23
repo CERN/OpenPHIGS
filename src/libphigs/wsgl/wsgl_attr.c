@@ -221,17 +221,16 @@ void wsgl_set_clip_ind(
   Wsgl_handle wsgl = ws->render_context;
   if (wsgl_use_shaders){
     glUniform1i(clipping_ind, ind);
-    if (! wsgl_use_shaders){
-      if (ind == 1) {
-        glEnable(GL_CLIP_PLANE0);
-        glDisable(GL_CLIP_PLANE1);
-      } else if (ind == 2) {
-        glEnable(GL_CLIP_PLANE0);
-        glEnable(GL_CLIP_PLANE1);
-      } else {
-        glDisable(GL_CLIP_PLANE0);
-        glDisable(GL_CLIP_PLANE1);
-      }
+  } else {
+    if (ind == 1) {
+      glEnable(GL_CLIP_PLANE0);
+      glDisable(GL_CLIP_PLANE1);
+    } else if (ind == 2) {
+      glEnable(GL_CLIP_PLANE0);
+      glEnable(GL_CLIP_PLANE1);
+    } else {
+      glDisable(GL_CLIP_PLANE0);
+      glDisable(GL_CLIP_PLANE1);
     }
   }
 }
@@ -273,8 +272,6 @@ void wsgl_set_clip_vol3(
     pt0.y = volume0.point.y;
     pt0.z = volume0.point.z;
 
-    glUniform4f(plane0, nn0.x, nn0.y, nn0.z, 0.);
-    glUniform4f(point0, pt0.x, pt0.y, pt0.z, 0.);
     if (2 ==num){
       /* first plane */
       volume1 = list[1];
@@ -287,18 +284,16 @@ void wsgl_set_clip_vol3(
       pt1.y = volume1.point.y;
       pt1.z = volume1.point.z;
 
-      glUniform4f(plane1, nn1.x, nn1.y, nn1.z, 0.);
-      glUniform4f(point1, pt1.x, pt1.y, pt1.z, 0.);
     }
   };
   if (wsgl_use_shaders) {
     glUniform1i(num_clip_planes, num);
     if (num >= 1){
       glUniform4f(plane0, nn0.x, nn0.y, nn0.z, 0.);
-      glUniform4f(point0, pt0.x, pt0.y, pt0.z, 0.);
+      glUniform4f(point0, pt0.x, pt0.y, pt0.z, 1.);
       if (num == 2){
         glUniform4f(plane1, nn1.x, nn1.y, nn1.z, 0.);
-        glUniform4f(point1, pt1.x, pt1.y, pt1.z, 0.);
+        glUniform4f(point1, pt1.x, pt1.y, pt1.z, 1.);
       }
     } else {
       glUniform1i(num_clip_planes, 0); /* ignore the call */

@@ -13,10 +13,11 @@ uniform vec4 point1;
 
 varying float v_clipDist0;
 varying float v_clipDist1;
-
+varying vec4 VertexPosEye;
 
 void main()
 {
+  VertexPosEye = gl_ModelViewMatrix * gl_Vertex;
   Color = vColor;
   Normal = normalize(ModelViewMatrix * vec4(gl_Normal, 1));
   gl_Position = ProjectionMatrix * ModelViewMatrix * gl_Vertex;

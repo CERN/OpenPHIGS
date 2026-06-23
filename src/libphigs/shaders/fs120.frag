@@ -42,6 +42,7 @@ varying vec4 Normal;
 varying vec4 Color;
 varying float v_clipDist0;
 varying float v_clipDist1;
+varying vec4 VertexPosEye;
 
 /*
  * getLight: returns the RGB contribution of a single light source.
@@ -81,11 +82,13 @@ vec4 getLight(int type, vec4 color, vec4 pos, vec4 coef){
     light = color.rgb * vDiffuse.rgb * angle;
   };
   if (type == 3) {
-    /* specular: NOTE this still uses N.L ("angle"), not a true reflection
-       or half-vector dot product, so it behaves like a sharpened diffuse
-       term rather than a physically-correct specular highlight. Left
-       unchanged from the original behavior; flagging in case you want to
-       revisit it separately. */
+    vec3 V = normalize(-VertexPosEye.xyz);     // view direction, eye space
+    vec3 L = normalize(pos.xyz);               // light direction (already what you compute angle from)
+    vec3 N = normalize(Normal.xyz);
+    vec3 R = reflect(-L, N);
+    float specAngle = max(dot(R, V), 0.0);
+    refl = coef.x * pow(specAngle, coef.y);
+    light = vSpecular.rgb * refl;
     refl = coef.x * pow(angle, coef.y);
     light = vSpecular.rgb * refl;
   };

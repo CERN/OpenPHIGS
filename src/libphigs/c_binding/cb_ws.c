@@ -2257,10 +2257,10 @@ void pxset_color_map(Pint ws_id){
           rep.rgba.green = gcolr.val.general.y;
           rep.rgba.blue  = gcolr.val.general.z;
           rep.rgba.alpha = def_alpha[j];
-          //#ifdef DEBUGA
+#ifdef DEBUGA
           printf("Re-defining color index %d as RGBA %f %f %f %f\n",
                  i+200*j, rep.rgba.red, rep.rgba.green, rep.rgba.blue, rep.rgba.alpha);
-          //#endif
+#endif
           pset_colr_rep(ws_id, i+200*j, &rep);
         }
         break;

@@ -491,7 +491,7 @@ void wsgl_convert_gcolr(
     }
     break;
   case PMODEL_RGBA:
-    gcolr->type = PMODEL_RGB;
+    if (model == PMODEL_RGB) gcolr->type = PMODEL_RGB;
     break;
   default:
     break;

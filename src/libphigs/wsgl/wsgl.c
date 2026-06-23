@@ -737,6 +737,11 @@ void wsgl_render_element(
     phg_get_colr_ind(ws,
                      &wsgl->cur_struct.ast.indiv_group.int_bundle.colr,
                      PHG_INT(el));
+    break;
+  case PELEM_BACK_INT_COLR_IND:
+    phg_get_colr_ind(ws,
+                     &wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr,
+                     PHG_INT(el));
 #ifdef DEBUGA
     printf("Col Indx %d type %d alpha %f\n",
            PHG_INT(el),
@@ -1000,8 +1005,10 @@ void wsgl_render_element(
   case PELEM_FILL_AREA3:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
+      printf("Fill area3: style %d\n", style);
       if ((wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON || wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON_NZ)  && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
+          printf("Fill area3: clearing\n");
           wsgl_clear_area3(ws, ELMT_CONTENT(el), &wsgl->cur_struct.ast);
         }
       }

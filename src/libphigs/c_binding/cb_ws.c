@@ -2199,8 +2199,8 @@ void pxset_color_map(Pint ws_id){
   Pcolr_rep rep;
   Ws_handle wsh;
   Pgcolr gcolr;
-  Pfloat def_alpha[n];
-  memcpy(def_alpha, (float[]) { 1.0, 0.7, 0.5, 0.3, 0.1}, sizeof def_alpha);
+  Pfloat def_alpha[n+1];
+  memcpy(def_alpha, (float[]) { 1.0, 0.8, 0.6, 0.4, 0.3, 0.1}, sizeof def_alpha);
 
   wsh = PHG_WSID(ws_id);
   switch (wsh->current_colour_model){
@@ -2223,7 +2223,7 @@ void pxset_color_map(Pint ws_id){
     }
     break;
   case PMODEL_RGBA:
-    for (i=0; i<n+1; i++){
+    for (i=0; i<=n; i++){
       index = 0;
       for (j=0; j<n; j++){
         for (k=0; k<n; k++){
@@ -2244,25 +2244,25 @@ void pxset_color_map(Pint ws_id){
       }
     }
     /* Redefine any existing colors with transparency */
-    for (i=0;i<16;i++){
+    for (i=0;i<=16;i++){
       phg_get_colr_ind(wsh, &gcolr, i);
       switch (gcolr.type){
       case PINDIRECT:
+        break;
       case PMODEL_RGB:
         break;
       case PMODEL_RGBA:
-        for (j=1;j<n;j++){
+        for (j=1;j<=n;j++){
           rep.rgba.red   = gcolr.val.general.x;
           rep.rgba.green = gcolr.val.general.y;
           rep.rgba.blue  = gcolr.val.general.z;
           rep.rgba.alpha = def_alpha[j];
-#ifdef DEBUGA
+          //#ifdef DEBUGA
           printf("Re-defining color index %d as RGBA %f %f %f %f\n",
                  i+200*j, rep.rgba.red, rep.rgba.green, rep.rgba.blue, rep.rgba.alpha);
-#endif
+          //#endif
           pset_colr_rep(ws_id, i+200*j, &rep);
         }
-        break;
         break;
       default:
 #ifdef DEBUGA

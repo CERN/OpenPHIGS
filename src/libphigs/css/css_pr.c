@@ -141,6 +141,7 @@ void phg_css_print_eldata(El_handle elptr, int arflag)
   case PELEM_INT_REFL_EQN:
   case PELEM_BACK_INT_REFL_EQN:
   case PELEM_EDGETYPE:
+  case PELEM_BACK_INT_COLR_IND:
     fprintf(stderr, "%d", PHG_INT(elptr));
     break;
   case PELEM_EDGEWIDTH:
@@ -255,7 +256,7 @@ void css_print_eltype(Pelem_type eltype)
   case PELEM_GSE: name = "PELEM_GSE"; break;
   case PELEM_ALPHA_CHANNEL: name = "PELEM_ALPHA_CHANNEL"; break;
   case PELEM_INT_REFL_MODEL: name = "PELEM_INT_REFL_MODEL"; break;
-
+  case PELEM_BACK_INT_COLR_IND: name ="PELEM_BACK_INT_COLR_IND"; break;
   default:
     fprintf(stderr, "UNKNOWN TYPE: %d\n", eltype);
     break;

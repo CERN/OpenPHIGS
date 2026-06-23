@@ -251,6 +251,7 @@ extern "C" {
     PELEM_ALPHA_CHANNEL,
     PELEM_TEXT3,
     PELEM_INT_REFL_MODEL,     //80
+    PELEM_BACK_INT_COLR_IND,
     PELEM_NUM_EL_TYPES
   } Pelem_type;
 
@@ -2519,6 +2520,16 @@ extern "C" {
   void pset_int_colr_ind(
                          Pint colr_ind
                          );
+
+  /*******************************************************************************
+   * pset_back_int_colr_ind
+   *
+   * DESCR:   Creates a new element - Facet Back Color Attribute
+   * RETURNS:   N/A
+   */
+  void pset_back_int_colr_ind(
+                              Pint colr_ind
+                              );
 
   /*******************************************************************************
    * pset_int_style

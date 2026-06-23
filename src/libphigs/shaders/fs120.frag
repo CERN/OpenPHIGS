@@ -40,8 +40,6 @@ uniform vec4 lightSourcePos6;
 uniform vec4 lightSourceCoef6;
 varying vec4 Normal;
 varying vec4 Color;
-varying float v_clipDist0;
-varying float v_clipDist1;
 varying vec4 VertexPosEye;
 
 /*
@@ -98,8 +96,6 @@ vec4 getLight(int type, vec4 color, vec4 pos, vec4 coef){
 void main()
 {
   int i;
-  /* clipping */
-  if (v_clipDist0 < 0.0 || v_clipDist1 < 0.0) discard;
   if (ShadingMode > 0) {
     int n = 0;
     gl_FragColor = vec4(0., 0., 0., 0.);

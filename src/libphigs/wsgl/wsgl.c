@@ -1328,7 +1328,9 @@ void wsgl_render_element(
     break;
 
   case PELEM_MODEL_CLIP_VOL3:
-    wsgl_set_clip_vol3(ws, (char*)ELMT_CONTENT(el));
+    wsgl_set_clip_vol3(ws,
+                       (char*)ELMT_CONTENT(el),
+                       wsgl->cur_struct.view_rep.map_matrix);
     break;
 
   case PELEM_ALPHA_CHANNEL:

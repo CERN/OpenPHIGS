@@ -490,7 +490,8 @@ extern "C" {
 
   void wsgl_set_clip_vol3(
                           Ws *ws,
-                          char * data
+                          char * data,
+                          Pmatrix3 ModelviewMatrix
                           );
 
   /*******************************************************************************

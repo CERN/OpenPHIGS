@@ -48,7 +48,7 @@ add_definitions(-g)
 # add_definitions(-DDEBUG)
 # add_definitions(-DDEBUGL)
 # add_definitions(-DDEBUGINP)
-
+#add_definitions(-DDEBUGCL)
 #
 # use Motif widgets rather than Xaw
 add_definitions(-DMOTIF)

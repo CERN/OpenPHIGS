@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #ifdef GLEW
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -35,9 +36,6 @@
 #include "ws.h"
 #include "private/wsglP.h"
 
-extern GLint clipping_ind, num_clip_planes;
-extern GLint plane0, point0;
-extern GLint plane1, point1;
 extern GLint shading_mode;
 extern GLint ModelViewMatrix, ProjectionMatrix;
 extern GLint alpha_channel;
@@ -239,7 +237,8 @@ void wsgl_set_clip_ind(
  */
 void wsgl_set_clip_vol3(
                         Ws *ws,
-                        char * el_data
+                        char * el_data,
+                        Pmatrix3 ModelviewMatrix
                         )
 {
   Phg_ret ret;
@@ -247,46 +246,100 @@ void wsgl_set_clip_vol3(
   int * int_data = (int*) el_data;
   Phalf_space3 * list;
   Phalf_space3 volume0, volume1;
-  Ppoint3 nn0, pt0; /* first plane */
-  Ppoint3 nn1, pt1; /* second plane if any */
-  Ppoint3 vol3, point3, pwc;
-  Pmatrix3  vrc2wc, unity;
-  // FIXME check against what the standard says
+  Ppoint4 norm3;
+  Ppoint4 nn0, nn1;
+  Ppoint3 vol3;
+  Ppoint3 pt0, pt1; /* second plane if any */
+  Pmatrix3 wc2evnorm, wc2ev2;
+
+  /* for norms, invert and transpose */
+  phg_mat_copy(wc2evnorm, ModelviewMatrix);
+  phg_mat_copy(wc2ev2, ModelviewMatrix);
+
+  phg_mat_inv(wc2evnorm);
+  phg_mat_transpose(wc2evnorm);
+
   op = int_data[0];
   num = int_data[1];
   list = (Phalf_space3 *)(&int_data[2]);
   if (num >=1 && num <=2){
-    /* invert to transform from VRC to WC */
     /* first plane */
     volume0 = list[0];
-    /* take a local copy of the data */
-    nn0.x = volume0.norm.delta_x;
-    nn0.y = volume0.norm.delta_y;
-    nn0.z = volume0.norm.delta_z;
 
-    pt0.x = volume0.point.x;
-    pt0.y = volume0.point.y;
-    pt0.z = volume0.point.z;
+    vol3.x = volume0.point.x;
+    vol3.y = volume0.point.y;
+    vol3.z = volume0.point.z;
+    phg_tranpt3(&vol3, wc2ev2, &pt0);
+
+    norm3.x = volume0.norm.delta_x;
+    norm3.y = volume0.norm.delta_y;
+    norm3.z = volume0.norm.delta_z;
+    norm3.w = 0.0;
+    phg_tranvec4(&norm3, wc2evnorm, &nn0);
+
+    /* normalise */
+    float len=sqrt(nn0.x*nn0.x+nn0.y*nn0.y+nn0.z*nn0.z);
+    if (len>0){
+      nn0.x = nn0.x/len;
+      nn0.y = nn0.y/len;
+      nn0.z = nn0.z/len;
+    }
+#ifdef DEBUGCL
+    printf("Plane0: norm in %f %f %f %flength %f\n",
+           norm3.x, norm3.y, norm3.z, norm3.w, sqrt(norm3.x*norm3.x+norm3.y*norm3.y+norm3.z*norm3.z));
+    printf("Plane0: norm out %f %f %f %f length %f\n",
+           nn0.x, nn0.y, nn0.z, nn0.w, sqrt(nn0.x*nn0.x+nn0.y*nn0.y+nn0.z*nn0.z));
+    printf("Plane0: point in %f %f %f length %f\n",
+           vol3.x, vol3.y, vol3.z, sqrt(vol3.x*vol3.x+vol3.y*vol3.y+vol3.z*vol3.z));
+    printf("Plane0: point out %f %f %f length %f\n",
+           pt0.x, pt0.y, pt0.z, sqrt(pt0.x*pt0.x+pt0.y*pt0.y+pt0.z*pt0.z));
+#endif
 
     if (2 ==num){
       /* first plane */
       volume1 = list[1];
       /* take a local copy of the data */
-      nn1.x = volume1.norm.delta_x;
-      nn1.y = volume1.norm.delta_y;
-      nn1.z = volume1.norm.delta_z;
+      vol3.x = volume1.point.x;
+      vol3.y = volume1.point.y;
+      vol3.z = volume1.point.z;
+      phg_tranpt3(&vol3, wc2ev2, &pt1);
 
-      pt1.x = volume1.point.x;
-      pt1.y = volume1.point.y;
-      pt1.z = volume1.point.z;
+      norm3.x = volume1.norm.delta_x;
+      norm3.y = volume1.norm.delta_y;
+      norm3.z = volume1.norm.delta_z;
+      norm3.w = 0.0;
+      phg_tranvec4(&norm3, wc2evnorm, &nn1);
+
+      float len=sqrt(nn1.x*nn1.x+nn1.y*nn1.y+nn1.z*nn1.z);
+      if (len>0){
+        nn1.x = nn1.x/len;
+        nn1.y = nn1.y/len;
+        nn1.z = nn1.z/len;
+      }
+#ifdef DEBUGCL
+      printf("Plane1: norm in %f %f %f %flength %f\n",
+             norm3.x, norm3.y, norm3.z, norm3.w, sqrt(norm3.x*norm3.x+norm3.y*norm3.y+norm3.z*norm3.z));
+      printf("Plane1: norm out %f %f %f %f length %f\n",
+             nn1.x, nn1.y, nn1.z, nn1.w, sqrt(nn1.x*nn1.x+nn1.y*nn1.y+nn1.z*nn1.z));
+      printf("Plane1: point in %f %f %f length %f\n",
+             vol3.x, vol3.y, vol3.z, sqrt(vol3.x*vol3.x+vol3.y*vol3.y+vol3.z*vol3.z));
+      printf("Plane1: point out %f %f %f length %f\n",
+             pt1.x, pt1.y, pt1.z, sqrt(pt1.x*pt1.x+pt1.y*pt1.y+pt1.z*pt1.z));
+#endif
 
     }
-  };
-  if (num >1){
-    GLdouble eqn0[4] = {nn0.x, nn0.y, nn0.z, 0.};
+  }
+  if (num >=1 ){
+    GLdouble eqn0[4] = {
+      nn0.x, nn0.y, nn0.z,
+      -(nn0.x * pt0.x + nn0.y * pt0.y + nn0.z * pt0.z)
+    };
     glClipPlane(GL_CLIP_PLANE0, eqn0);
     if (num == 2){
-      GLdouble eqn1[4] = {nn1.x, nn1.y, nn1.z, 0.};
+      GLdouble eqn1[4] = {
+        nn1.x, nn1.y, nn1.z,
+        -(nn1.x * pt1.x + nn1.y * pt1.y + nn1.z * pt1.z)
+      };
       glClipPlane(GL_CLIP_PLANE1, eqn1);
     }
   }

@@ -36,9 +36,6 @@
 #include "private/wsglP.h"
 
 GLint vertex_shader, fragment_shader;
-GLint clipping_ind, num_clip_planes;
-GLint plane0, point0;
-GLint plane1, point1;
 GLint shading_mode;
 GLint vAmbient, vDiffuse, vSpecular, vPositional;
 GLint ModelViewMatrix, ProjectionMatrix;
@@ -85,7 +82,7 @@ void wsgl_shaders(Ws * ws){
 #endif
 
    if (! wsgl_use_shaders) {
-      fprintf(stderr, "WARNING: Shaders are not available or not wanted.\nSome functionality will not work, e.g. clipping\n");
+      fprintf(stderr, "WARNING: Shaders are not available or not wanted.\nSome functionality may not work as expected.\n");
     glUseProgram(0);
   } else {
     char NewerVersion[] = "1.30";
@@ -105,15 +102,15 @@ void wsgl_shaders(Ws * ws){
     }
     if (strcmp(ShaderVersion, NewerVersion) < 0 ){
       printf("[WARNING] Shader version is %s\n", ShaderVersion);
-      printf("Detected NVIDIA card. Recommend 1.20 for vertex and fragment shaders\n");
+      printf("Detected NVIDIA card.\n");
     } else {
       if (strcmp(Vendor, "NVIDIA Corporation") == 0){
-        printf("Detected NVIDIA card. Recommend 1.30 for vertex and fragment shaders\n");
+        printf("Detected NVIDIA card.\n");
       } else if (strcmp(Vendor, "Intel") == 0) {
-        printf("Detected Intel card. Recommend to use 1.20 for vertex and 1.30 for fragment shader\n");
+        printf("Detected Intel card.\n");
       } else {
-        printf("Unknown vendor card. Recommend to try 1.30 for vertex and 1.30 for fragment shader\n");
-        printf("If that does not work, use 1.20 or switch off shaders via the configuration file\n");
+        printf("Unknown vendor card.\n");
+        printf("Using default shaders version 1.20\n");
       }
     }
     printf("[INFO] Using shader version %d for vertex shader\n", wsgl_vert_shader_version);
@@ -177,17 +174,6 @@ void wsgl_shaders(Ws * ws){
     vPositional = glGetUniformLocation(ws->program, "vPositional");
     // set some default color
     glVertexAttrib4f(vCOLOR, 0.5, 0.5, 0.5, 1.0);
-    // init clipping
-    num_clip_planes = glGetUniformLocation(ws->program, "num_clip_planes");
-    clipping_ind = glGetUniformLocation(ws->program, "clipping_ind");
-    glDisable(GL_CLIP_PLANE0);
-    glDisable(GL_CLIP_PLANE1);
-    glUniform1i(clipping_ind, 0);
-    glUniform1i(num_clip_planes, 2);
-    plane0 = glGetUniformLocation(ws->program, "plane0");
-    point0 = glGetUniformLocation(ws->program, "point0");
-    plane1 = glGetUniformLocation(ws->program, "plane1");
-    point1 = glGetUniformLocation(ws->program, "point1");
     // shading mode
     shading_mode = glGetUniformLocation(ws->program, "ShadingMode");
     // light sources

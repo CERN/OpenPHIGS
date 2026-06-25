@@ -59,10 +59,10 @@ int phg_tranpt3(Ppoint3 *p, Pmatrix3 m, Ppoint3 *r);
 int phg_tranpts3(Pmatrix3 m, int n, Ppoint3 *p, Ppoint3 *r);
 void phg_tranpt4(Ppoint4 *p, Pmatrix3 m, Ppoint4 *r);
 void phg_tranpts4(Pmatrix3 m, int n, Ppoint4 *p, Ppoint4 *r);
+void phg_tranvec4(Ppoint4 *v, Pmatrix3 m, Ppoint4 *r);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
 #endif /* _mat_h */
-

@@ -118,8 +118,8 @@ C----- Input classes
       PARAMETER (PEXPOS=10,PRSIZE=11,PENWIN=12,PEXWIN=13)
 
 C---- Colour model, Color type
-      INTEGER PIND, PINDIR, PRGB
-      PARAMETER (PIND=0, PINDIR=0, PRGB=1)
+      INTEGER PIND, PINDIR, PRGB, PRGBA
+      PARAMETER (PIND=0, PINDIR=0, PRGB=1, PRGBA=2)
 
 C---- Search direction
       INTEGER PBWD, PFWD

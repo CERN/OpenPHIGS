@@ -702,6 +702,40 @@ void pset_int_colr_ind(
 }
 
 /*******************************************************************************
+ * pset_back_int_colr_ind
+ *
+ * DESCR:   Creates a new element - Facet Back Color Attribute
+ * RETURNS:   N/A
+ */
+void pset_back_int_colr_ind(
+                       Pint colr_ind
+                       )
+{
+  Phg_args_add_el args;
+
+  if (phg_entry_check(PHG_ERH, ERR5, Pfn_set_back_int_colr_ind)) {
+    if (PSL_STRUCT_STATE(PHG_PSL) != PSTRUCT_ST_STOP) {
+      ERR_REPORT(PHG_ERH, ERR5);
+    }
+    else if (colr_ind < 0) {
+      ERR_REPORT(PHG_ERH, ERR113);
+    }
+    else {
+      args.el_type = PELEM_BACK_INT_COLR_IND;
+      args.el_size = sizeof(Pint);
+      if (!PHG_SCRATCH_SPACE(&PHG_SCRATCH, args.el_size)) {
+        ERR_REPORT(PHG_ERH, ERR900);
+      }
+      else {
+        args.el_data = PHG_SCRATCH.buf;
+        memcpy(args.el_data, &colr_ind, args.el_size);
+        phg_add_el(PHG_CSS, &args);
+      }
+    }
+  }
+}
+
+/*******************************************************************************
  * pset_int_style
  *
  * DESCR:   Creates a new element - Face Interiour Style

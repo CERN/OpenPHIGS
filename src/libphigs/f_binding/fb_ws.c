@@ -1,24 +1,24 @@
 /******************************************************************************
-*   Do NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
-*
-*   This file is part of Open PHIGS
-*   Copyright (C) 2014 Surplus Users Ham Society
-*
-*   Open PHIGS is free software: you can redistribute it and/or modify
-*   it under the terms of the GNU Lesser General Public License as published by
-*   the Free Software Foundation, either version 2.1 of the License, or
-*   (at your option) any later version.
-*
-*   Open PHIGS is distributed in the hope that it will be useful,
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*   GNU Lesser General Public License for more details.
-*
-*   You should have received a copy of the GNU Lesser General Public License
-*   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
-******************************************************************************
-* Changes:   Copyright (C) 2022-2023 CERN
-******************************************************************************/
+ *   Do NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
+ *
+ *   This file is part of Open PHIGS
+ *   Copyright (C) 2014 Surplus Users Ham Society
+ *
+ *   Open PHIGS is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Lesser General Public License as published by
+ *   the Free Software Foundation, either version 2.1 of the License, or
+ *   (at your option) any later version.
+ *
+ *   Open PHIGS is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Lesser General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public License
+ *   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************
+ * Changes:   Copyright (C) 2022-2023 CERN
+ ******************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -165,10 +165,14 @@ FTN_SUBROUTINE(popwk)(
       }
       /* predefine some colors */
       pxset_color_map(ws_id);
-      /* set background as specified in configuration file */
-      pset_colr_rep(ws_id, 0, &(config[ws_id].background_color));
       /* init output file name */
       wsh = PHG_WSID(ws_id);
+      /* set background as specified in configuration file */
+      if (wsh->current_colour_model == PMODEL_RGBA){
+        pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgba));
+      } else {
+        pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgb));
+      }
       if (strlen(config[ws_id].filename) == 0){
         sprintf(filename, "fort.%d", lun);
         strncpy(wsh->filename, filename, strlen(filename));
@@ -220,6 +224,23 @@ FTN_SUBROUTINE(ppost)(
 }
 
 /*******************************************************************************
+ * pscm
+ *
+ * DESCR:       Set colour model
+ * RETURNS:     N/A
+ */
+
+FTN_SUBROUTINE(pscm)(
+                     FTN_INTEGER(wkid),
+                     FTN_INTEGER(cmodel)
+                     )
+{
+  Pint ws_id = FTN_INTEGER_GET(wkid);
+  Pint model = FTN_INTEGER_GET(cmodel);
+  pset_colr_model(ws_id, model);
+}
+
+/*******************************************************************************
  * pscr
  *
  * DESCR:       Set colour representation
@@ -236,17 +257,47 @@ FTN_SUBROUTINE(pscr)(
   Pint ws_id = FTN_INTEGER_GET(wkid);
   Pint ind = FTN_INTEGER_GET(ci);
   Pint ncc = FTN_INTEGER_GET(nccs);
+  Pint color_model;
   Pcolr_rep rep;
+  Ws *wsh;
+  wsh = PHG_WSID(ws_id);
+  color_model = wsh->current_colour_model;
 #ifdef DEBUG
   printf("DEBUG: PSCR workstation color representation %d\n", *wkid);
 #endif
-  if (ncc == 3) {
+  if (ncc<3 || ncc>4){
+    printf("WARNING: PSCR not enough or too many color components %d. Ignoring function.\n", ncc);
+  };
+  switch (color_model) {
+  case PMODEL_RGB:
     rep.rgb.red   = FTN_REAL_ARRAY_GET(cspec, 0);
     rep.rgb.green = FTN_REAL_ARRAY_GET(cspec, 1);
     rep.rgb.blue  = FTN_REAL_ARRAY_GET(cspec, 2);
-  }
-  else {
+    break;
+  case PMODEL_RGBA:
+    rep.rgba.red   = FTN_REAL_ARRAY_GET(cspec, 0);
+    rep.rgba.green = FTN_REAL_ARRAY_GET(cspec, 1);
+    rep.rgba.blue  = FTN_REAL_ARRAY_GET(cspec, 2);
+    if (ncc == 4) {
+      rep.rgba.alpha = FTN_REAL_ARRAY_GET(cspec, 3);
+    } else {
+      printf("INFO: psrc no alpha component specified in RGBA mode. Using 1.\n");
+      rep.rgba.alpha = 1,0;
+    };
+#ifdef DEBUGA
+    printf("INFO: psrc set color RGBA %f%f %f %f\n",
+           rep.rgba.red,
+           rep.rgba.green,
+           rep.rgba.blue,
+           rep.rgba.alpha
+           );
+#endif
+    break;
+  case PINDIRECT:
     rep.rgb.red = rep.rgb.green = rep.rgb.blue = FTN_REAL_ARRAY_GET(cspec, 0);
+    break;
+  default:
+    printf("WARNING: Unknown color model %d. Ignoring function.\n", color_model);
   }
   pset_colr_rep(ws_id, ind, &rep);
 }
@@ -896,9 +947,9 @@ FTN_SUBROUTINE(pqwkpo)(
                        )
 {
   /*
-This needs to loop over all work stations and all their posted structures, and if the given structure is found,
-remember that WKID and the number of matches we had. Then we return the WKID of the N'th match in wkid and the number of matches in ol
-FIXME: this one does not seem to find anything for some reason.
+    This needs to loop over all work stations and all their posted structures, and if the given structure is found,
+    remember that WKID and the number of matches we had. Then we return the WKID of the N'th match in wkid and the number of matches in ol
+    FIXME: this one does not seem to find anything for some reason.
 
   */
   Pint struct_id = FTN_INTEGER_GET(strid);
@@ -1155,10 +1206,28 @@ FTN_SUBROUTINE(pqcr)(
   if (buf_size >= 3){
     pinq_colr_rep(ws_id, colr_ind, type, err_ind, &colr_rep);
     if (*err_ind == 0){
-      *ol = 3;
-      cspec[0] = colr_rep.rgb.red;
-      cspec[1] = colr_rep.rgb.green;
-      cspec[2] = colr_rep.rgb.blue;
+      switch (buf_size) {
+      case 3:
+        cspec[0] = colr_rep.rgb.red;
+        cspec[1] = colr_rep.rgb.green;
+        cspec[2] = colr_rep.rgb.blue;
+        break;
+      case 4:
+        *ol = 4;
+        cspec[0] = colr_rep.rgba.red;
+        cspec[1] = colr_rep.rgba.green;
+        cspec[2] = colr_rep.rgba.blue;
+        cspec[3] = colr_rep.rgba.alpha;
+        break;
+      default:
+        *ol = 0;
+        cspec[0] = 0;
+        cspec[1] = 0;
+        cspec[2] = 0;
+        cspec[3] = 1;
+        printf("Error in pqcr: Given buffer is too small\n");
+        break;
+      }
     }
   } else {
     *err_ind = 1;
@@ -1271,10 +1340,17 @@ FTN_SUBROUTINE(pslsr)(
   switch (type) {
   case PLIGHT_AMBIENT:
     amblight.colr.type = col_type;
-    if (col_type == PINDIRECT){
+    switch (col_type){
+    case PINDIRECT:
       amblight.colr.val.ind = col_indx;
-    } else {
+      break;
+    case PMODEL_RGB:
       memcpy(&amblight.colr.val.general.x, &fhere[0], 3*sizeof(Pfloat));
+      amblight.colr.val.general.a = 1.0;
+      break;
+    case PMODEL_RGBA:
+      memcpy(&amblight.colr.val.general.x, &fhere[0], 4*sizeof(Pfloat));
+      break;
     }
     light_src_rep.type = type;
     light_src_rep.rec.ambient = amblight;
@@ -1283,10 +1359,17 @@ FTN_SUBROUTINE(pslsr)(
   case PLIGHT_DIRECTIONAL:
     dirlight.colr.type = col_type;
     memcpy(&dirlight.dir.delta_x, &fhere[0], 3*sizeof(Pfloat));
-    if (col_type == PINDIRECT){
+    switch (col_type){
+    case PINDIRECT:
       dirlight.colr.val.ind = col_indx;
-    } else {
+      break;
+    case PMODEL_RGB:
       memcpy(&dirlight.colr.val.general.x, &fhere[3], 3*sizeof(Pfloat));
+      dirlight.colr.val.general.a = 1.0;
+      break;
+    case PMODEL_RGBA:
+      memcpy(&dirlight.colr.val.general.x, &fhere[3], 4*sizeof(Pfloat));
+      break;
     }
     light_src_rep.type = type;
     light_src_rep.rec.directional = dirlight;
@@ -1296,10 +1379,17 @@ FTN_SUBROUTINE(pslsr)(
     poslight.colr.type = col_type;
     memcpy(&poslight.pos.x, &fhere[0], 3*sizeof(Pfloat));
     memcpy(&poslight.coef, &fhere[3], 2*sizeof(Pfloat));
-    if (col_type == PINDIRECT){
+    switch (col_type){
+    case PINDIRECT:
       poslight.colr.val.ind = col_indx;
-    } else {
+      break;
+    case PMODEL_RGB:
       memcpy(&poslight.colr.val.general.x, &fhere[5], 3*sizeof(Pfloat));
+      poslight.colr.val.general.a = 1.0;
+      break;
+    case PMODEL_RGBA:
+      memcpy(&poslight.colr.val.general.x, &fhere[5], 4*sizeof(Pfloat));
+      break;
     }
     light_src_rep.type = type;
     light_src_rep.rec.positional = poslight;

@@ -1,24 +1,24 @@
 /******************************************************************************
-*   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
-*
-*   This file is part of Open PHIGS
-*   Copyright (C) 2014 Surplus Users Ham Society
-*
-*   Open PHIGS is free software: you can redistribute it and/or modify
-*   it under the terms of the GNU Lesser General Public License as published by
-*   the Free Software Foundation, either version 2.1 of the License, or
-*   (at your option) any later version.
-*
-*   Open PHIGS is distributed in the hope that it will be useful,
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*   GNU Lesser General Public License for more details.
-*
-*   You should have received a copy of the GNU Lesser General Public License
-*   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
-******************************************************************************
-* Changes:   Copyright (C) 2022-2023 CERN
-******************************************************************************/
+ *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
+ *
+ *   This file is part of Open PHIGS
+ *   Copyright (C) 2014 Surplus Users Ham Society
+ *
+ *   Open PHIGS is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Lesser General Public License as published by
+ *   the Free Software Foundation, either version 2.1 of the License, or
+ *   (at your option) any later version.
+ *
+ *   Open PHIGS is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Lesser General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public License
+ *   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************
+ * Changes:   Copyright (C) 2022-2023 CERN
+ ******************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,15 +46,18 @@
 #include "private/sofas3P.h"
 
 short int wsgl_use_shaders = 1;
-#define LOG_INT(DATA) \
-   css_print_eltype(ELMT_HEAD(DATA)->elementType); \
-   printf(":\tSIZE: %d\t", ELMT_HEAD(DATA)->length); \
-   printf("CONTENT: %d\n", PHG_INT(DATA));
+short int wsgl_vert_shader_version = 120;
+short int wsgl_frag_shader_version = 120;
 
-#define LOG_FLOAT(DATA) \
-   css_print_eltype(ELMT_HEAD(DATA)->elementType); \
-   printf(":\tSIZE: %d\t", ELMT_HEAD(DATA)->length); \
-   printf("CONTENT: %f\n", PHG_FLOAT(DATA));
+#define LOG_INT(DATA)                                   \
+  css_print_eltype(ELMT_HEAD(DATA)->elementType);       \
+  printf(":\tSIZE: %d\t", ELMT_HEAD(DATA)->length);     \
+  printf("CONTENT: %d\n", PHG_INT(DATA));
+
+#define LOG_FLOAT(DATA)                                 \
+  css_print_eltype(ELMT_HEAD(DATA)->elementType);       \
+  printf(":\tSIZE: %d\t", ELMT_HEAD(DATA)->length);     \
+  printf("CONTENT: %f\n", PHG_FLOAT(DATA));
 
 /*******************************************************************************
  * wsgl_init
@@ -82,11 +85,12 @@ int wsgl_init(
     return FALSE;
   }
 #ifdef DEBUG
-  printf("wsgl_init: background color type %d (%f %f %f)\n",
+  printf("wsgl_init: background color type %d (%f %f %f %f)\n",
          background->type,
          background->val.general.x,
          background->val.general.y,
-         background->val.general.z
+         background->val.general.z,
+         background->val.general.a
          );
 #endif
   phg_nset_init(&wsgl->cur_struct.ast.asf_nameset,
@@ -210,16 +214,21 @@ void wsgl_clear(
     wsgl->background.val.general.x = gcolr.val.general.x;
     wsgl->background.val.general.y = gcolr.val.general.y;
     wsgl->background.val.general.z = gcolr.val.general.z;
+    wsgl->background.val.general.a = gcolr.val.general.a;
   } else {
     wsgl->background.val.general.x = 0.;
     wsgl->background.val.general.y = 0.;
     wsgl->background.val.general.z = 0.;
+    wsgl->background.val.general.a = 1.;
 #ifdef DEBUG
     printf("INFO: background color index 0 not defined. Using default black.\n");
 #endif
   }
 #ifdef DEBUG
-  printf("wsgl_setup_background: Setting background to (%f %f %f)\n",  gcolr.val.general.x,gcolr.val.general.y,gcolr.val.general.z);
+  printf("wsgl_setup_background: Setting background to (%f %f %f %f)\n",
+         gcolr.val.general.x,gcolr.val.general.y,gcolr.val.general.z,
+         gcolr.val.general.a
+         );
 #endif
   if (ws->drawable_id != 0){
     glXMakeContextCurrent(ws->display, ws->drawable_id, ws->drawable_id, ws->glx_context);
@@ -243,6 +252,7 @@ void wsgl_clear(
 #endif
     glFlush();
   }
+  glDepthMask (GL_TRUE);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -312,26 +322,30 @@ void wsgl_flush(
     if (wsgl->win_changed) {
       wsgl->win_changed = 0;
     }
-
     clear_flag = 1;
   }
 
   if (wsgl->hlhsr_changed) {
-    if (wsgl->hlhsr_mode == PHIGS_HLHSR_MODE_ZBUFF) {
-#ifdef DEBUG
-      printf("Enable z-buffer\n");
-#endif
-      glEnable(GL_DEPTH_TEST);
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glAlphaFunc (GL_GREATER, 0.1);
-      glEnable(GL_ALPHA_TEST);
-    }
-    else if (wsgl->hlhsr_mode == PHIGS_HLHSR_MODE_NONE) {
+    switch (wsgl->hlhsr_mode){
+    case PHIGS_HLHSR_MODE_NONE:
 #ifdef DEBUG
       printf("Disable z-buffer\n");
 #endif
       glDisable(GL_DEPTH_TEST);
+      glDepthMask (GL_TRUE);
+      glDepthFunc(GL_LESS);
+      break;
+    case PHIGS_HLHSR_MODE_ZBUFF:
+#ifdef DEBUG
+      printf("Enable z-buffer\n");
+#endif
+      glDepthMask (GL_TRUE);
+      glEnable(GL_DEPTH_TEST);
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glAlphaFunc (GL_GREATER, 0.01);
+      glEnable(GL_ALPHA_TEST);
+      break;
     }
     wsgl->hlhsr_changed = 0;
   }
@@ -339,12 +353,13 @@ void wsgl_flush(
   glClearColor(wsgl->background.val.general.x,
                wsgl->background.val.general.y,
                wsgl->background.val.general.z,
-               0.0);
+               wsgl->background.val.general.a);
 #ifdef DEBUG
-  printf("wsgl: clear to background color %f %f %f\n",
+  printf("wsgl: clear to background color %f %f %f %f\n",
          wsgl->background.val.general.x,
          wsgl->background.val.general.y,
-         wsgl->background.val.general.z
+         wsgl->background.val.general.z,
+         wsgl->background.val.general.a
          );
 #endif
   if (clear_flag) {
@@ -389,6 +404,8 @@ static void init_rendering_state(
   wsgl->cur_struct.ast.anno_char_up_vec.delta_y = 1.0;
   wsgl->cur_struct.ast.disting_mode = PDISTING_YES;
   wsgl->cur_struct.ast.cull_mode = PCULL_NONE;
+  wsgl->cur_struct.ast.alpha_channel = 1.0;
+  wsgl->cur_struct.ast.color_model= PMODEL_RGB;
   wsgl_set_edge_ind(ws, &wsgl->cur_struct.ast.bundl_group, 0);
   wsgl_set_edge_ind(ws, &wsgl->cur_struct.ast.indiv_group, 0);
   wsgl_set_int_ind(ws, &wsgl->cur_struct.ast.bundl_group, 0);
@@ -427,6 +444,7 @@ void wsgl_begin_rendering(
   if (ws->drawable_id != 0){
     glXMakeContextCurrent(ws->display, ws->drawable_id, ws->drawable_id, ws->glx_context);
   }
+  glDepthMask (GL_TRUE);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   init_rendering_state(ws);
 }
@@ -606,7 +624,6 @@ void wsgl_begin_structure(
   phg_mat_copy(wsgl->cur_struct.global_tran, wsgl->composite_tran);
   phg_mat_identity(wsgl->cur_struct.local_tran);
   wsgl_set_clip_ind(ws, 0);
-  wsgl_set_alpha_channel(ws, 1.0);
   wsgl_update_modelview(ws);
 
   if (wsgl->render_mode == WS_RENDER_MODE_SELECT) {
@@ -635,28 +652,28 @@ void wsgl_end_structure(
   printf("End structure element: %d\n", wsgl->cur_struct.id);
 #endif
 
-   stack_pop(wsgl->struct_stack, (caddr_t) &wsgl->cur_struct);
-   wsgl_update_hlhsr_id(ws);
-   wsgl_update_projection(ws);
-   wsgl_update_modelview(ws);
-   wsgl_update_light_src_state(ws);
+  stack_pop(wsgl->struct_stack, (caddr_t) &wsgl->cur_struct);
+  wsgl_update_hlhsr_id(ws);
+  wsgl_update_projection(ws);
+  wsgl_update_modelview(ws);
+  wsgl_update_light_src_state(ws);
 
 #ifdef DEBUG
-   printf("Pop: id = %d, offset = %d\n",
-          wsgl->cur_struct.id,
-          wsgl->cur_struct.offset);
-   printf("View:\n");
-   phg_mat_print(wsgl->cur_struct.view_rep.map_matrix);
-   printf("\n");
+  printf("Pop: id = %d, offset = %d\n",
+         wsgl->cur_struct.id,
+         wsgl->cur_struct.offset);
+  printf("View:\n");
+  phg_mat_print(wsgl->cur_struct.view_rep.map_matrix);
+  printf("\n");
 #endif
 
-   if (wsgl->render_mode == WS_RENDER_MODE_SELECT) {
+  if (wsgl->render_mode == WS_RENDER_MODE_SELECT) {
 #ifdef DEBUG
-     printf("\tPop name\n");
+    printf("\tPop name\n");
 #endif
-     glPopName();
-      glPopName();
-   }
+    glPopName();
+    glPopName();
+  }
 }
 
 /*******************************************************************************
@@ -721,17 +738,47 @@ void wsgl_render_element(
                      &wsgl->cur_struct.ast.indiv_group.int_bundle.colr,
                      PHG_INT(el));
     break;
+  case PELEM_BACK_INT_COLR_IND:
+    phg_get_colr_ind(ws,
+                     &wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr,
+                     PHG_INT(el));
+#ifdef DEBUGA
+    printf("Col Indx %d type %d alpha %f\n",
+           PHG_INT(el),
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.type,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.val.general.a
+           );
+#endif
+    break;
 
   case PELEM_INT_COLR:
     memcpy(&wsgl->cur_struct.ast.indiv_group.int_bundle.colr,
            ELMT_CONTENT(el),
            sizeof(Pgcolr));
+#ifdef DEBUGA
+    printf("Setting INT COLR type %d colors %f %f %f %f\n",
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.type,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.val.general.x,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.val.general.y,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.val.general.z,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.colr.val.general.a
+           );
+#endif
     break;
 
   case PELEM_BACK_INT_COLR:
     memcpy(&wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr,
            ELMT_CONTENT(el),
            sizeof(Pgcolr));
+#ifdef DEBUGA
+    printf("Setting BACK COLR type %d colors %f %f %f %f\n",
+           wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr.type,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr.val.general.x,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr.val.general.y,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr.val.general.z,
+           wsgl->cur_struct.ast.indiv_group.int_bundle.back_colr.val.general.a
+           );
+#endif
     break;
 
   case PELEM_INT_STYLE:
@@ -761,6 +808,13 @@ void wsgl_render_element(
     phg_get_colr_ind(ws,
                      &wsgl->cur_struct.ast.indiv_group.edge_bundle.colr,
                      PHG_INT(el));
+#ifdef DEBUGA
+    printf("Edge Col Indx %d type %d alpha %f\n",
+           PHG_INT(el),
+           wsgl->cur_struct.ast.indiv_group.edge_bundle.colr.type,
+           wsgl->cur_struct.ast.indiv_group.edge_bundle.colr.val.general.a
+           );
+#endif
     break;
 
   case PELEM_EDGE_COLR:
@@ -778,8 +832,7 @@ void wsgl_render_element(
     break;
 
   case PELEM_EDGE_FLAG:
-    wsgl->cur_struct.ast.indiv_group.edge_bundle.flag =
-      (Pedge_flag) PHG_INT(el);
+    wsgl->cur_struct.ast.indiv_group.edge_bundle.flag = (Pedge_flag) PHG_INT(el);
     break;
 
   case PELEM_MARKER_IND:
@@ -790,6 +843,13 @@ void wsgl_render_element(
     phg_get_colr_ind(ws,
                      &wsgl->cur_struct.ast.indiv_group.marker_bundle.colr,
                      PHG_INT(el));
+#ifdef DEBUGA
+    printf("Marker Col Indx %d type %d alpha %f\n",
+           PHG_INT(el),
+           wsgl->cur_struct.ast.indiv_group.marker_bundle.colr.type,
+           wsgl->cur_struct.ast.indiv_group.marker_bundle.colr.val.general.a
+           );
+#endif
     break;
 
   case PELEM_MARKER_COLR:
@@ -814,6 +874,13 @@ void wsgl_render_element(
     phg_get_colr_ind(ws,
                      &wsgl->cur_struct.ast.indiv_group.text_bundle.colr,
                      PHG_INT(el));
+#ifdef DEBUGA
+    printf("Text Col Indx %d type %d alpha %f\n",
+           PHG_INT(el),
+           wsgl->cur_struct.ast.indiv_group.text_bundle.colr.type,
+           wsgl->cur_struct.ast.indiv_group.text_bundle.colr.val.general.a
+           );
+#endif
     break;
 
   case PELEM_TEXT_COLR:
@@ -877,6 +944,13 @@ void wsgl_render_element(
         phg_get_colr_ind(ws,
                          &wsgl->cur_struct.ast.indiv_group.line_bundle.colr,
                          PHG_INT(el));
+#ifdef DEBUGA
+        printf("Line Col Indx %d type %d alpha %f\n",
+               PHG_INT(el),
+               wsgl->cur_struct.ast.indiv_group.line_bundle.colr.type,
+               wsgl->cur_struct.ast.indiv_group.line_bundle.colr.val.general.a
+               );
+#endif
       }
     break;
 
@@ -894,7 +968,7 @@ void wsgl_render_element(
     wsgl->cur_struct.ast.indiv_group.line_bundle.type = PHG_INT(el);
     break;
 
-   case PELEM_FILL_AREA:
+  case PELEM_FILL_AREA:
     if (check_draw_primitive(ws)) {
       if (wsgl_get_int_style(&wsgl->cur_struct.ast) != PSTYLE_EMPTY) {
         wsgl_fill_area(ws, ELMT_CONTENT(el), &wsgl->cur_struct.ast);
@@ -931,7 +1005,7 @@ void wsgl_render_element(
   case PELEM_FILL_AREA3:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
+      if ((wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON || wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON_NZ)  && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
           wsgl_clear_area3(ws, ELMT_CONTENT(el), &wsgl->cur_struct.ast);
         }
@@ -970,7 +1044,7 @@ void wsgl_render_element(
   case PELEM_FILL_AREA_SET3:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
+      if ((wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON || wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON_NZ)  && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
           wsgl_clear_area_set3(ws,
                                ELMT_CONTENT(el),
@@ -989,7 +1063,7 @@ void wsgl_render_element(
   case PELEM_FILL_AREA_SET_DATA:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
+      if ((wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON || wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON_NZ)  && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
           wsgl_clear_area_set_data(ws,
                                    ELMT_CONTENT(el),
@@ -1032,7 +1106,7 @@ void wsgl_render_element(
   case PELEM_FILL_AREA_SET3_DATA:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
+      if ((wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON || wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON_NZ)  && wsgl->hlhsr_mode > 0) {
         if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
           wsgl_clear_area_set3_data(ws,
                                     ELMT_CONTENT(el),
@@ -1075,12 +1149,10 @@ void wsgl_render_element(
   case PELEM_SET_OF_FILL_AREA_SET3_DATA:
     if (check_draw_primitive(ws)) {
       style = wsgl_get_int_style(&wsgl->cur_struct.ast);
-      if (wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON && wsgl->hlhsr_mode > 0) {
-        if (style == PSTYLE_EMPTY || style == PSTYLE_HOLLOW) {
-          wsgl_set_of_clear_area_set3_data(ws,
-                                           ELMT_CONTENT(el),
-                                           &wsgl->cur_struct.ast);
-        }
+      if ((wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON || wsgl->cur_struct.hlhsr_id == PHIGS_HLHSR_ID_ON_NZ)  && wsgl->hlhsr_mode > 0) {
+        wsgl_set_of_clear_area_set3_data(ws,
+                                         ELMT_CONTENT(el),
+                                         &wsgl->cur_struct.ast);
       }
       if (style != PSTYLE_EMPTY) {
         if (wsgl->cur_struct.ast.cull_mode != PCULL_BACKFACE) {
@@ -1256,11 +1328,14 @@ void wsgl_render_element(
     break;
 
   case PELEM_MODEL_CLIP_VOL3:
-    wsgl_set_clip_vol3(ws, (char*)ELMT_CONTENT(el));
+    wsgl_set_clip_vol3(ws,
+                       (char*)ELMT_CONTENT(el),
+                       wsgl->cur_struct.view_rep.map_matrix);
     break;
 
   case PELEM_ALPHA_CHANNEL:
-    wsgl_set_alpha_channel(ws, PHG_FLOAT(el));
+    wsgl->cur_struct.ast.alpha_channel = PHG_FLOAT(el);
+    wsgl->cur_struct.ast.color_model = PMODEL_RGBA;
     break;
 
   default:

@@ -331,6 +331,13 @@ static void phg_swap_gcolr(
       (*swp->conv_float)((float *) &fdata[1]);
       (*swp->conv_float)((float *) &fdata[2]);
    }
+   else if (gcolr.type == PMODEL_RGBA) {
+      fdata = (Pfloat *) &idata[1];
+      (*swp->conv_float)((float *) &fdata[0]);
+      (*swp->conv_float)((float *) &fdata[1]);
+      (*swp->conv_float)((float *) &fdata[2]);
+      (*swp->conv_float)((float *) &fdata[3]);
+   }
 }
 
 /******************************************************************************
@@ -461,5 +468,6 @@ Phg_conv phg_swap_tbl[PELEM_NUM_EL_TYPES] = {
    phg_swap_nil,                   /* PELEM_FILL_AREA_SET_DATA */
    phg_swap_nil,                   /* PELEM_GSE */
    phg_swap_nil,                   /* PELEM_ALPHA_CHANNEL */
-   phg_swap_text3                  /* PELEM_TEXT3 */
+   phg_swap_text3,                 /* PELEM_TEXT3 */
+   phg_swap_int                    /* PELEM_BACK_INT_COLR_IND */
 };

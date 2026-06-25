@@ -156,9 +156,6 @@ FTN_SUBROUTINE(psrfp)(
     int ncc = here[2];
     int index = here[3];
     refl_properties.specular_colr.type = col_type;
-    if (col_type == PINDIRECT){
-      refl_properties.specular_colr.val.ind = index;
-    }
     fp = (float*) &here[5];
     refl_properties.ambient_coef = fp[0];
     refl_properties.diffuse_coef = fp[1];
@@ -171,14 +168,28 @@ FTN_SUBROUTINE(psrfp)(
            refl_properties.specular_coef,
            refl_properties.specular_exp);
 #endif
-    if (col_type ==  PMODEL_RGB){
+    switch (col_type){
+    case  PINDIRECT:
+      refl_properties.specular_colr.val.ind = index;
+      break;
+    case PMODEL_RGB:
       refl_properties.specular_colr.val.general.x = fp[4];
       refl_properties.specular_colr.val.general.y = fp[5];
       refl_properties.specular_colr.val.general.z = fp[6];
+      refl_properties.specular_colr.val.general.a = 1.0;
+      break;
+    case PMODEL_RGBA:
+      refl_properties.specular_colr.val.general.x = fp[4];
+      refl_properties.specular_colr.val.general.y = fp[5];
+      refl_properties.specular_colr.val.general.z = fp[6];
+      refl_properties.specular_colr.val.general.z = fp[7];
+      break;
+    default:
+      printf("ERROR in psrfp: unknown color model %d.", col_type);
     }
     pset_refl_props(&refl_properties);
   } else {
-    printf("PSRFP: unknown reflection type. Ignorning function.\n");
+    printf("ERROR in psrfp: unknown reflection type. Ignorning function.\n");
   }
 }
 
@@ -748,19 +759,38 @@ FTN_SUBROUTINE(psbic)(
 #ifdef DEBUG
   printf("DEBUG: pset interior color index set to %d\n", colr_ind);
 #endif
-  if (colr_typ == PINDIRECT){
+  switch (colr_typ) {
+  case PINDIRECT:
     colr.type = PINDIRECT;
     colr.val.ind = colr_ind;
-  } else {
+    break;
+  case PMODEL_RGB:
     colr.type = PMODEL_RGB;
     if (ncc == 3){
       colr.val.general.x = FTN_REAL_ARRAY_GET(rcolr, 0);
       colr.val.general.y = FTN_REAL_ARRAY_GET(rcolr, 1);
       colr.val.general.z = FTN_REAL_ARRAY_GET(rcolr, 2);
+      colr.val.general.a = 1.0;
     }
     else {
       printf("PSBCI: not enough color values provided. Ignoring function.\n");
     }
+    break;
+  case PMODEL_RGBA:
+    colr.type = PMODEL_RGBA;
+    if (ncc == 4){
+      colr.val.general.x = FTN_REAL_ARRAY_GET(rcolr, 0);
+      colr.val.general.y = FTN_REAL_ARRAY_GET(rcolr, 1);
+      colr.val.general.z = FTN_REAL_ARRAY_GET(rcolr, 2);
+      colr.val.general.a = FTN_REAL_ARRAY_GET(rcolr, 3);
+    }
+    else {
+      printf("PSBCI: not enough color values provided. Ignoring function.\n");
+    }
+    break;
+  default:
+    printf("PSBCI: Unknown color mode given. Ignoring function.\n");
+    break;
   }
   pset_back_int_colr(&colr);
 }

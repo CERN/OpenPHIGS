@@ -97,7 +97,7 @@ C      Include PHIGS enumeration file
       PARAMETER (NMARKS=8, NMSIZS=8)
 
       INTEGER MARKER, ISIZE, MARKRS(NMARKS)
-      DATA MARKRS/2, 3, 4, 5, 6, 7, 8, 9 /
+      DATA MARKRS/1, 2, 3, 4, 5, 6, 7, 8/
       INTEGER     PICKAB
       PARAMETER  (PICKAB=98)
 
@@ -152,6 +152,7 @@ C query work station
       DX = 1./(FLOAT(NMSIZS)+1.)
       DO I = 1, NMARKS
          MARKER = MARKRS(I)
+         print*,"Defining marker:", i, marker
          Y = 1. - FLOAT(I) * DY
          DO ISIZE = 1, NMSIZS
             X = 0.05 + FLOAT(ISIZE-1) * DX
@@ -205,8 +206,8 @@ C     Busy loop
                SELMRK=PP(1,1)
                CALL PSEDM (EDITMO)
                CALL PUWK (IWKMK,1)
-               MKIND = PP(2,1) / 100
-               MKSIZ = PP(2,1) - 100 * MKIND
+               MKIND = PP(2,1) / 400
+               MKSIZ = PP(2,1) - 400 * MKIND
                PRINT*, "Selected marker ", mkind, " with size ", mksiz
             ENDIF
  99         CALL PUWK(IWKMK,1)

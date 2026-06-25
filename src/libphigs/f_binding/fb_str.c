@@ -369,20 +369,32 @@ FTN_SUBROUTINE(pqeco)(
               case PELEM_MARKER_COLR:
               case PELEM_EDGE_COLR:
               case PELEM_TEXT_COLR:
-                if (elem_data->colr.type == PMODEL_RGB){
+		switch (elem_data->colr.type){
+		case PMODEL_RGB:
                   ra[0] = elem_data->colr.val.general.x;
                   ra[1] = elem_data->colr.val.general.y;
                   ra[3] = elem_data->colr.val.general.z;
+                  ra[4] = 1.0;
                   *rl = 3;
-                } else {
+		  break;
+		case PMODEL_RGBA:
+                  ra[0] = elem_data->colr.val.general.x;
+                  ra[1] = elem_data->colr.val.general.y;
+                  ra[3] = elem_data->colr.val.general.z;
+                  ra[4] = elem_data->colr.val.general.a;
+                  *rl = 4;
+		  break;
+		default:
                   *err_ind=4;
                   printf("ERROR in PQECO: RGB requested but colr type is not RGB: %d elem_type %d\n", (int)elem_data->colr.type, (int)elem_type);
+		  break;
                 }
                 break;
               default:
                 css_print_eltype(elem_type);
                 printf("ERROR in PQECO: unknown element type %d. Ignoring function\n", (int)elem_type);
                 *err_ind = 2;
+		break;
               }
             }
           }

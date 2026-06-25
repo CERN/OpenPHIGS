@@ -1,24 +1,24 @@
 /******************************************************************************
-*   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
-*
-*   This file is part of Open PHIGS
-*   Copyright (C) 2014 Surplus Users Ham Society
-*
-*   Open PHIGS is free software: you can redistribute it and/or modify
-*   it under the terms of the GNU Lesser General Public License as published by
-*   the Free Software Foundation, either version 2.1 of the License, or
-*   (at your option) any later version.
-*
-*   Open PHIGS is distributed in the hope that it will be useful,
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*   GNU Lesser General Public License for more details.
-*
-*   You should have received a copy of the GNU Lesser General Public License
-*   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
-******************************************************************************
-* Changes:   Copyright (C) 2022-2023 CERN
-******************************************************************************/
+ *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
+ *
+ *   This file is part of Open PHIGS
+ *   Copyright (C) 2014 Surplus Users Ham Society
+ *
+ *   Open PHIGS is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Lesser General Public License as published by
+ *   the Free Software Foundation, either version 2.1 of the License, or
+ *   (at your option) any later version.
+ *
+ *   Open PHIGS is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Lesser General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public License
+ *   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************
+ * Changes:   Copyright (C) 2022-2023 CERN
+ ******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -70,7 +70,6 @@ void popen_ws(
     read_config("phigs.def");
   };
   /* save the current shader settings */
-  printf("popen_ws: %d %d\n", wsgl_use_shaders, wsgl_use_shaders_settings);
   wsgl_use_shaders_settings = wsgl_use_shaders;
   if (phg_entry_check(PHG_ERH, ERR2, Pfn_open_ws)) {
     if ((ws_id < 0) || (ws_id > MAX_NO_OPEN_WS)) {
@@ -157,12 +156,16 @@ void popen_ws(
         }
         /* predefine some colors */
         pxset_color_map(ws_id);
-        /* set background as specified in configuration file */
-        pset_colr_rep(ws_id, 0, &(config[ws_id].background_color));
         wsinfo = phg_psl_get_ws_info(PHG_PSL, ws_id);
         dt = &wsinfo->wstype->desc_tbl.phigs_dt;
         /* init the file name */
         wsh = PHG_WSID(ws_id);
+        /* set background as specified in configuration file */
+        if (wsh->current_colour_model == PMODEL_RGBA){
+          pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgba));
+        } else {
+          pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgb));
+        }
         if (strlen(config[ws_id].filename) == 0){
           switch (dt->ws_category){
           case PCAT_TGA:
@@ -277,36 +280,36 @@ void pclose_ws(
       }
       for (i=0; i<height; i++){
         png_rows[i] = &(pixel_buffer[ (height - i - 1) * width * channels]);
-        }
-        png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-        if (png) {
-          png_infop info = png_create_info_struct(png);
-          if (info){
-            wsh->fd = fopen(wsh->filename, "w+");
-            setjmp(png_jmpbuf(png));
-            png_init_io(png, wsh->fd);
-            png_set_IHDR(
-                         png,
-                         info,
-                         width, height,
-                         8,
-                         PNG_COLOR_TYPE_RGB,
-                         PNG_INTERLACE_NONE,
-                         PNG_COMPRESSION_TYPE_DEFAULT,
-                         PNG_FILTER_TYPE_DEFAULT
-                         );
-            png_write_info(png, info);
-            png_write_image(png, png_rows);
-            png_write_end(png, NULL);
-            fclose(wsh->fd);
-          } else {
-            printf("PNG export error: failed to create info structure\n");
-          }
-          png_destroy_write_struct(&png, &info);
+      }
+      png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+      if (png) {
+        png_infop info = png_create_info_struct(png);
+        if (info){
+          wsh->fd = fopen(wsh->filename, "w+");
+          setjmp(png_jmpbuf(png));
+          png_init_io(png, wsh->fd);
+          png_set_IHDR(
+                       png,
+                       info,
+                       width, height,
+                       8,
+                       PNG_COLOR_TYPE_RGB,
+                       PNG_INTERLACE_NONE,
+                       PNG_COMPRESSION_TYPE_DEFAULT,
+                       PNG_FILTER_TYPE_DEFAULT
+                       );
+          png_write_info(png, info);
+          png_write_image(png, png_rows);
+          png_write_end(png, NULL);
+          fclose(wsh->fd);
         } else {
-          printf("PNG export error: failed to create write structure\n");
+          printf("PNG export error: failed to create info structure\n");
         }
-        free(pixel_buffer);
+        png_destroy_write_struct(&png, &info);
+      } else {
+        printf("PNG export error: failed to create write structure\n");
+      }
+      free(pixel_buffer);
       free(png_rows);
       clean_fb = TRUE;
       break;
@@ -383,7 +386,11 @@ void pclose_ws(
       /* redefine colors and redraw */
       ctrl_flag = 0;
       pxset_color_map(ws_id);
-      pset_colr_rep(ws_id, 0, &(config[ws_id].background_color));
+      if (wsh->current_colour_model == PMODEL_RGBA){
+        pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgba));
+      } else {
+        pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgb));
+      }
       predraw_all_structs(ws_id, ctrl_flag);
       int state = gl2psEndPage();
       if (state == GL2PS_OVERFLOW) {
@@ -536,43 +543,43 @@ void pset_ws_win(
                  Plimit *window
                  )
 {
-   Psl_ws_info *wsinfo;
-   Wst_phigs_dt *dt;
-   Ws_handle wsh;
-   Plimit3 win;
+  Psl_ws_info *wsinfo;
+  Wst_phigs_dt *dt;
+  Ws_handle wsh;
+  Plimit3 win;
 
-   ERR_SET_CUR_FUNC(PHG_ERH, Pfn_set_ws_win);
+  ERR_SET_CUR_FUNC(PHG_ERH, Pfn_set_ws_win);
 
-   if (PSL_WS_STATE(PHG_PSL) != PWS_ST_WSOP) {
-     ERR_REPORT(PHG_ERH, ERR3);
-   }
-   else if ((wsinfo = phg_psl_get_ws_info(PHG_PSL, ws_id)) == NULL) {
-     ERR_REPORT(PHG_ERH, ERR54);
-   }
-   else {
-     dt = &wsinfo->wstype->desc_tbl.phigs_dt;
-     if (dt->ws_category == PCAT_MI) {
-       ERR_REPORT(PHG_ERH, ERR57);
-     }
-     else if (!PHG_IN_RANGE(PDT_NPC_XMIN, PDT_NPC_XMAX, window->x_min) ||
-              !PHG_IN_RANGE(PDT_NPC_XMIN, PDT_NPC_XMAX, window->x_max) ||
-              !PHG_IN_RANGE(PDT_NPC_YMIN, PDT_NPC_YMAX, window->y_min) ||
-              !PHG_IN_RANGE(PDT_NPC_YMIN, PDT_NPC_YMAX, window->y_max)) {
-       ERR_REPORT(PHG_ERH, ERR156);
-     }
-     else if (!(window->x_min < window->x_max) ||
-              !(window->y_min < window->y_max)) {
-       ERR_REPORT(PHG_ERH, ERR151);
-     }
-     else {
-       wsh = PHG_WSID(ws_id);
-       win.x_min = window->x_min;
-       win.x_max = window->x_max;
-       win.y_min = window->y_min;
-       win.y_max = window->y_max;
-       (*wsh->set_ws_window)(wsh, 1, &win);
-     }
-   }
+  if (PSL_WS_STATE(PHG_PSL) != PWS_ST_WSOP) {
+    ERR_REPORT(PHG_ERH, ERR3);
+  }
+  else if ((wsinfo = phg_psl_get_ws_info(PHG_PSL, ws_id)) == NULL) {
+    ERR_REPORT(PHG_ERH, ERR54);
+  }
+  else {
+    dt = &wsinfo->wstype->desc_tbl.phigs_dt;
+    if (dt->ws_category == PCAT_MI) {
+      ERR_REPORT(PHG_ERH, ERR57);
+    }
+    else if (!PHG_IN_RANGE(PDT_NPC_XMIN, PDT_NPC_XMAX, window->x_min) ||
+             !PHG_IN_RANGE(PDT_NPC_XMIN, PDT_NPC_XMAX, window->x_max) ||
+             !PHG_IN_RANGE(PDT_NPC_YMIN, PDT_NPC_YMAX, window->y_min) ||
+             !PHG_IN_RANGE(PDT_NPC_YMIN, PDT_NPC_YMAX, window->y_max)) {
+      ERR_REPORT(PHG_ERH, ERR156);
+    }
+    else if (!(window->x_min < window->x_max) ||
+             !(window->y_min < window->y_max)) {
+      ERR_REPORT(PHG_ERH, ERR151);
+    }
+    else {
+      wsh = PHG_WSID(ws_id);
+      win.x_min = window->x_min;
+      win.x_max = window->x_max;
+      win.y_min = window->y_min;
+      win.y_max = window->y_max;
+      (*wsh->set_ws_window)(wsh, 1, &win);
+    }
+  }
 }
 
 /*******************************************************************************
@@ -1109,6 +1116,47 @@ void pset_light_src_rep(
       (*wsh->set_rep)(wsh, PHG_ARGS_LIGHTSRCREP, &rep);
     }
   }
+}
+
+/*******************************************************************************
+ * pset_colr_model
+ *
+ * DESCR:       Set workstation colour model
+ * RETURNS:     N/A
+ */
+void pset_colr_model(
+                     Pint ws_id,
+                     Pint model
+                     )
+{
+  Ws *wsh;
+  Pint original_model;
+  wsh = PHG_WSID(ws_id);
+  original_model = wsh->current_colour_model;
+  switch (model){
+  case PINDIRECT:
+    wsh->current_colour_model = PINDIRECT;
+    break;
+  case PMODEL_RGB:
+    wsh->current_colour_model = PMODEL_RGB;
+    break;
+  case PMODEL_RGBA:
+    wsh->current_colour_model = PMODEL_RGBA;
+    break;
+  default:
+    wsh->current_colour_model = wsh->type->desc_tbl.phigs_dt.out_dt.default_colour_model;
+    printf("WARNING: pset_colr_model: Unknown color model, using default\n");
+    break;
+  }
+  /* if the model has changed we should update the background */
+  if (original_model != model){
+    if (wsh->current_colour_model == PMODEL_RGBA){
+      pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgba));
+    } else {
+      pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgb));
+    }
+  }
+
 }
 
 /*******************************************************************************
@@ -2137,28 +2185,95 @@ void pinq_invis_filter(
 }
 
 /***********************************
- * predefine some colors
- *
+ * predefine 125 colors
+ * in RGBA mode
+ *    - prepeated with offset 200*i and increasing transparency
+ *    - dito for any already existing first 16 colors
  **********************************/
 void pxset_color_map(Pint ws_id){
-  int i, j, k;
+  int i, j, k, l;
   int n = 5;
   int index = 0;
+  int offset = 16;
   float delta_n = 1.0/(n-1);
   Pcolr_rep rep;
-  for (i=0; i<5; i++){
-    for (j=0; j<5; j++){
-      for (k=0; k<5; k++){
-        rep.rgb.red   = i*delta_n;
-        rep.rgb.green = j*delta_n;
-        rep.rgb.blue  = k*delta_n;
-        pset_colr_rep(ws_id, 16+index, &rep);
+  Ws_handle wsh;
+  Pgcolr gcolr;
+  Pfloat def_alpha[n+1];
+  memcpy(def_alpha, (float[]) { 1.0, 0.8, 0.6, 0.4, 0.3, 0.1}, sizeof def_alpha);
+
+  wsh = PHG_WSID(ws_id);
+  switch (wsh->current_colour_model){
+  case PINDIRECT:
+    break;
+  case PMODEL_RGB:
+    for (i=0; i<n; i++){
+      for (j=0; j<n; j++){
+        for (k=0; k<n; k++){
+          rep.rgb.red   = i*delta_n;
+          rep.rgb.green = j*delta_n;
+          rep.rgb.blue  = k*delta_n;
 #ifdef DEBUG
-        printf("Defining color index %d as RGB %f %f %f\n", 16+index, rep.rgb.red, rep.rgb.green, rep.rgb.blue);
+          printf("Defining color index %d as RGB %f %f %f\n", offset+index, rep.rgb.red, rep.rgb.green, rep.rgb.blue);
 #endif
-        index += 1;
+          pset_colr_rep(ws_id, offset+index, &rep);
+          index += 1;
+        }
       }
     }
+    break;
+  case PMODEL_RGBA:
+    for (i=0; i<=n; i++){
+      index = 0;
+      for (j=0; j<n; j++){
+        for (k=0; k<n; k++){
+          for (l=0; l<n; l++){
+            rep.rgba.red   = j*delta_n;
+            rep.rgba.green = k*delta_n;
+            rep.rgba.blue  = l*delta_n;
+            rep.rgba.alpha = def_alpha[i];
+            pset_colr_rep(ws_id, offset+index+200*i, &rep);
+#ifdef DEBUGA
+            printf("Defining color index %d as RGBA %f %f %f %f\n",
+                   offset+index+200*i,
+                   rep.rgba.red, rep.rgba.green, rep.rgba.blue, rep.rgba.alpha);
+#endif
+            index += 1;
+          }
+        }
+      }
+    }
+    /* Redefine any existing colors with transparency */
+    for (i=0;i<=16;i++){
+      phg_get_colr_ind(wsh, &gcolr, i);
+      switch (gcolr.type){
+      case PINDIRECT:
+        break;
+      case PMODEL_RGB:
+        break;
+      case PMODEL_RGBA:
+        for (j=1;j<=n;j++){
+          rep.rgba.red   = gcolr.val.general.x;
+          rep.rgba.green = gcolr.val.general.y;
+          rep.rgba.blue  = gcolr.val.general.z;
+          rep.rgba.alpha = def_alpha[j];
+#ifdef DEBUGA
+          printf("Re-defining color index %d as RGBA %f %f %f %f\n",
+                 i+200*j, rep.rgba.red, rep.rgba.green, rep.rgba.blue, rep.rgba.alpha);
+#endif
+          pset_colr_rep(ws_id, i+200*j, &rep);
+        }
+        break;
+      default:
+#ifdef DEBUGA
+        printf("WARNING in pxset_color_map: Skipping non-exiting color index %d\n", i);
+#endif
+        break;
+      }
+    }
+    break;
+  default:
+    printf("WARNING in pxset_color_map: unknown color model %d. Ignoring function.\n", gcolr.type);
   }
 }
 

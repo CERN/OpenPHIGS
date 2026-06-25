@@ -138,16 +138,17 @@ int main(int argc, char *argv[])
       view_index = atoi(argv[1]);
       printf("Use view: %d\n", view_index);
    }
-
-   green.type = PMODEL_RGB;
+   green.type = PMODEL_RGBA;
    green.val.general.x = 0.0;
    green.val.general.y = 1.0;
    green.val.general.z = 0.0;
+   green.val.general.a = 1.0;
 
-   yellow.type = PMODEL_RGB;
+   yellow.type = PMODEL_RGBA;
    yellow.val.general.x = 1.0;
    yellow.val.general.y = 1.0;
    yellow.val.general.z = 0.0;
+   yellow.val.general.a = 1.0;
 
    popen_phigs(NULL, 0);
 
@@ -173,6 +174,7 @@ int main(int argc, char *argv[])
    pset_edgewidth(EDGE_WIDTH);
    pset_edgetype(PLINE_SOLID);
    pset_int_colr_ind(0);
+   pset_back_int_colr_ind(0);
    pset_int_style(FILL_STYLE);
    pset_int_style_ind(FILL_STYLE_IND);
    pset_marker_type(PMARKER_CROSS);
@@ -185,6 +187,7 @@ int main(int argc, char *argv[])
    pset_local_tran3(rot3, PTYPE_REPLACE);
    pset_local_tran3(tran3, PTYPE_POSTCONCAT);
    pset_int_colr_ind(1);
+   pset_back_int_colr_ind(1);
    pexec_struct(0);
    tvec3.delta_z += SPACE;
    ptranslate3(&tvec3, &errnum, tran3);
@@ -193,12 +196,14 @@ int main(int argc, char *argv[])
    plabel(10);
    pset_local_tran3(tran3, PTYPE_POSTCONCAT);
    pset_int_colr_ind(2);
+   pset_back_int_colr_ind(2);
    plabel(20);
    pexec_struct(0);
    plabel(30);
    pclose_struct();
 
    popen_ws(0, NULL, PWST_OUTPUT_TRUE_DB);
+   pset_colr_model(0, PMODEL_RGBA);
    vp.x_min = VP_X0;
    vp.x_max = VP_X1;
    vp.y_min = VP_Y0;
@@ -215,33 +220,43 @@ int main(int argc, char *argv[])
    pset_ws_win3(0, &win);
    pset_hlhsr_mode(0, PHIGS_HLHSR_MODE_ZBUFF);
 
-   col_rep.rgb.red = 0.0;
-   col_rep.rgb.green = 0.25;
-   col_rep.rgb.blue = 0.25;
+   col_rep.rgba.red = 0.0;
+   col_rep.rgba.green = 0.25;
+   col_rep.rgba.blue = 0.25;
+   col_rep.rgba.alpha = 1.0;
    pset_colr_rep(0, 0, &col_rep);
 
-   col_rep.rgb.red = 0.0;
-   col_rep.rgb.green = 0.5;
-   col_rep.rgb.blue = 0.5;
+   col_rep.rgba.red = 0.0;
+   col_rep.rgba.green = 0.5;
+   col_rep.rgba.blue = 0.5;
+   col_rep.rgba.alpha = 0.5;
    pset_colr_rep(0, 1, &col_rep);
 
-   col_rep.rgb.red = 0.0;
-   col_rep.rgb.green = 1.0;
-   col_rep.rgb.blue = 1.0;
+   col_rep.rgba.red = 0.0;
+   col_rep.rgba.green = 1.0;
+   col_rep.rgba.blue = 1.0;
+   col_rep.rgba.alpha = 1.0;
    pset_colr_rep(0, 2, &col_rep);
 
-   col_rep.rgb.red = 1.0;
-   col_rep.rgb.green = 1.0;
-   col_rep.rgb.blue = 1.0;
+   col_rep.rgba.red = 1.0;
+   col_rep.rgba.green = 1.0;
+   col_rep.rgba.blue = 1.0;
+   col_rep.rgba.alpha = 0.25;
    pset_colr_rep(0, 3, &col_rep);
 
-   col_rep.rgb.red = 1.0;
-   col_rep.rgb.green = 0.0;
-   col_rep.rgb.blue = 0.0;
+   col_rep.rgba.red = 1.0;
+   col_rep.rgba.green = 0.0;
+   col_rep.rgba.blue = 0.0;
+   col_rep.rgba.alpha = 0.2;
    pset_colr_rep(0, 4, &col_rep);
    pset_disp_upd_st(0, PDEFER_BNIL, PMODE_UQUM);
+   pxset_color_map(0);
 
    ppost_struct(0, 1, 0);
+#ifdef DEBUG
+   Struct_handle structp = CSS_STRUCT_EXISTS(PHG_CSS, 1);
+   phg_css_print_struct(structp, 0);
+#endif
    pupd_ws(0, PFLAG_PERFORM);
 
    XSelectInput(PHG_WSID(0)->display,
@@ -290,6 +305,7 @@ int main(int argc, char *argv[])
                pset_local_tran3(tran3, PTYPE_POSTCONCAT);
                poffset_elem_ptr(1);
                pset_int_colr_ind(4);
+               //               pset_back_int_colr_ind(4);
 #if 0
                pset_elem_ptr(0);
                //pdel_elem_range(19, 20);
@@ -307,6 +323,7 @@ int main(int argc, char *argv[])
                //pset_hlhsr_id(PHIGS_HLHSR_ID_OFF);
                pset_int_style(FILL_STYLE);
                pset_int_colr(&green);
+               pset_back_int_colr(&green);
                pset_edge_colr(&yellow);
                pcopy_all_elems_struct(0);
                pclose_struct();

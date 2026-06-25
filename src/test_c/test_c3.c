@@ -157,6 +157,7 @@ void init_scene(void)
    pset_edgewidth(EDGE_WIDTH);
    pset_edgetype(PLINE_SOLID);
    pset_int_colr(&dark);
+   pset_back_int_colr(&dark); //us
    pset_int_style(FILL_STYLE);
    pset_int_style_ind(FILL_STYLE_IND);
    pset_marker_type(PMARKER_CROSS);
@@ -516,6 +517,7 @@ int main(void)
    print_size(PWST_OUTIN_TRUE_DB);
 
    popen_ws(WS_1, NULL, PWST_OUTIN_TRUE_DB);
+   pset_colr_model(WS_1, PMODEL_RGB);
 
    pset_ws_win(WS_1, &win);
    pset_invis_filter(WS_1, &invis_filter);

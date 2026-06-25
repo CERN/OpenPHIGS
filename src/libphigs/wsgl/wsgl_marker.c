@@ -34,26 +34,34 @@
 #define PI 3.1415926535897932384626433832795
 
 /*******************************************************************************
- * wsgl_marker_dot
+ * wsgl_marker_line_loop
  *
  * DESCR:	Draw marker dots helper function
  * RETURNS:	N/A
  */
 
-static void wsgl_marker_dot(
-   Ppoint_list *point_list,
-   Pfloat scale
-   )
+static void wsgl_marker_line_loop(
+  Pint n,
+  Ppoint_list *point_list,
+  Pfloat scale
+  )
 {
-   int i;
+  int i, j;
 
-   glPointSize(scale);
-   glBegin(GL_POINTS);
-   for (i = 0; i < point_list->num_points; i++) {
-      glVertex2f(point_list->points[i].x,
-                 point_list->points[i].y);
-   }
-   glEnd();
+  float alpha, dalpha;
+  glLineWidth(1.0);
+  glDisable(GL_LINE_STIPPLE);
+  dalpha = 2.0*PI/(float)n;
+  glBegin(GL_LINE_LOOP);
+  for (i = 0; i < point_list->num_points; i++) {
+    alpha = dalpha/2.0;
+    for (j = 0; j < n; j++){
+      glVertex2f(point_list->points[i].x + scale*cos(alpha),
+		 point_list->points[i].y + scale*sin(alpha));
+      alpha += dalpha;
+    }
+  }
+  glEnd();
 }
 
 /*******************************************************************************
@@ -219,7 +227,7 @@ void wsgl_polymarker(
    wsgl_setup_marker_attr(ast, &type, &size);
    switch (type) {
       case PMARKER_DOT:
-	wsgl_marker_dot(&point_list, size);
+	wsgl_marker_polygon(40, &point_list, size);
 	break;
 
       case PMARKER_PLUS:
@@ -235,7 +243,7 @@ void wsgl_polymarker(
 	break;
 
       case PMARKER_CIRCLE:
-	wsgl_marker_polygon(40, &point_list, size);
+	wsgl_marker_line_loop(40, &point_list, size);
 	break;
 
       case PMARKER_TRIANG:
@@ -294,7 +302,7 @@ void wsgl_polymarker3(
       wsgl_setup_marker_attr(ast, &type, &size);
       switch (type) {
       case PMARKER_DOT:
-	wsgl_marker_dot(&plist, size);
+	wsgl_marker_polygon(40, &plist, size);
 	break;
 
       case PMARKER_PLUS:
@@ -310,7 +318,7 @@ void wsgl_polymarker3(
 	break;
 
       case PMARKER_CIRCLE:
-	wsgl_marker_polygon(40, &plist, size);
+	wsgl_marker_line_loop(40, &plist, size);
 	break;
 
       case PMARKER_TRIANG:

@@ -297,6 +297,7 @@ void phg_wsx_pixel_colour(
    gcolr->val.general.x = (float) color.red / 65535.0;
    gcolr->val.general.y = (float) color.green / 65535.0;
    gcolr->val.general.z = (float) color.blue / 65535.0;
+   gcolr->val.general.z = 1.0; // FIXME
 }
 
 /*******************************************************************************

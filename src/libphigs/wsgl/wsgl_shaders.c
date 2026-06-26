@@ -101,8 +101,7 @@ void wsgl_shaders(Ws * ws){
       printf("WARNING: Because of a bug please switch off shaders via the configuration file\n");
     }
     if (strcmp(ShaderVersion, NewerVersion) < 0 ){
-      printf("[WARNING] Shader version is %s\n", ShaderVersion);
-      printf("Detected NVIDIA card.\n");
+      printf("Shader version is %s\n", ShaderVersion);
     } else {
       if (strcmp(Vendor, "NVIDIA Corporation") == 0){
         printf("Detected NVIDIA card.\n");

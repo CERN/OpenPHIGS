@@ -32,5 +32,5 @@ void main()
   } else {
     gl_ClipDistance[0] = 1.0;
     gl_ClipDistance[1] = 1.0;
-  };
-};
+  }
+}

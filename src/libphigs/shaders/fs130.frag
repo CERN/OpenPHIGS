@@ -119,5 +119,5 @@ void main()
     } else { FragColor = Color;};
   } else {
     FragColor = Color;
-  };
-};
+  }
+}

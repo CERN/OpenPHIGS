@@ -12,4 +12,4 @@ void main()
   Color = vColor;
   Normal = normalize(ModelViewMatrix * vec4(gl_Normal, 1));
   gl_Position = ProjectionMatrix * ModelViewMatrix * gl_Vertex;
-};
+}

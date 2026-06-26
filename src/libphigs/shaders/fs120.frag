@@ -128,5 +128,5 @@ void main()
     } else { gl_FragColor = Color;};
   } else {
     gl_FragColor = Color;
-  };
-};
+  }
+}

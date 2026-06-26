@@ -322,7 +322,7 @@ int init_devices(
      idt->strokes[i].record.pets.pet_r1.unused = 0;
      idt->strokes[i].record.buffer_size = 100;
      idt->strokes[i].record.init_pos = 1;
-     idt->strokes[i].type = WST_STROKE_TYPE_POINTER_BUTTON_1;
+     idt->strokes[i].type = (Wst_stroke_type)WST_STROKE_TYPE_POINTER_BUTTON_1;
    }
    /* Default pick */
    idt->num_devs.pick = WST_MAX_NUM_PICK_DEVS;
@@ -331,7 +331,7 @@ int init_devices(
      idt->picks[i].num_pets = 1;
      idt->picks[i].pets[0] = 1;
      idt->picks[i].record.pets.pet_r1.unused = 0;
-     idt->picks[i].type = WST_PICK_TYPE_POINTER_BUTTON_1;
+     idt->picks[i].type = (Wst_pick_type)WST_PICK_TYPE_POINTER_BUTTON_1;
    }
    /* Default valuator */
    idt->num_devs.val = WST_MAX_NUM_VALUATOR_DEVS;

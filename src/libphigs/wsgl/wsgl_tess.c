@@ -28,6 +28,10 @@ static void CALLBACK tessEndCB() {
 
 static void CALLBACK tessVertexCB(void *data) {
     Wsgl_tess_vertex *v = (Wsgl_tess_vertex *)data;
+    if (v->has_norm) {
+        glNormal3dv(v->norm);
+        wsgl_set_current_normal((float)v->norm[0], (float)v->norm[1], (float)v->norm[2]);
+    }
     if (v->apply_cb) {
         v->apply_cb(v);
     }

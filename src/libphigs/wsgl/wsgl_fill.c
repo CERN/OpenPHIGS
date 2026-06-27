@@ -27,6 +27,7 @@
 #include "private/phgP.h"
 #include "ws.h"
 #include "private/wsglP.h"
+#include "private/wsgl_tessP.h"
 
 /*******************************************************************************
  * priv_fill_area
@@ -40,33 +41,18 @@ void priv_fill_area(
                     )
 {
   int i;
-  int vertex_indices[MAX_VERTICES];
-  int n_vertices = 0;
-  int normal_indices[MAX_VERTICES];
-  int n_normals = 0;
+  Wsgl_tess_vertex *t_verts = (Wsgl_tess_vertex *)malloc(point_list->num_points * sizeof(Wsgl_tess_vertex));
+  if (!t_verts) return;
+  memset(t_verts, 0, point_list->num_points * sizeof(Wsgl_tess_vertex));
 
-  glBegin(GL_POLYGON);
   for (i = 0; i < point_list->num_points; i++) {
-    glVertex2f(point_list->points[i].x,
-               point_list->points[i].y);
-    if (record_geom && record_geom_fill){
-#ifdef DEBUG_OBJ
-      printf("wsgl_fill: priv_fill_area called\n");
-#endif
-      vertex_indices[n_vertices] = wsgl_add_vertex(point_list->points[i].x,
-                                                   point_list->points[i].y,
-                                                   0.0);
-      n_vertices ++;
-      normal_indices[n_normals] = wsgl_add_normal(current_normal.x,
-                                                  current_normal.y,
-                                                  current_normal.z);
-      n_normals ++;
-    }
+    t_verts[i].pos[0] = point_list->points[i].x;
+    t_verts[i].pos[1] = point_list->points[i].y;
+    t_verts[i].pos[2] = 0.0;
   }
-  if (record_geom && record_geom_fill){
-    wsgl_add_geometry(GEOM_FACE, vertex_indices, normal_indices, n_vertices);
-  }
-  glEnd();
+  
+  wsgl_draw_tess_polygon(t_verts, point_list->num_points, record_geom && record_geom_fill);
+  free(t_verts);
 }
 
 /*******************************************************************************
@@ -113,34 +99,18 @@ void priv_fill_area3(
                      )
 {
   int i;
-  int vertex_indices[MAX_VERTICES];
-  int n_vertices = 0;
-  int normal_indices[MAX_VERTICES];
-  int n_normals = 0;
+  Wsgl_tess_vertex *t_verts = (Wsgl_tess_vertex *)malloc(point_list->num_points * sizeof(Wsgl_tess_vertex));
+  if (!t_verts) return;
+  memset(t_verts, 0, point_list->num_points * sizeof(Wsgl_tess_vertex));
 
-  glBegin(GL_POLYGON);
   for (i = 0; i < point_list->num_points; i++) {
-    glVertex3f(point_list->points[i].x,
-               point_list->points[i].y,
-               point_list->points[i].z);
-    if (record_geom && record_geom_fill){
-#ifdef DEBUG_OBJ
-      printf("wsgl_fill: priv_fill_area3 called\n");
-#endif
-      vertex_indices[n_vertices] = wsgl_add_vertex(point_list->points[i].x,
-                                                   point_list->points[i].y,
-                                                   point_list->points[i].z);
-      n_vertices ++;
-      normal_indices[n_normals] = wsgl_add_normal(current_normal.x,
-                                                  current_normal.y,
-                                                  current_normal.z);
-      n_normals ++;
-    }
+    t_verts[i].pos[0] = point_list->points[i].x;
+    t_verts[i].pos[1] = point_list->points[i].y;
+    t_verts[i].pos[2] = point_list->points[i].z;
   }
-  if (record_geom && record_geom_fill){
-    wsgl_add_geometry(GEOM_FACE, vertex_indices, normal_indices, n_vertices);
-  }
-  glEnd();
+  
+  wsgl_draw_tess_polygon(t_verts, point_list->num_points, record_geom && record_geom_fill);
+  free(t_verts);
 }
 
 /*******************************************************************************

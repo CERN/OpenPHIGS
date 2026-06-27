@@ -432,6 +432,7 @@ CDECK  ID>, KYDELP.
       END IF
 *
 *     Draw the Dolphin
+        CALL PSIS(PSOLID)
         CALL PSEDCI (IBLUE)
         CALL PSICI  (153)
         CALL VFILL (VCOLI, NPT1, IBLUE)
@@ -506,6 +507,7 @@ C     Initialize colors
 
 C      Open structure
       CALL POPST(0)
+      CALL PSIASF(13, 1)
       CALL KYDELP(0.3, 0.5, 1.)
 C
 C     Close structure

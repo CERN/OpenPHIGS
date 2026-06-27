@@ -32,6 +32,7 @@
 #include "private/phgP.h"
 #include "ws.h"
 #include "private/wsglP.h"
+#include "private/wsgl_tessP.h"
 #include "private/fasd3P.h"
 
 /*******************************************************************************
@@ -47,31 +48,17 @@ static void priv_clear_area_points(
                                    )
 {
   Pint i;
-  int vertex_indices[MAX_VERTICES];
-  int n_vertices = 0;
-  int normal_indices[MAX_VERTICES];
-  int n_normals = 0;
+  Wsgl_tess_vertex *t_verts = (Wsgl_tess_vertex *)malloc(num_vertices * sizeof(Wsgl_tess_vertex));
+  if (!t_verts) return;
+  memset(t_verts, 0, num_vertices * sizeof(Wsgl_tess_vertex));
 
-  glBegin(GL_POLYGON);
   for (i = 0; i < num_vertices; i++) {
-    glVertex3f(points[i].x,
-               points[i].y,
-               0.);
-    if (record_geom){
-      vertex_indices[n_vertices] = wsgl_add_vertex(points[i].x,
-                                                   points[i].y,
-                                                   0.);
-      n_vertices ++;
-      normal_indices[n_normals] = wsgl_add_normal(current_normal.x,
-                                                  current_normal.y,
-                                                  current_normal.z);
-      n_normals ++;
-    }
+    t_verts[i].pos[0] = points[i].x;
+    t_verts[i].pos[1] = points[i].y;
+    t_verts[i].pos[2] = 0.;
   }
-  if (record_geom){
-    wsgl_add_geometry(GEOM_FACE, vertex_indices, normal_indices, n_vertices);
-  }
-  glEnd();
+  wsgl_draw_tess_polygon(t_verts, num_vertices, record_geom);
+  free(t_verts);
 }
 
 /*******************************************************************************
@@ -87,31 +74,17 @@ static void priv_clear_area_ptcolrs(
                                     )
 {
   Pint i;
-  int vertex_indices[MAX_VERTICES];
-  int n_vertices = 0;
-  int normal_indices[MAX_VERTICES];
-  int n_normals = 0;
+  Wsgl_tess_vertex *t_verts = (Wsgl_tess_vertex *)malloc(num_vertices * sizeof(Wsgl_tess_vertex));
+  if (!t_verts) return;
+  memset(t_verts, 0, num_vertices * sizeof(Wsgl_tess_vertex));
 
-  glBegin(GL_POLYGON);
   for (i = 0; i < num_vertices; i++) {
-    glVertex3f(ptcolrs[i].point.x,
-               ptcolrs[i].point.y,
-               0.0);
-    if (record_geom){
-      vertex_indices[n_vertices] = wsgl_add_vertex(ptcolrs[i].point.x,
-                                                   ptcolrs[i].point.y,
-                                                   0.0);
-      n_vertices ++;
-      normal_indices[n_normals] = wsgl_add_normal(current_normal.x,
-                                                  current_normal.y,
-                                                  current_normal.z);
-      n_normals ++;
-    }
+    t_verts[i].pos[0] = ptcolrs[i].point.x;
+    t_verts[i].pos[1] = ptcolrs[i].point.y;
+    t_verts[i].pos[2] = 0.0;
   }
-  if (record_geom){
-    wsgl_add_geometry(GEOM_FACE, vertex_indices, normal_indices, n_vertices);
-  }
-  glEnd();
+  wsgl_draw_tess_polygon(t_verts, num_vertices, record_geom);
+  free(t_verts);
 }
 
 /*******************************************************************************
@@ -127,31 +100,17 @@ static void priv_clear_area_ptnorms(
                                     )
 {
   Pint i;
-  int vertex_indices[MAX_VERTICES];
-  int n_vertices = 0;
-  int normal_indices[MAX_VERTICES];
-  int n_normals = 0;
+  Wsgl_tess_vertex *t_verts = (Wsgl_tess_vertex *)malloc(num_vertices * sizeof(Wsgl_tess_vertex));
+  if (!t_verts) return;
+  memset(t_verts, 0, num_vertices * sizeof(Wsgl_tess_vertex));
 
-  glBegin(GL_POLYGON);
   for (i = 0; i < num_vertices; i++) {
-    glVertex3f(ptnorms[i].point.x,
-               ptnorms[i].point.y,
-               0.0);
-    if (record_geom){
-      vertex_indices[n_vertices] = wsgl_add_vertex(ptnorms[i].point.x,
-                                                   ptnorms[i].point.y,
-                                                   0.0);
-      n_vertices ++;
-      normal_indices[n_normals] = wsgl_add_normal(current_normal.x,
-                                                  current_normal.y,
-                                                  current_normal.z);
-      n_normals ++;
-    }
+    t_verts[i].pos[0] = ptnorms[i].point.x;
+    t_verts[i].pos[1] = ptnorms[i].point.y;
+    t_verts[i].pos[2] = 0.0;
   }
-  if (record_geom){
-    wsgl_add_geometry(GEOM_FACE, vertex_indices, normal_indices, n_vertices);
-  }
-  glEnd();
+  wsgl_draw_tess_polygon(t_verts, num_vertices, record_geom);
+  free(t_verts);
 }
 
 /*******************************************************************************
@@ -168,31 +127,17 @@ static void priv_clear_area_ptconorms(
                                       )
 {
   Pint i;
-  int vertex_indices[MAX_VERTICES];
-  int n_vertices = 0;
-  int normal_indices[MAX_VERTICES];
-  int n_normals = 0;
+  Wsgl_tess_vertex *t_verts = (Wsgl_tess_vertex *)malloc(num_vertices * sizeof(Wsgl_tess_vertex));
+  if (!t_verts) return;
+  memset(t_verts, 0, num_vertices * sizeof(Wsgl_tess_vertex));
 
-  glBegin(GL_POLYGON);
   for (i = 0; i < num_vertices; i++) {
-    glVertex3f(ptconorms[i].point.x,
-               ptconorms[i].point.y,
-               0.0);
-    if (record_geom){
-      vertex_indices[n_vertices] = wsgl_add_vertex(ptconorms[i].point.x,
-                                                   ptconorms[i].point.y,
-                                                   0.0);
-      n_vertices ++;
-      normal_indices[n_normals] = wsgl_add_normal(current_normal.x,
-                                                  current_normal.y,
-                                                  current_normal.z);
-      n_normals ++;
-    }
+    t_verts[i].pos[0] = ptconorms[i].point.x;
+    t_verts[i].pos[1] = ptconorms[i].point.y;
+    t_verts[i].pos[2] = 0.0;
   }
-  if (record_geom){
-    wsgl_add_geometry(GEOM_FACE, vertex_indices, normal_indices, n_vertices);
-  }
-  glEnd();
+  wsgl_draw_tess_polygon(t_verts, num_vertices, record_geom);
+  free(t_verts);
 }
 
 /*******************************************************************************

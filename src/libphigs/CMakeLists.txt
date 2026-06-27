@@ -77,6 +77,7 @@ SET(P_WSGL_SRCS
   wsgl/wsgl_fasdfill.c
   wsgl/wsgl_fasedge.c
   wsgl/wsgl_fill.c
+  wsgl/wsgl_tess.c
   wsgl/wsgl_hatch.c
   wsgl/wsgl_light.c
   wsgl/wsgl_line.c

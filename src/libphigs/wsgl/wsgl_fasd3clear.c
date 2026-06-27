@@ -28,6 +28,7 @@
 #include "ws.h"
 #include "private/wsglP.h"
 #include "private/fasd3P.h"
+#include "private/wsgl_tessP.h"
 
 /*******************************************************************************
  * priv_clear_area3_points

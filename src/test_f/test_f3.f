@@ -432,6 +432,7 @@ CDECK  ID>, KYDELP.
       END IF
 *
 *     Draw the Dolphin
+        CALL PSIS(PSOLID)
         CALL PSEDCI (IBLUE)
         CALL PSICI  (153)
         CALL VFILL (VCOLI, NPT1, IBLUE)

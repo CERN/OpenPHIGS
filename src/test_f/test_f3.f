@@ -507,6 +507,7 @@ C     Initialize colors
 
 C      Open structure
       CALL POPST(0)
+      CALL PSIASF(13, 1)
       CALL KYDELP(0.3, 0.5, 1.)
 C
 C     Close structure

@@ -903,23 +903,6 @@ FTN_SUBROUTINE(psbici)(
 }
 
 /*******************************************************************************
- * psbis
- *
- * DESCR:   set back interior style
- * RETURNS:   N/A
- */
-FTN_SUBROUTINE(psbis)(
-                      FTN_INTEGER(style)
-                      )
-{
-  Pint_style int_style = (Pint_style) FTN_INTEGER_GET(style);
-#ifdef DEBUG
-  printf("DEBUG: pset back interior style set to %d\n", int_style);
-#endif
-  pset_back_int_style(int_style);
-}
-
-/*******************************************************************************
  * psbisi
  *
  * DESCR:   set back interior style index
@@ -935,3 +918,4 @@ FTN_SUBROUTINE(psbisi)(
 #endif
   pset_back_int_style_ind(style_ind);
 }
+

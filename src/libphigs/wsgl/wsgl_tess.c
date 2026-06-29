@@ -26,6 +26,10 @@ static void CALLBACK tessEndCB() {
     glEnd();
 }
 
+static void CALLBACK tessEdgeFlagCB(GLboolean flag) {
+    glEdgeFlag(flag);
+}
+
 static void CALLBACK tessVertexCB(void *data) {
     Wsgl_tess_vertex *v = (Wsgl_tess_vertex *)data;
     if (v->has_norm) {
@@ -92,6 +96,7 @@ void wsgl_draw_tess_polygon(Wsgl_tess_vertex *vertices, int num_vertices, int re
     gluTessCallback(tess, GLU_TESS_VERTEX, (void (CALLBACK *)())tessVertexCB);
     gluTessCallback(tess, GLU_TESS_ERROR, (void (CALLBACK *)())tessErrorCB);
     gluTessCallback(tess, GLU_TESS_COMBINE, (void (CALLBACK *)())tessCombineCB);
+    gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (void (CALLBACK *)())tessEdgeFlagCB);
 
     gluTessBeginPolygon(tess, NULL);
     gluTessBeginContour(tess);
@@ -114,6 +119,9 @@ void wsgl_draw_tess_polygon(Wsgl_tess_vertex *vertices, int num_vertices, int re
     gluTessEndContour(tess);
     gluTessEndPolygon(tess);
     gluDeleteTess(tess);
+
+    /* Restore default edge flag state for subsequent rendering */
+    glEdgeFlag(GL_TRUE);
 
     if (record_geom_flag && n_vertices > 0) {
         wsgl_add_geometry(GEOM_FACE, vertex_indices, normal_indices, n_vertices);

@@ -87,6 +87,9 @@ void wsgl_draw_tess_polygon(Wsgl_tess_vertex *vertices, int num_vertices, int re
     int normal_indices[MAX_VERTICES];
     int n_vertices = 0;
     int n_normals = 0;
+    GLboolean orig_depth_mask;
+    GLfloat cur_color[4];
+    int has_transparency = 0;
 
     tess = gluNewTess();
     if (!tess) return;
@@ -99,10 +102,6 @@ void wsgl_draw_tess_polygon(Wsgl_tess_vertex *vertices, int num_vertices, int re
     gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (void (CALLBACK *)())tessEdgeFlagCB);
 
     /* Determine if depth writing should be disabled for order-independent transparency */
-    GLboolean orig_depth_mask;
-    GLfloat cur_color[4];
-    int has_transparency = 0;
-    
     glGetBooleanv(GL_DEPTH_WRITEMASK, &orig_depth_mask);
     
     if (num_vertices > 0 && vertices[0].apply_cb) {

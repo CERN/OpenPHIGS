@@ -98,6 +98,28 @@ void wsgl_draw_tess_polygon(Wsgl_tess_vertex *vertices, int num_vertices, int re
     gluTessCallback(tess, GLU_TESS_COMBINE, (void (CALLBACK *)())tessCombineCB);
     gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (void (CALLBACK *)())tessEdgeFlagCB);
 
+    /* Determine if depth writing should be disabled for order-independent transparency */
+    GLboolean orig_depth_mask;
+    GLfloat cur_color[4];
+    int has_transparency = 0;
+    
+    glGetBooleanv(GL_DEPTH_WRITEMASK, &orig_depth_mask);
+    
+    if (num_vertices > 0 && vertices[0].apply_cb) {
+        if (vertices[0].colr_type == PMODEL_RGBA && vertices[0].colr.direct.rgba.alpha < 1.0f) {
+            has_transparency = 1;
+        }
+    } else {
+        glGetFloatv(GL_CURRENT_COLOR, cur_color);
+        if (cur_color[3] < 1.0f) {
+            has_transparency = 1;
+        }
+    }
+    
+    if (has_transparency && orig_depth_mask == GL_TRUE) {
+        glDepthMask(GL_FALSE);
+    }
+
     gluTessBeginPolygon(tess, NULL);
     gluTessBeginContour(tess);
 
@@ -122,6 +144,10 @@ void wsgl_draw_tess_polygon(Wsgl_tess_vertex *vertices, int num_vertices, int re
 
     /* Restore default edge flag state for subsequent rendering */
     glEdgeFlag(GL_TRUE);
+
+    if (has_transparency && orig_depth_mask == GL_TRUE) {
+        glDepthMask(GL_TRUE);
+    }
 
     if (record_geom_flag && n_vertices > 0) {
         wsgl_add_geometry(GEOM_FACE, vertex_indices, normal_indices, n_vertices);

@@ -884,3 +884,54 @@ FTN_SUBROUTINE(psmcv3)(
   spacelist.half_spaces = &list[0];
   pset_model_clip_vol3(iop, spacelist);
 }
+
+/*******************************************************************************
+ * psbici
+ *
+ * DESCR:   set back interior colour index
+ * RETURNS:   N/A
+ */
+FTN_SUBROUTINE(psbici)(
+                      FTN_INTEGER(coli)
+                      )
+{
+  Pint colr_ind = FTN_INTEGER_GET(coli);
+#ifdef DEBUG
+  printf("DEBUG: pset back interior color index set to %d\n", colr_ind);
+#endif
+  pset_back_int_colr_ind(colr_ind);
+}
+
+/*******************************************************************************
+ * psbis
+ *
+ * DESCR:   set back interior style
+ * RETURNS:   N/A
+ */
+FTN_SUBROUTINE(psbis)(
+                      FTN_INTEGER(style)
+                      )
+{
+  Pint_style int_style = (Pint_style) FTN_INTEGER_GET(style);
+#ifdef DEBUG
+  printf("DEBUG: pset back interior style set to %d\n", int_style);
+#endif
+  pset_back_int_style(int_style);
+}
+
+/*******************************************************************************
+ * psbisi
+ *
+ * DESCR:   set back interior style index
+ * RETURNS:   N/A
+ */
+FTN_SUBROUTINE(psbisi)(
+                      FTN_INTEGER(stylei)
+                      )
+{
+  Pint style_ind = FTN_INTEGER_GET(stylei);
+#ifdef DEBUG
+  printf("DEBUG: pset back interior style index set to %d\n", style_ind);
+#endif
+  pset_back_int_style_ind(style_ind);
+}

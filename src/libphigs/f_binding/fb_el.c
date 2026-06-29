@@ -272,23 +272,6 @@ FTN_SUBROUTINE(psici)(
 }
 
 /*******************************************************************************
- * psbici
- *
- * DESCR:   set back interior colour index
- * RETURNS:   N/A
- */
-FTN_SUBROUTINE(psbici)(
-                      FTN_INTEGER(coli)
-                      )
-{
-  Pint colr_ind = FTN_INTEGER_GET(coli);
-#ifdef DEBUG
-  printf("DEBUG: pset back interior color index set to %d\n", colr_ind);
-#endif
-  pset_back_int_colr_ind(colr_ind);
-}
-
-/*******************************************************************************
  * psis
  *
  * DESCR:   set interior style
@@ -303,23 +286,6 @@ FTN_SUBROUTINE(psis)(
   printf("DEBUG: PSIS interior style called to %d\n", (int)interior_style);
 #endif
   pset_int_style(interior_style);
-}
-
-/*******************************************************************************
- * pbsi
- *
- * DESCR:   set back interior style
- * RETURNS:   N/A
- */
-FTN_SUBROUTINE(pbsi)(
-                     FTN_INTEGER(ints)
-                     )
-{
-  Pint_style interior_style = (Pint_style) FTN_INTEGER_GET(ints);
-#ifdef DEBUG
-  printf("DEBUG: PSBIS back interior style called to %d\n", (int)interior_style);
-#endif
-  pset_back_int_style(interior_style);
 }
 
 /*******************************************************************************

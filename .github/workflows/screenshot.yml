@@ -1,0 +1,36 @@
+name: Screenshot Test
+
+on:
+  push:
+    branches: [ "fix/tessellation-artifacts" ]
+
+jobs:
+  test-and-screenshot:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: sudo apt update && sudo apt install --fix-missing cmake gcc gfortran libx11-dev libglu1-mesa-dev libmotif-dev tcsh libxaw7-dev libglew-dev libdlm-dev libgl2ps-dev libpng-dev xvfb imagemagick
+      
+    - name: Build
+      run: |
+        make config
+        make build
+        
+    - name: Run test_f3 and capture screenshot
+      run: |
+        Xvfb :99 -screen 0 1024x768x24 &
+        export DISPLAY=:99
+        sleep 2
+        ./build/test_f/test_f3 &
+        TEST_PID=$!
+        sleep 5
+        import -window root test_f3_output.png
+        kill $TEST_PID
+        
+    - name: Upload Screenshot Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: test_f3-screenshot
+        path: test_f3_output.png

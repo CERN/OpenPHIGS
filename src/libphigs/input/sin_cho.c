@@ -167,7 +167,19 @@ static void enable_choice(
     sprintf( buf, "choice%d", device->num );
     sprintf( title, "Options:");
     /* Create the containing shell. */
-#ifdef MOTIF
+#ifdef GTK4_EXT
+    if (device->item_handle.choice.shell) {
+        gtk_window_destroy(GTK_WINDOW(device->item_handle.choice.shell));
+        device->item_handle.choice.shell = NULL;
+    }
+    device->item_handle.choice.shell = (Widget)gtk_window_new();
+    gtk_window_set_title(GTK_WINDOW(device->item_handle.choice.shell), title);
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_window_set_child(GTK_WINDOW(device->item_handle.choice.shell), box);
+    device->item_handle.choice.list = (Widget)gtk_list_box_new();
+    gtk_box_append(GTK_BOX(box), (GtkWidget*)device->item_handle.choice.list);
+    w = device->item_handle.choice.list;
+#elif defined(MOTIF)
     device->item_handle.choice.shell =
       XtVaCreatePopupShell( buf, applicationShellWidgetClass,
 			    parent,
@@ -230,10 +242,14 @@ static void enable_choice(
 	XtNcallback, choice_notify, (XtPointer)device );
 #endif
 
+#ifdef GTK4_EXT
+    gtk_window_present(GTK_WINDOW(device->item_handle.choice.shell));
+#else
     XtPopup( device->item_handle.choice.shell, XtGrabNone );
     if ( device->mode == SIN_REQUEST_PENDING )
 	XSaveContext( XtDisplay(w), XtWindow(w), phg_sin_device_context_id,
 	    (caddr_t)device );
+#endif
 #ifdef DEBUGINP
     printf("Enabling choice finished\n");
 #endif

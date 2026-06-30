@@ -7,10 +7,20 @@ FIND_PACKAGE(PNG REQUIRED)
 FIND_PACKAGE(OpenGL REQUIRED)
 FIND_PACKAGE(X11 REQUIRED)
 FIND_PACKAGE(XMU REQUIRED)
-FIND_PACKAGE(Motif REQUIRED)
+FIND_PACKAGE(Motif)
 FIND_PACKAGE(GLEW)
 FIND_PACKAGE(epoxy)
 FIND_LIBRARY(MATH_LIBRARY m)
+
+option(USE_GTK4 "Use GTK4 for widgets instead of Motif/Xaw" OFF)
+if (USE_GTK4)
+  FIND_PACKAGE(PkgConfig REQUIRED)
+  pkg_check_modules(GTK4 REQUIRED gtk4)
+else()
+  if(NOT Motif_FOUND)
+    message(FATAL_ERROR "Motif not found but USE_GTK4 is OFF. You must have Motif installed.")
+  endif()
+endif()
 
 if (APPLE)
   set(CMAKE_C_COMPILER gcc)
@@ -50,8 +60,12 @@ add_definitions(-g)
 # add_definitions(-DDEBUGINP)
 #add_definitions(-DDEBUGCL)
 #
-# use Motif widgets rather than Xaw
-add_definitions(-DMOTIF)
+# use Motif or GTK4 widgets rather than Xaw
+if(USE_GTK4)
+  add_definitions(-DGTK4_EXT)
+else()
+  add_definitions(-DMOTIF)
+endif()
 
 # use GLEW or epoxy
 if (USE_GLEW)
@@ -65,15 +79,22 @@ endif()
 # gl2ps
 FIND_PATH(GL2PS_INCLUDE_DIR gl2ps.h)
 FIND_LIBRARY(GL2PS_LIBRARY NAMES gl2ps)
-add_definitions(-DGLEW)
-set (GL_INCLUDES ${GL2PS_INCLUDE_DIR})
+if (GL2PS_INCLUDE_DIR)
+  list(APPEND GL_INCLUDES ${GL2PS_INCLUDE_DIR})
+endif()
 
 message(STATUS "GL Includes=${GL_INCLUDES}")
-include_directories(${X11_INCLUDE_DIR} ${MOTIF_INCLUDE_DIR} ${GL_INCLUDES})
-
-SET(CMAKE_C_FLAGS  "$ENV{CFLAGS} -DMOTIF -g -O0 -fPIC")
-SET(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -DMOTIF -g -O0  -fPIC")
-SET(CMAKE_Fortran_FLAGS "$ENV{FFLAGS} -DMOTIF -finit-local-zero -g -O0 -fPIC")
+if (USE_GTK4)
+  include_directories(${X11_INCLUDE_DIR} ${GTK4_INCLUDE_DIRS} ${GL_INCLUDES})
+  SET(CMAKE_C_FLAGS  "$ENV{CFLAGS} -DGTK4_EXT -g -O0 -fPIC")
+  SET(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -DGTK4_EXT -g -O0  -fPIC")
+  SET(CMAKE_Fortran_FLAGS "$ENV{FFLAGS} -DGTK4_EXT -finit-local-zero -g -O0 -fPIC")
+else()
+  include_directories(${X11_INCLUDE_DIR} ${MOTIF_INCLUDE_DIR} ${GL_INCLUDES})
+  SET(CMAKE_C_FLAGS  "$ENV{CFLAGS} -DMOTIF -g -O0 -fPIC")
+  SET(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -DMOTIF -g -O0  -fPIC")
+  SET(CMAKE_Fortran_FLAGS "$ENV{FFLAGS} -DMOTIF -finit-local-zero -g -O0 -fPIC")
+endif()
 
 SET(CMAKE_EXE_LINKER_FLAGS $ENV{LDFLAGS})
 if (OPENPHIGS_FORCE_32)
@@ -98,11 +119,17 @@ INCLUDE_DIRECTORIES(
     set (XLIBS "")
 endif()
 
+if (USE_GTK4)
+  set(UI_LIBRARIES ${GTK4_LIBRARIES})
+else()
+  set(UI_LIBRARIES ${MOTIF_LIBRARIES})
+endif()
+
 if (USE_GLEW)
   SET(PHIGS_LIBRARIES
       phigs
       ${XLIBS}
-      ${MOTIF_LIBRARIES}
+      ${UI_LIBRARIES}
       ${XMU_LIBRARY}
       ${PNG_LIBRARY}
       ${X11_Xaw_LIB}
@@ -117,7 +144,7 @@ else()
   SET(PHIGS_LIBRARIES
       phigs
       ${XLIBS}
-      ${MOTIF_LIBRARIES}
+      ${UI_LIBRARIES}
       ${XMU_LIBRARY}
       ${PNG_LIBRARY}
       ${X11_Xaw_LIB}

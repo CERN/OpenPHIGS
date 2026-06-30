@@ -75,7 +75,13 @@ SOFTWARE.
  * DESCR:       Reset string measure helper function
  * RETURNS:     N/A
  */
-#ifdef MOTIF
+#ifdef GTK4_EXT
+static void reset_string_measure(Sin_input_device *device) {
+    if (device->item_handle.string.textw) {
+        gtk_editable_set_text(GTK_EDITABLE(device->item_handle.string.textw), device->data.string.init_string ? device->data.string.init_string : "");
+    }
+}
+#elif defined(MOTIF)
 static void reset_string_measure(
 				 Sin_input_device *device
 				 )
@@ -127,7 +133,16 @@ static void reset_string_measure(
  * RETURNS:     N/A
  */
 
-#ifdef MOTIF
+#ifdef GTK4_EXT
+static void update_string(Sin_input_device *device) {
+    Sin_string_device_data *data = &device->data.string;
+    if (device->item_handle.string.textw) {
+        const char *text = gtk_editable_get_text(GTK_EDITABLE(device->item_handle.string.textw));
+        strncpy(data->string, text, data->buffer_size - 1);
+        data->string[data->buffer_size - 1] = '\0';
+    }
+}
+#elif defined(MOTIF)
 static void update_string(
 			  Sin_input_device *device
 			  )
@@ -239,7 +254,15 @@ static void create_string(
 #endif
     /* Create the containing shell. */
     sprintf( buf, "string%d", device->num );
-#ifdef MOTIF
+#ifdef GTK4_EXT
+    widgets->shell = (Widget)gtk_window_new();
+    gtk_window_set_title(GTK_WINDOW(widgets->shell), "String Input");
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_window_set_child(GTK_WINDOW(widgets->shell), box);
+    widgets->textw = (Widget)gtk_entry_new();
+    gtk_box_append(GTK_BOX(box), (GtkWidget*)widgets->textw);
+    widgets->pane = (Widget)box;
+#elif defined(MOTIF)
     widgets->shell =
       XtVaCreatePopupShell( buf, applicationShellWidgetClass,
 			    parent,
@@ -309,7 +332,11 @@ static void enable_string(
 	create_string( device );
 
     reset_string_measure( device );
+#ifdef GTK4_EXT
+    gtk_window_present(GTK_WINDOW(device->item_handle.string.shell));
+#else
     XtPopup( device->item_handle.string.shell, XtGrabNone );
+#endif
     if ( !device->flags.been_up_yet ) {
 #ifdef DEBUGINP
       printf("Setting flags\n");
@@ -357,8 +384,13 @@ static void disable_string(
 #ifdef DEBUGINP
     printf("Disable string.\n");
 #endif
-    if ( device->item_handle.string.shell )
+    if ( device->item_handle.string.shell ) {
+#ifdef GTK4_EXT
+        gtk_window_close(GTK_WINDOW(device->item_handle.string.shell));
+#else
 	XtPopdown( device->item_handle.string.shell );
+#endif
+    }
 }
 
 /*******************************************************************************

@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.9...3.31)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5...3.31)
 PROJECT(PHIGS)
 
 SET(CMAKE_MODULE_PATH ${PHIGS_SOURCE_DIR}/cmake)
@@ -86,15 +86,16 @@ endif()
 message(STATUS "GL Includes=${GL_INCLUDES}")
 if (USE_GTK4)
   include_directories(${X11_INCLUDE_DIR} ${GTK4_INCLUDE_DIRS} ${GL_INCLUDES})
-  SET(CMAKE_C_FLAGS  "$ENV{CFLAGS} -DGTK4_EXT -g -O0 -fPIC")
-  SET(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -DGTK4_EXT -g -O0  -fPIC")
+  SET(CMAKE_C_FLAGS "$ENV{CFLAGS} -DGTK4_EXT -g -O0 -fPIC -Wno-deprecated-non-prototype")
+  SET(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -DGTK4_EXT -g -O0 -fPIC -Wno-deprecated-non-prototype")
   SET(CMAKE_Fortran_FLAGS "$ENV{FFLAGS} -DGTK4_EXT -finit-local-zero -g -O0 -fPIC")
 else()
   include_directories(${X11_INCLUDE_DIR} ${MOTIF_INCLUDE_DIR} ${GL_INCLUDES})
-  SET(CMAKE_C_FLAGS  "$ENV{CFLAGS} -DMOTIF -g -O0 -fPIC")
-  SET(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -DMOTIF -g -O0  -fPIC")
+  SET(CMAKE_C_FLAGS "$ENV{CFLAGS} -DMOTIF -g -O0 -fPIC -Wno-deprecated-non-prototype")
+  SET(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -DMOTIF -g -O0 -fPIC -Wno-deprecated-non-prototype")
   SET(CMAKE_Fortran_FLAGS "$ENV{FFLAGS} -DMOTIF -finit-local-zero -g -O0 -fPIC")
 endif()
+
 
 SET(CMAKE_EXE_LINKER_FLAGS $ENV{LDFLAGS})
 if (OPENPHIGS_FORCE_32)
@@ -169,3 +170,15 @@ ADD_SUBDIRECTORY(test_f)
 #foreach (_variableName ${_variableNames})
 #    message(STATUS "${_variableName}=${${_variableName}}")
 #endforeach()
+
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+    add_custom_target(doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM)
+endif()

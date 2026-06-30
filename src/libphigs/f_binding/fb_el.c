@@ -257,7 +257,7 @@ FTN_SUBROUTINE(psvwi)(
 /*******************************************************************************
  * psici
  *
- * DESCR:   set interior colour index
+ * DESCR:   set interior colour index for front face
  * RETURNS:   N/A
  */
 FTN_SUBROUTINE(psici)(

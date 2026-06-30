@@ -1,4 +1,5 @@
 ## Contributors
 * Alexander von Knorring
 * Ulrich Schwickerath
-* Matthias Schroeder
+* Matthias Schroede
+* Paramveer Singh

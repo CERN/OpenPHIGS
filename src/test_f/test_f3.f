@@ -29,15 +29,15 @@ C *****************************************************************************
 
       SUBROUTINE INITCOLS(IWK1)
       COMMON /KXCCOL/ NCOL, IBLACK, IWHIT, IRED, IGREEN, IBLUE, IYEL,
-     ,                IMAG, ICYAN, IORAN, ICOL(7),
+     ,                IGREY, IMAG, ICYAN, IORAN, ICOL(7),
      ,                COLR(16), COLG(16), COLB(16)
       INTEGER         NCOL, IBLACK, IWHIT, IRED, IGREEN, IBLUE, IYEL,
-     ,                IMAG, ICYAN, IORAN, ICOL, ICLTB(16)
+     ,                IGREY, IMAG, ICYAN, IORAN, ICOL, ICLTB(16)
       REAL            COLR    ,COLG     ,COLB
       EQUIVALENCE    (IBLACK, ICLTB)
       REAL            FCOLR(3)
       INTEGER IWK1
-      NCOL = 6
+      NCOL = 7
       IBLACK = 1
       COLR(1) = 0.0
       COLG(1) = 0.0
@@ -56,7 +56,7 @@ C *****************************************************************************
       IGREEN = 4
       COLR(4) = 0.0
       COLG(4) = 1.0
-      COLB(4) = 1.0
+      COLB(4) = 0.0
 
       IBLUE = 5
       COLR(5) = 0.0
@@ -67,6 +67,11 @@ C *****************************************************************************
       COLR(6) = 0.0
       COLG(6) = 1.0
       COLB(6) = 0.0
+
+      IGREY = 7
+      COLR(7) = 0.7
+      COLG(7) = 0.7
+      COLB(7) = 0.7
 
       DO I=1, NCOL
          FCOLR(1) = COLR(I)
@@ -136,10 +141,10 @@ CDECK  ID>, KYDELP.
 *      COLOR LOOK UP TABLE DEFINITION
 *
       COMMON /KXCCOL/ NCOL, IBLACK, IWHIT, IRED, IGREEN, IBLUE, IYEL,
-     ,                IMAG, ICYAN, IORAN, ICOL(7),
+     ,                IGREY,IMAG, ICYAN, IORAN, ICOL(7),
      ,                COLR(16), COLG(16), COLB(16)
       INTEGER         NCOL, IBLACK, IWHIT, IRED, IGREEN, IBLUE, IYEL,
-     ,                IMAG, ICYAN, IORAN, ICOL, ICLTB(16)
+     ,                IGREY,IMAG, ICYAN, IORAN, ICOL, ICLTB(16)
       REAL            COLR    ,COLG     ,COLB
       EQUIVALENCE    (IBLACK, ICLTB)
 *
@@ -359,6 +364,7 @@ CDECK  ID>, KYDELP.
       IF ( NKPRT )                                  THEN
         CALL PSLWSC (1.0)
         CALL PSIS   (PSOLID)
+        CALL PSBIS  (PSOLID)
         CALL PSEWSC (1.0)
         CALL PSEDFG (1)
 *
@@ -404,6 +410,7 @@ CDECK  ID>, KYDELP.
         END DO
         CALL PSEDCI (IGREEN)
         CALL PSICI  (IGREEN)
+        CALL PSBICI  (IGREEN)
         CALL PFASD (PFNO, PEVF, PCD, 0, 0, IGREEN, 0., 0., 0., 0., 0,
      ,              0., 1, NPT11, EDATA, XG, YG, VCOLI, 0., VNXY, VNXY,
      ,              VNXY, 0, 0.)
@@ -433,8 +440,9 @@ CDECK  ID>, KYDELP.
 *
 *     Draw the Dolphin
         CALL PSIS(PSOLID)
-        CALL PSEDCI (IBLUE)
-        CALL PSICI  (153)
+        CALL PSEDCI(IBLUE)
+        CALL PSICI(153)
+        CALL PSBICI(153)
         CALL VFILL (VCOLI, NPT1, IBLUE)
         DO   I = 1, NPT1
           XG(I) = ((FLOAT (X1 (I))+OFFSET)*NORM - X0)*SCALE + XORG
@@ -447,6 +455,7 @@ CDECK  ID>, KYDELP.
 *     Dolphin tong
         CALL PSEDCI (IRED)
         CALL PSICI  (IRED)
+        CALL PSBICI  (IRED)
         CALL VFILL (VCOLI, NPT2, IRED)
         DO   I = 1, NPT2
           XG(I) = ((FLOAT (X2 (I))+OFFSET)*NORM - X0)*SCALE + XORG
@@ -459,7 +468,8 @@ CDECK  ID>, KYDELP.
 *     Dolphin eye
         CALL PSEDCI (IBLACK)
         CALL PSICI  (IBLACK)
-        CALL PSIS(PISEMP)
+        CALL PSBICI  (IBLACK)
+*        CALL PSIS(PISEMP)
         CALL VFILL (VCOLI, MAX (NPT3, NPT4), 0)
         DO   I = 1, NPT3
           XG(I) = ((FLOAT (X3 (I))+OFFSET)*NORM - X0)*SCALE + XORG
@@ -477,8 +487,11 @@ CDECK  ID>, KYDELP.
      ,              0, 0.)
 *
 *     Dolphin Z
-        CALL PSEDCI (IRED)
+        CALL PSEDCI (IBLACK)
+        CALL PSIS(PSOLID)
+        CALL PSBIS(PSOLID)
         CALL PSICI  (IRED)
+        CALL PSBICI  (IRED)
         CALL VFILL (VCOLI, NPT5, IRED)
         DO   I = 1, NPT5
           XG(I) = ((FLOAT (X5 (I))+OFFSET)*NORM - X0)*SCALE + XORG

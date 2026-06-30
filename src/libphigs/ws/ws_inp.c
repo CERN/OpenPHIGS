@@ -1364,7 +1364,7 @@ static void send_request(
   Ws_input_ws *iws = &ws->in_ws;
 
   --ws->num_active_input_devs;
-  iws->input_request.dev_class = event->dev_class;
+  iws->input_request.dev_class = (Phg_args_idev_class)event->dev_class;
   iws->input_request.dev_num = event->dev_num;
   if (brk) {
     switch (event->dev_class) {

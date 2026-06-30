@@ -425,6 +425,12 @@ static void wsgl_text_string(
   int n_vertices = 0;
 
   wsgl_setup_text_attr(ast, &fnt, &char_expan);
+  {
+      GLfloat cur_color[4];
+      glGetFloatv(GL_CURRENT_COLOR, cur_color);
+      if (wsgl_current_transparency_pass == 0 && cur_color[3] < 1.0f) return;
+      if (wsgl_current_transparency_pass == 1 && cur_color[3] >= 1.0f) return;
+  }
   char_ht = ast->char_ht;
 
   posa.x = text->pos.x;
@@ -496,6 +502,12 @@ static void wsgl_text_string3(
   int n_vertices = 0;
 
   wsgl_setup_text_attr(ast, &fnt, &char_expan);
+  {
+      GLfloat cur_color[4];
+      glGetFloatv(GL_CURRENT_COLOR, cur_color);
+      if (wsgl_current_transparency_pass == 0 && cur_color[3] < 1.0f) return;
+      if (wsgl_current_transparency_pass == 1 && cur_color[3] >= 1.0f) return;
+  }
   char_ht = ast->char_ht;
 
   posa.x = text->pos.x;
@@ -568,6 +580,12 @@ static void wsgl_anno_text_string3(
   int n_vertices = 0;
 
   wsgl_setup_text_attr(ast, &fnt, &char_expan);
+  {
+      GLfloat cur_color[4];
+      glGetFloatv(GL_CURRENT_COLOR, cur_color);
+      if (wsgl_current_transparency_pass == 0 && cur_color[3] < 1.0f) return;
+      if (wsgl_current_transparency_pass == 1 && cur_color[3] >= 1.0f) return;
+  }
   char_ht = ast->anno_char_ht;
 
   posa.x = text->pos.x;

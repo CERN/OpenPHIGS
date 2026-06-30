@@ -854,7 +854,8 @@ void phg_wsb_traverse_all_postings(
 
   WSB_CHECK_POSTED(&owsb->posted);
   if( WSB_SOME_POSTED(&owsb->posted) ) {
-    /* Set up for complete traversal. */
+    /* PASS 1: Opaque elements */
+    wsgl_set_transparency_pass(ws, 0);
     post_str = owsb->posted.lowest.higher;
     end = &(owsb->posted.highest);
     wsgl_begin_rendering(ws);
@@ -863,6 +864,20 @@ void phg_wsb_traverse_all_postings(
       post_str = post_str->higher;
     }
     wsgl_end_rendering(ws);
+
+    /* PASS 2: Transparent elements (drawn with depth write off) */
+    wsgl_set_transparency_pass(ws, 1);
+    post_str = owsb->posted.lowest.higher;
+    wsgl_begin_rendering(ws);
+    while ( post_str != end ) {
+      phg_wsb_traverse_net( ws, post_str->structh );
+      post_str = post_str->higher;
+    }
+    wsgl_end_rendering(ws);
+
+    /* Restore default state (Opaque) */
+    wsgl_set_transparency_pass(ws, 0);
+
     owsb->surf_state = PSURF_NOT_EMPTY;
   }
 }

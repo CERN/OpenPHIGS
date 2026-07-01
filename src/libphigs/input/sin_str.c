@@ -198,7 +198,7 @@ static void update_string(
  * RETURNS:     N/A
  */
 
-#ifndef USE_GTK4
+#ifndef GTK4_EXT
 XtActionProc phg_sin_xt_string_event(
     Widget w,
     XEvent *event,

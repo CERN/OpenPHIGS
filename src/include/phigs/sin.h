@@ -400,7 +400,7 @@ extern void             phg_sin_sample();
   */
 
 /* Xt action procs for input. */
-#ifndef USE_GTK4
+#ifndef GTK4_EXT
   extern XtActionProc     phg_sin_xt_request_satisfied(Widget);
   extern XtActionProc     phg_sin_xt_string_event(Widget, XEvent*, String *, Cardinal*);
 #endif

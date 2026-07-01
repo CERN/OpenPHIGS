@@ -613,7 +613,7 @@ void phg_sin_ws_flush_event_buffer(
     SIN_WS_RESET_EVENT_BUFFER(ev_buf);
 }
 
-#ifndef USE_GTK4
+#ifndef GTK4_EXT
 XtActionProc phg_sin_xt_request_satisfied(
     Widget  w
     )

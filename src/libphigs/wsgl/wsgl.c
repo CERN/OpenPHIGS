@@ -1465,7 +1465,7 @@ void wsgl_begin_pick(
   printf("\n");
 #endif
 
-  init_rendering_state(ws);
+  wsgl_init_rendering_state(ws);
   glSelectBuffer(wsgl->select_size, wsgl->select_buf);
 #ifdef DEBUGINP
   printf("WSGL begin pick: set render mode to select\n");

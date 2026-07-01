@@ -91,10 +91,14 @@ void wsgl_draw_tess_polygon(Wsgl_tess_vertex *vertices, int num_vertices, int re
     int has_transparency = 0;
 
     if (num_vertices > 0 && vertices[0].apply_cb) {
-        if (vertices[0].colr_type == PMODEL_RGBA && vertices[0].colr.direct.rgba.alpha < 1.0f) {
-            has_transparency = 1;
-        } else if (vertices[0].colr_type == PMODEL_RGB && vertices[0].ast && vertices[0].ast->alpha_channel < 1.0f) {
-            has_transparency = 1;
+        for (i = 0; i < num_vertices; i++) {
+            if (vertices[i].colr_type == PMODEL_RGBA && vertices[i].colr.direct.rgba.alpha < 1.0f) {
+                has_transparency = 1;
+                break;
+            } else if (vertices[i].colr_type != PMODEL_RGBA && vertices[i].ast && vertices[i].ast->alpha_channel < 1.0f) {
+                has_transparency = 1;
+                break;
+            }
         }
     } else {
         glGetFloatv(GL_CURRENT_COLOR, cur_color);

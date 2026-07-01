@@ -289,7 +289,8 @@ extern "C" {
 
   void wsgl_set_colr(
                      Pint colr_type,
-                     Pcoval *colr
+                     Pcoval *colr,
+                     Pfloat alpha
                      );
 
   /*******************************************************************************

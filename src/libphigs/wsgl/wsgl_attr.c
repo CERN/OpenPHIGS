@@ -412,7 +412,8 @@ void wsgl_set_asf(
  */
 void wsgl_set_colr(
                    Pint colr_type,
-                   Pcoval *colr
+                   Pcoval *colr,
+                   Pfloat alpha
                    )
 {
   int* crash = 0;
@@ -430,12 +431,12 @@ void wsgl_set_colr(
                        colr->direct.rgb.red,
                        colr->direct.rgb.green,
                        colr->direct.rgb.blue,
-                       1.0);
+                       alpha);
     } else {
       glColor4f(colr->direct.rgb.red,
                 colr->direct.rgb.green,
                 colr->direct.rgb.blue,
-                1.0);
+                alpha);
     }
     break;
 

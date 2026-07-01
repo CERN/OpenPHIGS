@@ -49,6 +49,19 @@ short int wsgl_use_shaders = 1;
 short int wsgl_vert_shader_version = 120;
 short int wsgl_frag_shader_version = 120;
 
+int wsgl_current_transparency_pass = 0;
+
+/*******************************************************************************
+ * wsgl_set_transparency_pass
+ *
+ * DESCR:       Set the transparency pass and update HLHSR depth mask.
+ * RETURNS:     N/A
+ ******************************************************************************/
+void wsgl_set_transparency_pass(Ws *ws, int pass) {
+    wsgl_current_transparency_pass = pass;
+    wsgl_update_hlhsr_id(ws);
+}
+
 #define LOG_INT(DATA)                                   \
   css_print_eltype(ELMT_HEAD(DATA)->elementType);       \
   printf(":\tSIZE: %d\t", ELMT_HEAD(DATA)->length);     \
@@ -373,7 +386,7 @@ void wsgl_flush(
  * DESCR:       Initialize rendering state helper function
  * RETURNS:     N/A
  */
-static void init_rendering_state(
+void wsgl_init_rendering_state(
                                  Ws *ws
                                  )
 {
@@ -446,7 +459,7 @@ void wsgl_begin_rendering(
   }
   glDepthMask (GL_TRUE);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  init_rendering_state(ws);
+  wsgl_init_rendering_state(ws);
 }
 
 /*******************************************************************************
@@ -1452,7 +1465,7 @@ void wsgl_begin_pick(
   printf("\n");
 #endif
 
-  init_rendering_state(ws);
+  wsgl_init_rendering_state(ws);
   glSelectBuffer(wsgl->select_size, wsgl->select_buf);
 #ifdef DEBUGINP
   printf("WSGL begin pick: set render mode to select\n");

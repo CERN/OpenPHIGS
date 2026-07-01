@@ -51,6 +51,12 @@ void wsgl_polyline(
    point_list.points = (Ppoint *) &data[1];
 
    wsgl_setup_line_attr(ast);
+   {
+       GLfloat cur_color[4];
+       glGetFloatv(GL_CURRENT_COLOR, cur_color);
+       if (wsgl_current_transparency_pass == 0 && cur_color[3] < 1.0f) return;
+       if (wsgl_current_transparency_pass == 1 && cur_color[3] >= 1.0f) return;
+   }
    glBegin(GL_LINES);
    for (i = 0; i < point_list.num_points; i++) {
       glVertex2f(point_list.points[i].x,
@@ -91,6 +97,12 @@ void wsgl_polyline3(
    point_list.points = (Ppoint3 *) &data[1];
 
    wsgl_setup_line_attr(ast);
+   {
+       GLfloat cur_color[4];
+       glGetFloatv(GL_CURRENT_COLOR, cur_color);
+       if (wsgl_current_transparency_pass == 0 && cur_color[3] < 1.0f) return;
+       if (wsgl_current_transparency_pass == 1 && cur_color[3] >= 1.0f) return;
+   }
    glBegin(GL_LINES);
    for (i = 0; i < point_list.num_points; i++) {
       glVertex3f(point_list.points[i].x,

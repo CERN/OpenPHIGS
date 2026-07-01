@@ -51,7 +51,22 @@ SOFTWARE.
 
 #include <sys/types.h>
 #include <X11/Xlib.h>
+#ifdef GTK4_EXT
+#include <gtk/gtk.h>
+#ifndef OPENPHIGS_GTK4_TYPES_DEFINED
+#define OPENPHIGS_GTK4_TYPES_DEFINED
+typedef void* XtAppContext;
+typedef GtkWidget* Widget;
+typedef void* XtPointer;
+typedef unsigned int Cardinal;
+typedef char* String;
+typedef void* Arg;
+typedef void* ArgList;
+typedef unsigned long XtArgVal;
+#endif
+#else
 #include <X11/Intrinsic.h>
+#endif
 
 #include "phigs.h"
 #include "ws_type.h"
@@ -391,8 +406,10 @@ extern void             phg_sin_sample();
   */
 
 /* Xt action procs for input. */
+#ifndef GTK4_EXT
   extern XtActionProc     phg_sin_xt_request_satisfied(Widget);
   extern XtActionProc     phg_sin_xt_string_event(Widget, XEvent*, String *, Cardinal*);
+#endif
 
 #define SIN_CLASS_INDEX(_class) \
     ((int)(_class))

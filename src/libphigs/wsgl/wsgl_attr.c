@@ -364,7 +364,11 @@ void wsgl_update_hlhsr_id(
 
   case PHIGS_HLHSR_ID_ON:
     glDepthFunc(GL_LESS);
-    glDepthMask(GL_TRUE);
+    if (wsgl_current_transparency_pass == 1) {
+        glDepthMask(GL_FALSE);
+    } else {
+        glDepthMask(GL_TRUE);
+    }
     glEnable(GL_DEPTH_TEST);
     break;
 

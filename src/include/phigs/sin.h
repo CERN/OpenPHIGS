@@ -400,8 +400,10 @@ extern void             phg_sin_sample();
   */
 
 /* Xt action procs for input. */
+#ifndef USE_GTK4
   extern XtActionProc     phg_sin_xt_request_satisfied(Widget);
   extern XtActionProc     phg_sin_xt_string_event(Widget, XEvent*, String *, Cardinal*);
+#endif
 
 #define SIN_CLASS_INDEX(_class) \
     ((int)(_class))

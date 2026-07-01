@@ -198,6 +198,7 @@ static void update_string(
  * RETURNS:     N/A
  */
 
+#ifndef USE_GTK4
 XtActionProc phg_sin_xt_string_event(
     Widget w,
     XEvent *event,
@@ -225,6 +226,7 @@ XtActionProc phg_sin_xt_string_event(
     }
     return NULL;
 }
+#endif
 
 static XtTranslations		compiled_translations;
 static String translations = "\

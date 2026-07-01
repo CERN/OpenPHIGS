@@ -386,7 +386,7 @@ void wsgl_flush(
  * DESCR:       Initialize rendering state helper function
  * RETURNS:     N/A
  */
-static void init_rendering_state(
+void wsgl_init_rendering_state(
                                  Ws *ws
                                  )
 {
@@ -459,7 +459,7 @@ void wsgl_begin_rendering(
   }
   glDepthMask (GL_TRUE);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  init_rendering_state(ws);
+  wsgl_init_rendering_state(ws);
 }
 
 /*******************************************************************************

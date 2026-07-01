@@ -360,6 +360,10 @@ extern "C" {
                             Ws *ws
                             );
 
+  void wsgl_init_rendering_state(
+                            Ws *ws
+                            );
+
   /*******************************************************************************
    * wsgl_end_rendering
    *

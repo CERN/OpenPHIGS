@@ -50,7 +50,9 @@ SOFTWARE.
 #include <stdio.h>
 #ifndef GTK4_EXT
 #include <X11/StringDefs.h>
+#ifndef GTK4_EXT
 #include <X11/Shell.h>
+#endif
 #endif
 #include "phg.h"
 #include "ws.h"

@@ -59,16 +59,20 @@ SOFTWARE.
 #include "sin.h"
 #include "private/sinP.h"
 
+#ifndef GTK4_EXT
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#endif
 #ifdef MOTIF
 #include <stdbool.h>
 #include <Xm/Frame.h>
 #include <Xm/ToggleB.h>
 #include <Xm/RowColumn.h>
 #else
+#ifndef GTK4_EXT
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xaw/List.h>
+#endif
 #endif
 /*******************************************************************************
  * choice_notify

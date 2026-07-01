@@ -57,18 +57,22 @@ SOFTWARE.
 #include "cp.h"
 #include "ws.h"
 #include "private/wsxP.h"
+#ifndef GTK4_EXT
 #include <X11/IntrinsicI.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#endif
 #ifdef MOTIF
 #include <Xm/Frame.h>
 #include <Xm/Label.h>
 #include <Xm/PanedW.h>
 #include <Xm/PushB.h>
 #else
+#ifndef GTK4_EXT
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/Command.h>
+#endif
 #endif
 
 int done_pressed = 0;

@@ -55,8 +55,10 @@ SOFTWARE.
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#ifndef GTK4_EXT
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#endif
 
 #include "phg.h"
 #include "private/phgP.h"

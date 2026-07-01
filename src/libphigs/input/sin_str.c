@@ -59,14 +59,18 @@ SOFTWARE.
 #include "sin.h"
 #include "private/sinP.h"
 
+#ifndef GTK4_EXT
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#endif
 #ifdef MOTIF
 #include <Xm/Frame.h>
 #include <Xm/Text.h>
 #else
+#ifndef GTK4_EXT
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xaw/AsciiText.h>
+#endif
 #endif
 
 /*******************************************************************************
@@ -228,10 +232,12 @@ XtActionProc phg_sin_xt_string_event(
 }
 #endif
 
+#ifndef GTK4_EXT
 static XtTranslations		compiled_translations;
 static String translations = "\
           <Key>Return:	newline() StringEvent() RequestSatisfied() \n\
 	  ";
+#endif
 
 /*******************************************************************************
  * create_string
@@ -306,10 +312,12 @@ static void create_string(
 					      NULL );
 #endif
 
+#ifndef GTK4_EXT
     if ( !compiled_translations ) {
       compiled_translations = XtParseTranslationTable( translations );
     }
     XtOverrideTranslations( widgets->textw, compiled_translations );
+#endif
 #ifdef DEBUGINP
     printf("Done with create string.\n");
 #endif
@@ -343,9 +351,11 @@ static void enable_string(
 #ifdef DEBUGINP
       printf("Setting flags\n");
 #endif
+#ifndef GTK4_EXT
       XSaveContext( XtDisplay(device->item_handle.string.textw),
 		    XtWindow(device->item_handle.string.textw),
 		    phg_sin_device_context_id, (caddr_t)device );
+#endif
       device->flags.been_up_yet = 1;
     }
 #ifdef DEBUGINP
@@ -409,8 +419,13 @@ static void destroy_string(
 #ifdef DEBUGINP
      printf("Destroy string.\n");
 #endif
-    if ( device->item_handle.string.shell )
+    if ( device->item_handle.string.shell ) {
+#ifdef GTK4_EXT
+        gtk_window_destroy(GTK_WINDOW(device->item_handle.string.shell));
+#else
 	XtDestroyWidget( device->item_handle.string.shell );
+#endif
+    }
 }
 
 /*******************************************************************************

@@ -28,8 +28,10 @@
 #include "private/evtP.h"
 #include "private/wsxP.h"
 
+#ifndef GTK4_EXT
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
+#endif
 
 /*******************************************************************************
  * phg_wsx_input_dispatch_next

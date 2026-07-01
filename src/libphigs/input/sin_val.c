@@ -59,8 +59,10 @@ SOFTWARE.
 #include "sin.h"
 #include "private/sinP.h"
 
+#ifndef GTK4_EXT
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#endif
 #ifdef MOTIF
 #include <Xm/Frame.h>
 #include <Xm/Scale.h>
@@ -68,10 +70,12 @@ SOFTWARE.
 #include <Xm/PanedW.h>
 #include <Xm/Label.h>
 #else
+#ifndef GTK4_EXT
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Scrollbar.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/Box.h>
+#endif
 #endif
 /*******************************************************************************
  * init_valuator

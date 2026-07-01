@@ -23,8 +23,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef GTK4_EXT
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#endif
 #include <X11/Xlib.h>
 
 #ifdef GLEW

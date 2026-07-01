@@ -57,6 +57,12 @@ SOFTWARE.
 #define OPENPHIGS_GTK4_TYPES_DEFINED
 typedef void* XtAppContext;
 typedef GtkWidget* Widget;
+typedef void* XtPointer;
+typedef unsigned int Cardinal;
+typedef char* String;
+typedef void* Arg;
+typedef void* ArgList;
+typedef unsigned long XtArgVal;
 #endif
 #else
 #include <X11/Intrinsic.h>

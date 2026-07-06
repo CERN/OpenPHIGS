@@ -676,6 +676,7 @@ void wsgl_setup_line_attr(
     break;
 
   default:
+    glLineStipple(2, 0xffff);
     glDisable(GL_LINE_STIPPLE);
     break;
   }
@@ -845,8 +846,10 @@ void wsgl_setup_int_attr_nocol(
   }
 
   if (style_ind != wsgl->dev_st.int_style_ind) {
-    glPolygonStipple(wsgl_hatch_tbl[style_ind - 1]);
-    wsgl->dev_st.int_style_ind = style_ind;
+    if (style_ind > 0 && style_ind<7){
+      glPolygonStipple(wsgl_hatch_tbl[style_ind - 1]);
+      wsgl->dev_st.int_style_ind = style_ind;
+    }
   }
 
   if (phg_nset_name_is_set(&ast->asf_nameset, (Pint) PASPECT_INT_SHAD_METH)) {
@@ -1014,6 +1017,7 @@ void wsgl_setup_edge_attr(
     break;
 
   default:
+    glLineStipple(2, 0xffff);
     glDisable(GL_LINE_STIPPLE);
     break;
   }

@@ -502,6 +502,7 @@ static void wsgl_text_string3(
   posa.y = text->pos.y;
   posa.z = text->pos.z;
   str = text->char_string;
+  glLineStipple(2, 0xffff);
   glDisable(GL_LINE_STIPPLE);
 
   wsgl_set_text_align3(text, ast, posa, &pos);
@@ -576,6 +577,7 @@ static void wsgl_anno_text_string3(
   wsgl_set_anno_text_align3(text, ast, posa, &pos);
 
   str = text->char_string;
+  glLineStipple(2, 0xffff);
   glDisable(GL_LINE_STIPPLE);
 
   len = strlen(str);
@@ -742,6 +744,7 @@ static void wsgl_text_char3(
   posa.y = text->pos.y;
   posa.z = text->pos.z;
   wsgl_set_text_align3(text, ast, posa, &pos);
+  glLineStipple(2, 0xffff);
   glDisable(GL_LINE_STIPPLE);
 
   str = text->char_string;
@@ -840,6 +843,7 @@ static void wsgl_anno_text_char3(
   posa.z = text->pos.z;
   wsgl_set_anno_text_align3(text, ast, posa, &pos);
   str = text->char_string;
+  glLineStipple(2, 0xffff);
   glDisable(GL_LINE_STIPPLE);
 
   len = strlen(str);
@@ -1050,6 +1054,7 @@ static void wsgl_text_stroke3(
   posa.z = text->pos.z;
   wsgl_set_text_align3(text, ast, posa, &pos);
 
+  glLineStipple(2, 0xffff);
   glDisable(GL_LINE_STIPPLE);
   str = text->char_string;
 
@@ -1165,6 +1170,7 @@ static void wsgl_anno_text_stroke3(
   posa.z = text->pos.z;
   wsgl_set_anno_text_align3(text, ast, posa, &pos);
   str = text->char_string;
+  glLineStipple(2, 0xffff);
   glDisable(GL_LINE_STIPPLE);
 
   len = strlen(str);
@@ -1247,6 +1253,7 @@ void wsgl_text(
   Ptext text;
   Ppoint *pos = (Ppoint *) tdata;
 
+  glLineStipple(2, 0xffff);
   glDisable(GL_LINE_STIPPLE);
   memcpy(&text.pos, pos, sizeof(Ppoint));
   text.char_string = (char *) &pos[1];
@@ -1294,6 +1301,7 @@ void wsgl_text3(
   Pfloat length, alpha;
   Ppoint3 tlcpos, wcpos;
 
+  glLineStipple(2, 0xffff);
   glDisable(GL_LINE_STIPPLE);
   memcpy(&wcpos, pos, sizeof(Ppoint3));
   planep = (Pvec3 *)&pos[1];

@@ -1591,7 +1591,9 @@ void pget_pick(
 #endif
     }
   } else {
+#ifdef DEBUGINP
     printf("No input");
+#endif
     *in_status = PIN_STATUS_NO_IN;
   }
 }
@@ -1705,6 +1707,9 @@ static void request_device(
 
   /* Copy to return argument */
   req->status.istat = in_status;
+#ifdef DEBUGINP
+  printf("Request device gives: %d\n", in_status);
+#endif
   if (in_status != PIN_STATUS_NO_IN) {
     switch (dev_class) {
     case PHG_ARGS_INP_LOC:
@@ -1726,6 +1731,12 @@ static void request_device(
       memcpy(&req->event.data.pik,
              &wsh->in_ws.input_request.evt.pick,
              sizeof(Ppick));
+      req->status.pkstat = wsh->in_ws.input_request.status.pkstat;
+#ifdef DEBUGINP
+      printf("Pick event copy results %d -> %d\n",
+	     wsh->in_ws.input_request.status.pkstat,
+	     req->event.data.pik.status);
+#endif
       break;
 
     case PHG_ARGS_INP_VAL:
@@ -1753,6 +1764,9 @@ static void request_device(
 
   memset(inp, 0, sizeof(Ws_inp_req));
   ret->err = 0;
+#ifdef DEBUGINP
+  printf("Set ret->err to zero\n");
+#endif
 }
 
 /*******************************************************************************
@@ -1861,6 +1875,10 @@ void preq_pick(
       request_device(ws_id, pick_num, PHG_ARGS_INP_PIK, &ret);
       if (ret.err == 0) {
         *status = req->status.pkstat;
+#ifdef DEBUGINP
+	printf("Request pick: status %d\n", *status);
+	printf("  pick status:       %d\n", req->status.pkstat);
+#endif
         if (req->status.pkstat != PIN_STATUS_NO_IN) {
           *status = req->event.data.pik.status;
           memcpy(pick, &req->event.data.pik.pick_path, sizeof(Ppick_path));

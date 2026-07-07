@@ -251,6 +251,9 @@ static int resolve_pick(
 #endif
     /* Get space for the converted path. */
     if ( dev_state->mode == POP_REQ || dev_state->mode == POP_SAMPLE ) {
+#ifdef DEBUGINP
+      printf("ws_inp resolve pick POP_REQ or POP_SAMPLE mode\n");
+#endif
       /* Use the scratch path.  Enlarge it if it's too small. */
       if ( dev_state->scratch_path.depth >= pick.pick_path.depth ){
         path = dev_state->scratch_path.path_list;
@@ -265,6 +268,9 @@ static int resolve_pick(
         }
       }
     } else {
+#ifdef DEBUGINP
+      printf("ws_inp resolve pick event mode\n");
+#endif
       /* EVENT mode:  allocate unique space so the event can
        * just be placed directly on the input queue.  It'll
        * be freed by the input code.
@@ -274,8 +280,14 @@ static int resolve_pick(
     }
 
     if ( !path ) {
+#ifdef DEBUGINP
+      printf("ws_inp resolve pick path is empty\n");
+#endif
       ERR_BUF( ws->erh, ERR900);
     } else {
+#ifdef DEBUGINP
+      printf("ws_inp resolve pick copy path and status %d\n", pick.status);
+#endif
       memcpy(path, pick.pick_path.path_list,
              pick.pick_path.depth * sizeof(Ppick_path_elem) );
       cur_pick->status = pick.status;
@@ -1352,7 +1364,7 @@ static int init_input_state(
 /*******************************************************************************
  * send_request
  *
- * DESCR:       Send reuqest callback function
+ * DESCR:       Send request callback function
  * RETURNS:     N/A
  */
 static void send_request(
@@ -1362,7 +1374,9 @@ static void send_request(
                          )
 {
   Ws_input_ws *iws = &ws->in_ws;
-
+#ifdef DEBUGINP
+  printf("send request called with brk= %d\n", brk);
+#endif
   --ws->num_active_input_devs;
   iws->input_request.dev_class = (Phg_args_idev_class)event->dev_class;
   iws->input_request.dev_num = event->dev_num;
@@ -1409,6 +1423,9 @@ static void send_request(
       memcpy(&iws->input_request.evt.pick,
              &event->data.pick.evt,
              sizeof(Ppick));
+#ifdef DEBUGINP
+      printf("send request set pick status to %d\n", iws->input_request.status.pkstat );
+#endif
       break;
     case PIN_VAL:
       iws->input_request.status.istat = PIN_STATUS_OK;

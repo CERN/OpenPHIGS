@@ -39,7 +39,14 @@
 extern GLint shading_mode;
 extern GLint ModelViewMatrix, ProjectionMatrix;
 extern GLint alpha_channel;
+extern GLfloat s_plane[], t_plane[];
 
+GLint state1;
+GLboolean state2;
+
+// FIXME: this should be moved into a header file
+extern void wsgl_select_pattern(Ws * ws, unsigned short style_ind);
+extern GLint applyTexture;
 /*******************************************************************************
  * wsgl_set_matrix
  *
@@ -794,21 +801,42 @@ void wsgl_setup_int_style(
   switch (style) {
   case PSTYLE_HOLLOW:
     glDisable(GL_POLYGON_STIPPLE);
+    glDisable(GL_TEXTURE_2D);
+    glUniform1i(applyTexture, 0);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     break;
 
   case PSTYLE_SOLID:
     glDisable(GL_POLYGON_STIPPLE);
+    glDisable(GL_TEXTURE_2D);
+    glUniform1i(applyTexture, 0);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    break;
+
+  case PSTYLE_PATTERN:
+    /* setup patterns */
+    glUniform1i(applyTexture, 1);
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+    glTexGenfv(GL_S, GL_OBJECT_PLANE, s_plane);
+    glTexGenfv(GL_T, GL_OBJECT_PLANE, t_plane);
+    glEnable(GL_TEXTURE_GEN_S);
+    glEnable(GL_TEXTURE_GEN_T);
+    glEnable(GL_TEXTURE_2D);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     break;
 
   case PSTYLE_HATCH:
+    glUniform1i(applyTexture, 0);
     glEnable(GL_POLYGON_STIPPLE);
+    glDisable(GL_TEXTURE_2D);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     break;
 
   default:
+    glUniform1i(applyTexture, 0);
     glDisable(GL_POLYGON_STIPPLE);
+    glDisable(GL_TEXTURE_2D);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     break;
   }
@@ -840,18 +868,25 @@ void wsgl_setup_int_attr_nocol(
   if (phg_nset_name_is_set(&ast->asf_nameset,
                            (Pint) PASPECT_INT_STYLE_IND)) {
     style_ind = ast->indiv_group.int_bundle.style_ind;
-  }
-  else {
+  } else {
     style_ind = ast->bundl_group.int_bundle.style_ind;
+  };
+  /* this is a bit clumbsy indeed. Can be improved... */
+  state1 = 0;
+  state2 = GL_FALSE;
+  if (wsgl_use_shaders){
+    glGetUniformiv(ws->program, applyTexture, &state1);
+  } else {
+    glGetBooleanv(GL_TEXTURE_2D, &state2);
   }
-
-  if (style_ind != wsgl->dev_st.int_style_ind) {
+  if (state1 ==  GL_TRUE || state2) {
+    wsgl_select_pattern(ws, style_ind);
+  } else {
     if (style_ind > 0 && style_ind<7){
       glPolygonStipple(wsgl_hatch_tbl[style_ind - 1]);
       wsgl->dev_st.int_style_ind = style_ind;
     }
   }
-
   if (phg_nset_name_is_set(&ast->asf_nameset, (Pint) PASPECT_INT_SHAD_METH)) {
     shad_meth = ast->indiv_group.int_bundle.shad_meth;
   }

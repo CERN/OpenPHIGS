@@ -38,28 +38,15 @@ uniform int lightSourceTyp6;
 uniform vec4 lightSourceCol6;
 uniform vec4 lightSourcePos6;
 uniform vec4 lightSourceCoef6;
+uniform sampler2D currentTexture;
+uniform int applyTexture;
 varying vec4 Normal;
 varying vec4 Color;
 varying vec4 VertexPosEye;
-
+varying vec2 TexCoord;
 /*
  * getLight: returns the RGB contribution of a single light source.
  *
- * Fix 1 (darkness): removed the global "/tot" normalization that divided
- *   every light's contribution by the combined magnitude of vAmbient +
- *   vDiffuse + vSpecular. That division could easily exceed 4.0 for
- *   ordinary material colors, crushing brightness well below intended
- *   levels, especially with few lights active. Standard ambient+diffuse+
- *   specular summation does not require this step; the final min(...,1.0)
- *   clamp in main() already guards against over-brightening when many
- *   lights are summed.
- *
- * Fix 2 (alpha): alpha is no longer computed here at all. Previously each
- *   light contributed its own alpha value (vAmbient.w, vDiffuse.w, or a
- *   hardcoded 1.0 for specular), and main() summed these across every
- *   active light, so final alpha depended on how many lights were on
- *   rather than on the material's actual transparency. Alpha is now
- *   handled once in main(), from Color.a.
  */
 vec4 getLight(int type, vec4 color, vec4 pos, vec4 coef){
   vec3 light = vec3(0.5, 0.5, 0.5);
@@ -128,5 +115,9 @@ void main()
     } else { gl_FragColor = Color;};
   } else {
     gl_FragColor = Color;
+  }
+  if (applyTexture != 0){
+    vec4 texColor = texture2D(currentTexture, TexCoord);
+    gl_FragColor = texColor*gl_FragColor;
   }
 }

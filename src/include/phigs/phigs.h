@@ -310,7 +310,8 @@ extern "C" {
     PSTYLE_EMPTY,
     PSTYLE_HOLLOW,
     PSTYLE_SOLID,
-    PSTYLE_HATCH
+    PSTYLE_HATCH,
+    PSTYLE_PATTERN
   } Pint_style;
 
   typedef enum {

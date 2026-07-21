@@ -87,23 +87,9 @@ void wsgl_draw_tess_polygon(Wsgl_tess_vertex *vertices, int num_vertices, int re
     int normal_indices[MAX_VERTICES];
     int n_vertices = 0;
     int n_normals = 0;
-    GLboolean orig_depth_mask;
     GLfloat cur_color[4];
     int has_transparency = 0;
 
-    tess = gluNewTess();
-    if (!tess) return;
-
-    gluTessCallback(tess, GLU_TESS_BEGIN, (void (CALLBACK *)())tessBeginCB);
-    gluTessCallback(tess, GLU_TESS_END, (void (CALLBACK *)())tessEndCB);
-    gluTessCallback(tess, GLU_TESS_VERTEX, (void (CALLBACK *)())tessVertexCB);
-    gluTessCallback(tess, GLU_TESS_ERROR, (void (CALLBACK *)())tessErrorCB);
-    gluTessCallback(tess, GLU_TESS_COMBINE, (void (CALLBACK *)())tessCombineCB);
-    gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (void (CALLBACK *)())tessEdgeFlagCB);
-
-    /* Determine if depth writing should be disabled for order-independent transparency */
-    glGetBooleanv(GL_DEPTH_WRITEMASK, &orig_depth_mask);
-    
     if (num_vertices > 0 && vertices[0].apply_cb) {
         if (vertices[0].colr_type == PMODEL_RGBA && vertices[0].colr.direct.rgba.alpha < 1.0f) {
             has_transparency = 1;
@@ -114,10 +100,19 @@ void wsgl_draw_tess_polygon(Wsgl_tess_vertex *vertices, int num_vertices, int re
             has_transparency = 1;
         }
     }
-    
-    if (has_transparency && orig_depth_mask == GL_TRUE) {
-        glDepthMask(GL_FALSE);
-    }
+
+    if (wsgl_current_transparency_pass == 0 && has_transparency) return;
+    if (wsgl_current_transparency_pass == 1 && !has_transparency) return;
+
+    tess = gluNewTess();
+    if (!tess) return;
+
+    gluTessCallback(tess, GLU_TESS_BEGIN, (void (CALLBACK *)())tessBeginCB);
+    gluTessCallback(tess, GLU_TESS_END, (void (CALLBACK *)())tessEndCB);
+    gluTessCallback(tess, GLU_TESS_VERTEX, (void (CALLBACK *)())tessVertexCB);
+    gluTessCallback(tess, GLU_TESS_ERROR, (void (CALLBACK *)())tessErrorCB);
+    gluTessCallback(tess, GLU_TESS_COMBINE, (void (CALLBACK *)())tessCombineCB);
+    gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (void (CALLBACK *)())tessEdgeFlagCB);
 
     gluTessBeginPolygon(tess, NULL);
     gluTessBeginContour(tess);
@@ -143,10 +138,6 @@ void wsgl_draw_tess_polygon(Wsgl_tess_vertex *vertices, int num_vertices, int re
 
     /* Restore default edge flag state for subsequent rendering */
     glEdgeFlag(GL_TRUE);
-
-    if (has_transparency && orig_depth_mask == GL_TRUE) {
-        glDepthMask(GL_TRUE);
-    }
 
     if (record_geom_flag && n_vertices > 0) {
         wsgl_add_geometry(GEOM_FACE, vertex_indices, normal_indices, n_vertices);

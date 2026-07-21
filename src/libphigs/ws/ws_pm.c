@@ -57,47 +57,67 @@ SOFTWARE.
 #include "cp.h"
 #include "ws.h"
 #include "private/wsxP.h"
+#ifndef GTK4_EXT
 #include <X11/IntrinsicI.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#endif
 #ifdef MOTIF
 #include <Xm/Frame.h>
 #include <Xm/Label.h>
 #include <Xm/PanedW.h>
 #include <Xm/PushB.h>
 #else
+#ifndef GTK4_EXT
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/Command.h>
 #endif
+#endif
 
 int done_pressed = 0;
 
+#ifdef GTK4_EXT
+static void done_button( GtkWidget *w, gpointer data )
+{
+  Ws *ws = (Ws *)data;
+  done_pressed = 1;
+  gtk_window_destroy(GTK_WINDOW(ws->msg_shell));
+  ws->msg_shell = NULL;
+}
+#else
 void done_button( Widget w,
 		  XtPointer client_data,
 		  XtPointer call_data )
 {
   Ws *ws = (Ws *)client_data;
-#ifdef DEBUGINP
-  printf("Done button pressed\n");
-#endif
   done_pressed = 1;
   XtPopdown( ws->msg_shell );
 }
+#endif
 
 void create_message_win( Ws *ws )
 {
+#ifdef GTK4_EXT
+  ws->msg_shell = (Widget)gtk_window_new();
+  gtk_window_set_title(GTK_WINDOW(ws->msg_shell), "Message");
+  gtk_window_set_default_size(GTK_WINDOW(ws->msg_shell), 400, 100);
+
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  gtk_window_set_child(GTK_WINDOW(ws->msg_shell), box);
+
+  ws->msg_label = (Widget)gtk_label_new("");
+  gtk_box_append(GTK_BOX(box), (GtkWidget*)ws->msg_label);
+
+  GtkWidget *button = gtk_button_new_with_label("OK");
+  g_signal_connect(button, "clicked", G_CALLBACK(done_button), ws);
+  gtk_box_append(GTK_BOX(box), button);
+#else
   Widget frame, pane, box, text, button;
 
-#ifdef DEBUGINP
-  printf("Creating message window\n");
-#endif
   /* Create the containing shell. */
   ws->msg_shell = XtVaCreatePopupShell( "message",
 					applicationShellWidgetClass, ws->top_level, NULL );
-#ifdef DEBUGINP
-  printf("Called XtVaCreatePopupShell. msg_shell is %ld\n", (long)ws->msg_shell);
-#endif
 #ifdef MOTIF
   frame =
     XtVaCreateManagedWidget( "frame", xmFrameWidgetClass, ws->msg_shell,
@@ -129,6 +149,7 @@ void create_message_win( Ws *ws )
   ws->msg_label = XtVaCreateManagedWidget( "label", labelWidgetClass, box,
 					   NULL );
 #endif
+#endif
 }
 
 void phg_wsb_message(
@@ -146,12 +167,13 @@ void phg_wsb_message(
   }
 
   if ( args->msg_length > 0 ) {
+#ifdef GTK4_EXT
+    gtk_label_set_text(GTK_LABEL(ws->msg_label), args->msg);
+    gtk_window_present(GTK_WINDOW(ws->msg_shell));
+#else
     /* The unmanage and manage is to get the parent box to allow the
      * label resize.
      */
-#ifdef DEBUGINP
-    printf("Setting message window parameters. Message is %s\n", args->msg);
-#endif
     XtUnmanageChild( ws->msg_label );
 #ifdef MOTIF
     XmString btext = XmStringCreateSimple(args->msg);
@@ -165,15 +187,16 @@ void phg_wsb_message(
 #endif
     XtManageChild( ws->msg_label );
     XtPopup( ws->msg_shell, XtGrabNone );
-#ifdef DEBUGINP
-    printf("Popup done.\n");
 #endif
   }
   phg_wsx_update_ws_rect( ws );
-#ifdef DEBUGINP
-  printf("DEBUG: ws_pm: entering main loop\n");
-#endif
+
   done_pressed = 0;
+#ifdef GTK4_EXT
+  while (done_pressed == 0) {
+    g_main_context_iteration(NULL, TRUE);
+  }
+#else
   XtAppContext app = _XtDefaultAppContext();
   do {
     if (m == 0) {
@@ -187,6 +210,7 @@ void phg_wsb_message(
     }
     m >>= 1;
   } while (done_pressed == 0);
+#endif
   done_pressed = 0;
 }
 

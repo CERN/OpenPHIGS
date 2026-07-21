@@ -23,8 +23,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef GTK4_EXT
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#endif
 #include <X11/Xlib.h>
 
 #ifdef GLEW
@@ -141,7 +143,11 @@ int phg_wsx_setup_tool(
     else {
       /* Initialize rendering context */
       ws->app_context = phg_cpm_init_toolkit(argc, argv);
+#ifdef GTK4_EXT
+      ws->top_level = (Widget)gtk_window_new();
+#else
       ws->top_level = XtInitialize("Workstation", "", NULL, 0, &argc, argv);
+#endif
       /* Create window */
       drawable_id = XCreateWindow(display,
                                   RootWindow(display, best_info->screen),

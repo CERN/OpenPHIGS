@@ -59,8 +59,10 @@ SOFTWARE.
 #include "sin.h"
 #include "private/sinP.h"
 
+#ifndef GTK4_EXT
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#endif
 #ifdef MOTIF
 #include <Xm/Frame.h>
 #include <Xm/Scale.h>
@@ -68,10 +70,12 @@ SOFTWARE.
 #include <Xm/PanedW.h>
 #include <Xm/Label.h>
 #else
+#ifndef GTK4_EXT
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Scrollbar.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/Box.h>
+#endif
 #endif
 /*******************************************************************************
  * init_valuator
@@ -139,7 +143,9 @@ static void valuator_jump(
     float delta, prec;
     Sin_input_device *device = (Sin_input_device *)client_data;
     Sin_valuator_device_data *data = &device->data.valuator;
-#ifdef MOTIF
+#ifdef GTK4_EXT
+    data->value = gtk_range_get_value(GTK_RANGE(device->item_handle.valuator.scrollbar));
+#elif defined(MOTIF)
     XmScaleCallbackStruct *cbs = (XmScaleCallbackStruct *) call_data;
     delta = data->high - data->low;
     if (delta<=1.0) prec = 100.0;
@@ -220,7 +226,30 @@ static void enable_valuator(
     if (device->item_handle.valuator.pane != NULL){
       return;
     }
-#ifdef MOTIF
+#ifdef GTK4_EXT
+    if (device->item_handle.valuator.shell == NULL) {
+      ws->valuator_shell = (Widget)gtk_window_new();
+      gtk_window_set_title(GTK_WINDOW(ws->valuator_shell), "Valuator");
+      
+      GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+      gtk_window_set_child(GTK_WINDOW(ws->valuator_shell), box);
+      ws->valuator_box = (Widget)box;
+
+      if (data->label) {
+          GtkWidget *lbl = gtk_label_new(data->label);
+          gtk_box_append(GTK_BOX(box), lbl);
+      }
+
+      device->item_handle.valuator.scrollbar = (Widget)gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, data->low, data->high, (data->high - data->low)/100.0);
+      gtk_range_set_value(GTK_RANGE(device->item_handle.valuator.scrollbar), data->init_value);
+      g_signal_connect(device->item_handle.valuator.scrollbar, "value-changed", G_CALLBACK(valuator_jump), device);
+      gtk_box_append(GTK_BOX(box), (GtkWidget*)device->item_handle.valuator.scrollbar);
+      
+      gtk_window_present(GTK_WINDOW(ws->valuator_shell));
+    }
+    device->item_handle.valuator.shell = ws->valuator_shell;
+    device->item_handle.valuator.pane = ws->valuator_box;
+#elif defined(MOTIF)
     XmString label;
     /* Create the containing shell. */
     sprintf( buf, "valuator%d", device->num );

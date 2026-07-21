@@ -371,7 +371,11 @@ void wsgl_update_hlhsr_id(
 
   case PHIGS_HLHSR_ID_ON:
     glDepthFunc(GL_LESS);
-    glDepthMask(GL_TRUE);
+    if (wsgl_current_transparency_pass == 1) {
+        glDepthMask(GL_FALSE);
+    } else {
+        glDepthMask(GL_TRUE);
+    }
     glEnable(GL_DEPTH_TEST);
     break;
 
@@ -415,7 +419,8 @@ void wsgl_set_asf(
  */
 void wsgl_set_colr(
                    Pint colr_type,
-                   Pcoval *colr
+                   Pcoval *colr,
+                   Pfloat alpha
                    )
 {
   int* crash = 0;
@@ -433,12 +438,12 @@ void wsgl_set_colr(
                        colr->direct.rgb.red,
                        colr->direct.rgb.green,
                        colr->direct.rgb.blue,
-                       1.0);
+                       alpha);
     } else {
       glColor4f(colr->direct.rgb.red,
                 colr->direct.rgb.green,
                 colr->direct.rgb.blue,
-                1.0);
+                alpha);
     }
     break;
 

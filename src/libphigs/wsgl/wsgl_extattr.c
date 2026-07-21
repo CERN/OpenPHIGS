@@ -489,33 +489,33 @@ void wsgl_setup_int_reflectance_model(
       ambient[0] = colr->direct.rgb.red   * refl_props->ambient_coef;
       ambient[1] = colr->direct.rgb.green * refl_props->ambient_coef;
       ambient[2] = colr->direct.rgb.blue  * refl_props->ambient_coef;
-      ambient[3] = 1.0;
+      ambient[3] = ast ? ast->alpha_channel : 1.0f;
 
       diffuse[0] = 0.0;
       diffuse[1] = 0.0;
       diffuse[2] = 0.0;
-      diffuse[3] = 1.0;
+      diffuse[3] = ast ? ast->alpha_channel : 1.0f;
 
       specular[0] = 0.0;
       specular[1] = 0.0;
       specular[2] = 0.0;
-      specular[3] = 1.0;
+      specular[3] = ast ? ast->alpha_channel : 1.0f;
     }
     if (colr_type == PMODEL_RGBA) {
       ambient[0] = colr->direct.rgba.red   * refl_props->ambient_coef;
       ambient[1] = colr->direct.rgba.green * refl_props->ambient_coef;
       ambient[2] = colr->direct.rgba.blue  * refl_props->ambient_coef;
-      ambient[3] = 1.;
+      ambient[3] = colr->direct.rgba.alpha;
 
       diffuse[0] = 0.0;
       diffuse[1] = 0.0;
       diffuse[2] = 0.0;
-      diffuse[3] = 1.0;
+      diffuse[3] = colr->direct.rgba.alpha;
 
       specular[0] = 0.0;
       specular[1] = 0.0;
       specular[2] = 0.0;
-      specular[3] = 1.0;
+      specular[3] = colr->direct.rgba.alpha;
     }
     break;
 
@@ -527,33 +527,33 @@ void wsgl_setup_int_reflectance_model(
       ambient[0] = colr->direct.rgb.red   * refl_props->ambient_coef;
       ambient[1] = colr->direct.rgb.green * refl_props->ambient_coef;
       ambient[2] = colr->direct.rgb.blue  * refl_props->ambient_coef;
-      ambient[3] = 1.0;
+      ambient[3] = ast ? ast->alpha_channel : 1.0f;
 
       diffuse[0] = colr->direct.rgb.red   * refl_props->diffuse_coef;
       diffuse[1] = colr->direct.rgb.green * refl_props->diffuse_coef;
       diffuse[2] = colr->direct.rgb.blue  * refl_props->diffuse_coef;
-      diffuse[3] = 1.0;
+      diffuse[3] = ast ? ast->alpha_channel : 1.0f;
 
       specular[0] = 0.0;
       specular[1] = 0.0;
       specular[2] = 0.0;
-      specular[3] = 1.0;
+      specular[3] = ast ? ast->alpha_channel : 1.0f;
     }
     if (colr_type == PMODEL_RGBA) {
       ambient[0] = colr->direct.rgba.red   * refl_props->ambient_coef;
       ambient[1] = colr->direct.rgba.green * refl_props->ambient_coef;
       ambient[2] = colr->direct.rgba.blue  * refl_props->ambient_coef;
-      ambient[3] = 1.0;
+      ambient[3] = colr->direct.rgba.alpha;
 
       diffuse[0] = colr->direct.rgba.red   * refl_props->diffuse_coef;
       diffuse[1] = colr->direct.rgba.green * refl_props->diffuse_coef;
       diffuse[2] = colr->direct.rgba.blue  * refl_props->diffuse_coef;
-      diffuse[3] = 1.0;
+      diffuse[3] = colr->direct.rgba.alpha;
 
       specular[0] = 0.0;
       specular[1] = 0.0;
       specular[2] = 0.0;
-      specular[3] = 1.0;
+      specular[3] = colr->direct.rgba.alpha;
     }
     break;
 
@@ -565,33 +565,33 @@ void wsgl_setup_int_reflectance_model(
       ambient[0] = colr->direct.rgb.red   * refl_props->ambient_coef;
       ambient[1] = colr->direct.rgb.green * refl_props->ambient_coef;
       ambient[2] = colr->direct.rgb.blue  * refl_props->ambient_coef;
-      ambient[3] = 1.0;
+      ambient[3] = ast ? ast->alpha_channel : 1.0f;
 
       diffuse[0] = colr->direct.rgb.red   * refl_props->diffuse_coef;
       diffuse[1] = colr->direct.rgb.green * refl_props->diffuse_coef;
       diffuse[2] = colr->direct.rgb.blue  * refl_props->diffuse_coef;
-      diffuse[3] = 1.0;
+      diffuse[3] = ast ? ast->alpha_channel : 1.0f;
 
       specular[0] = colr->direct.rgb.red   * refl_props->specular_coef;
       specular[1] = colr->direct.rgb.green * refl_props->specular_coef;
       specular[2] = colr->direct.rgb.blue  * refl_props->specular_coef;
-      specular[3] = 1.0;
+      specular[3] = ast ? ast->alpha_channel : 1.0f;
     }
     if (colr_type == PMODEL_RGBA) {
       ambient[0] = colr->direct.rgba.red   * refl_props->ambient_coef;
       ambient[1] = colr->direct.rgba.green * refl_props->ambient_coef;
       ambient[2] = colr->direct.rgba.blue  * refl_props->ambient_coef;
-      ambient[3] = 1.0;
+      ambient[3] = colr->direct.rgba.alpha;
 
       diffuse[0] = colr->direct.rgba.red   * refl_props->diffuse_coef;
       diffuse[1] = colr->direct.rgba.green * refl_props->diffuse_coef;
       diffuse[2] = colr->direct.rgba.blue  * refl_props->diffuse_coef;
-      diffuse[3] = 1.0;
+      diffuse[3] = colr->direct.rgba.alpha;
 
       specular[0] = colr->direct.rgba.red   * refl_props->specular_coef;
       specular[1] = colr->direct.rgba.green * refl_props->specular_coef;
       specular[2] = colr->direct.rgba.blue  * refl_props->specular_coef;
-      specular[3] = 1.0;
+      specular[3] = colr->direct.rgba.alpha;
     }
 #ifdef DEBUGLIGHT
     else printf("Reflectance model, color type is not RGB %d \n", colr_type);
@@ -605,9 +605,9 @@ void wsgl_setup_int_reflectance_model(
     memset(ambient, 0.0, sizeof(Pfloat) * 3);
     memset(diffuse, 0.0, sizeof(Pfloat) * 3);
     memset(specular, 0.0, sizeof(Pfloat) * 3);
-    ambient[3] = 1.0;
-    diffuse[3] = 1.0;
-    specular[3] = 1.0;
+    ambient[3] = ast ? ast->alpha_channel : 1.0f;
+    diffuse[3] = ast ? ast->alpha_channel : 1.0f;
+    specular[3] = ast ? ast->alpha_channel : 1.0f;
 
     if (wsgl_use_shaders) glUniform1i(shading_mode, 0);
     break;
@@ -620,7 +620,7 @@ void wsgl_setup_int_reflectance_model(
                        colr->direct.rgb.red,
                        colr->direct.rgb.green,
                        colr->direct.rgb.blue,
-                       1.0);
+                       ast ? ast->alpha_channel : 1.0f);
       break;
     case PMODEL_RGBA:
       glVertexAttrib4f(vCOLOR,
@@ -675,7 +675,7 @@ int wsgl_setup_int_colr(
            colr->direct.rgba.blue,
            colr->direct.rgba.alpha);
 #endif
-    wsgl_set_colr(colr_type, colr);
+    wsgl_set_colr(colr_type, colr, ast ? ast->alpha_channel : 1.0f);
     lighting = FALSE;
   }
 
@@ -735,7 +735,7 @@ int wsgl_setup_back_int_colr(
     lighting = TRUE;
   }
   else {
-    wsgl_set_colr(colr_type, colr);
+    wsgl_set_colr(colr_type, colr, ast ? ast->alpha_channel : 1.0f);
     lighting = FALSE;
   }
 

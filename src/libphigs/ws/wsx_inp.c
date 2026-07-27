@@ -28,8 +28,10 @@
 #include "private/evtP.h"
 #include "private/wsxP.h"
 
+#ifndef GTK4_EXT
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
+#endif
 
 /*******************************************************************************
  * phg_wsx_input_dispatch_next
@@ -43,8 +45,14 @@ int phg_wsx_input_dispatch_next(
    Phg_sin_evt_tbl *evt_tbl
    )
 {
-   int status;
+   int status = FALSE;
    XEvent event;
+
+#ifdef GTK4_EXT
+   if (g_main_context_iteration(NULL, FALSE)) {
+     status = TRUE;
+   }
+#else
    XtInputMask m;
    XtInputMask t;
 
@@ -56,14 +64,12 @@ int phg_wsx_input_dispatch_next(
      status = TRUE;
      XtAppProcessEvent(ws->app_context, t & m);
    }
+#endif
    if (XCheckWindowEvent(ws->display,
                          ws->input_overlay_window,
                          (unsigned long) 0xffffffffUL,
                          &event) == True) {
       status = TRUE;
-   }
-   else {
-      status = FALSE;
    }
 
    return status;

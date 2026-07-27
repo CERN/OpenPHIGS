@@ -50,8 +50,10 @@ SOFTWARE.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef GTK4_EXT
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
+#endif
 
 #include "phg.h"
 #include "ws.h"

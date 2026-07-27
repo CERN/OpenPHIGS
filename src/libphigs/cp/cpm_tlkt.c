@@ -48,12 +48,17 @@ SOFTWARE.
 
 ******************************************************************/
 #include <stdio.h>
+#ifndef GTK4_EXT
 #include <X11/StringDefs.h>
+#ifndef GTK4_EXT
 #include <X11/Shell.h>
+#endif
+#endif
 #include "phg.h"
 #include "ws.h"
 #include "sin.h"
 
+#ifndef GTK4_EXT
 /* TODO: Fill in the real options. */
 static XrmOptionDescRec options[] = {
 {"-horiz",	"scrollbar.orientation", XrmoptionNoArg,  "horizontal"}
@@ -300,6 +305,7 @@ static XtActionsRec	actions[] = {
 };
 
 XContext        phg_sin_device_context_id;
+#endif
 
 /* No need for a "destroy_toolkit function since all the resources are
  * destroyed when the PM terminates.
@@ -307,8 +313,11 @@ XContext        phg_sin_device_context_id;
 
 XtAppContext phg_cpm_init_toolkit( int argc, char **argv )
 {
-  XtAppContext app_con;
+  XtAppContext app_con = NULL;
 
+#ifdef GTK4_EXT
+  gtk_init();
+#else
   XtToolkitInitialize();
 #ifdef DEBUGINP
   printf("Initialising Xt Toolkit\n");
@@ -321,6 +330,7 @@ XtAppContext phg_cpm_init_toolkit( int argc, char **argv )
     XtAppAddActions( app_con, actions, XtNumber(actions) );
     phg_sin_device_context_id = XUniqueContext();
   }
+#endif
   return app_con;
 }
 
@@ -328,13 +338,20 @@ Widget phg_cpm_toolkit_add_connection( XtAppContext context, Display* display, P
 {
   int    argc = 0, status = 0;
   char   **argv = (char **)NULL;
-  Widget top_level;
+  Widget top_level = NULL;
 
+  *err = 0;
+#ifdef GTK4_EXT
+  /* In GTK4, Display connection is handled by gtk_init() or implicitly. */
+  /* We can create a dummy or invisible top-level window if needed, but 
+   * OpenPHIGS handles GLX on X11 windows directly. We just need to return 
+   * a valid pointer to indicate success if the caller checks it. */
+  top_level = (Widget)gtk_window_new();
+#else
   /* TODO: XtDisplayInitialize destroys the arg vector, but we need to
    * keep it for the next display initialized.  So copy it to scratch
    * space then pass the copy.
    */
-  *err = 0;
   XtDisplayInitialize( context, display,
         "Workstation", NULL, NULL, 0,
         &argc, argv );
@@ -342,6 +359,7 @@ Widget phg_cpm_toolkit_add_connection( XtAppContext context, Display* display, P
 				  display, NULL );
   if (top_level == NULL)
     *err = ERRN204;
+#endif
   return top_level;
 }
 
@@ -354,16 +372,30 @@ int phg_cpm_toolkit_open_ws( Ws *ws ) {
 #endif
     status = 0;
     sprintf( buf, "workstation%d", ws->id );
+#ifdef GTK4_EXT
+    ws->shell = (Widget)gtk_window_new();
+    if (ws->shell == NULL){
+      status = 1;
+    }
+#else
     ws->shell = XtVaCreatePopupShell( buf, applicationShellWidgetClass,
 				      ws->top_level, NULL);
     if (ws->shell == NULL){
       printf("Failed to create shell for %s! Top_level was %ld\n", buf, (long)ws->top_level);
       status = 1;
     }
+#endif
 
     return status;
 }
 
 void phg_cpm_toolkit_close_ws( Ws *ws ) {
+#ifdef GTK4_EXT
+    if (ws->shell) {
+      gtk_window_destroy(GTK_WINDOW(ws->shell));
+      ws->shell = NULL;
+    }
+#else
     XtDestroyWidget( ws->shell );
+#endif
 }

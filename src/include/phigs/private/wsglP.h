@@ -198,6 +198,17 @@ extern "C" {
   void wsgl_clear_geometry();
 
   /*******************************************************************************
+  /*******************************************************************************
+   * wsgl_set_transparency_pass
+   *
+   * DESCR:       Set the transparency pass and update HLHSR depth mask.
+   * RETURNS:     N/A
+   */
+  void wsgl_set_transparency_pass(Ws *ws, int pass);
+
+  extern int wsgl_current_transparency_pass;
+
+  /*******************************************************************************
    * wsgl_init
    *
    * DESCR:       Initialize renderer

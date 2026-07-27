@@ -19,18 +19,19 @@ jobs:
           - linux/arm/v6
           - linux/arm/v7
           - linux/arm64
+        gtk4: [ON, OFF]
 
     steps:
     - uses: actions/checkout@v4
 
     - name: dependencies
-      run: sudo apt install --fix-missing cmake gcc gfortran libx11-dev libglu1-mesa-dev libmotif-dev tcsh libxaw7-dev libglew-dev libdlm-dev libgl2ps-dev libpng-dev
+      run: sudo apt install --fix-missing cmake gcc gfortran libx11-dev libglu1-mesa-dev libmotif-dev tcsh libxaw7-dev libglew-dev libdlm-dev libgl2ps-dev libpng-dev libgtk-4-dev
 
     - name: clean
       run: make clean
 
     - name: configure
-      run: make config
+      run: make config OPENPHIGS_OPTS="-DUSE_GTK4=${{ matrix.gtk4 }}"
 
     - name: Build
       run: make build

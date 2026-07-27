@@ -225,6 +225,12 @@ void wsgl_polymarker(
    point_list.points = (Ppoint *) &data[1];
 
    wsgl_setup_marker_attr(ast, &type, &size);
+   {
+       GLfloat cur_color[4];
+       glGetFloatv(GL_CURRENT_COLOR, cur_color);
+       if (wsgl_current_transparency_pass == 0 && cur_color[3] < 1.0f) return;
+       if (wsgl_current_transparency_pass == 1 && cur_color[3] >= 1.0f) return;
+   }
    switch (type) {
       case PMARKER_DOT:
 	wsgl_marker_polygon(40, &point_list, size);
@@ -300,6 +306,12 @@ void wsgl_polymarker3(
       }
 
       wsgl_setup_marker_attr(ast, &type, &size);
+      {
+          GLfloat cur_color[4];
+          glGetFloatv(GL_CURRENT_COLOR, cur_color);
+          if (wsgl_current_transparency_pass == 0 && cur_color[3] < 1.0f) return;
+          if (wsgl_current_transparency_pass == 1 && cur_color[3] >= 1.0f) return;
+      }
       switch (type) {
       case PMARKER_DOT:
 	wsgl_marker_polygon(40, &plist, size);

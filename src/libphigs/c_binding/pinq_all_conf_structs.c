@@ -1,0 +1,86 @@
+/******************************************************************************
+*   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
+*
+*   This file is part of Open PHIGS
+*   Copyright (C) 2014 Surplus Users Ham Society
+*
+*   Open PHIGS is free software: you can redistribute it and/or modify
+*   it under the terms of the GNU Lesser General Public License as published by
+*   the Free Software Foundation, either version 2.1 of the License, or
+*   (at your option) any later version.
+*
+*   Open PHIGS is distributed in the hope that it will be useful,
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*   GNU Lesser General Public License for more details.
+*
+*   You should have received a copy of the GNU Lesser General Public License
+*   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "phg.h"
+#include "css.h"
+#include "ar.h"
+#include "private/phgP.h"
+#include "private/cb_internal.h"
+#include "private/cbP.h"
+
+/**
+ * \file pinq_all_conf_structs.c
+ * \brief Get all conflicting structure ids
+ */
+void pinq_all_conf_structs(
+                           Pint ar_id,
+                           Pint num_elems_appl_list,
+                           Pint start_ind,
+                           Pint *err_ind,
+                           Pint_list *ids,
+                           Pint *num_elems_impl_list
+                           )
+{
+  Phg_args_q_conflicting args;
+  Phg_ret ret;
+
+  if (!phg_entry_check(PHG_ERH, 0, Pfn_INQUIRY)) {
+    *err_ind = ERR7;
+  }
+  else if (PSL_AR_STATE(PHG_PSL) != PST_AROP) {
+    *err_ind = ERR7;
+  }
+  else if (!phg_psl_inq_ar_open(PHG_PSL, ar_id)) {
+    *err_ind = ERR404;
+  }
+  else {
+    args.op = PHG_ARGS_CONF_ALL;
+    args.arid = ar_id;
+    ret.err = 0;
+    phg_inq_ar_conflicting(&args, &ret);
+    if (ret.err) {
+      *err_ind = ret.err;
+    }
+    else {
+      *err_ind = 0;
+      ids->num_ints = 0;
+      *num_elems_impl_list = ret.data.int_list.num_ints;
+      if (ret.data.int_list.num_ints > 0) {
+        if (start_ind < 0 || start_ind >= ret.data.int_list.num_ints) {
+          *err_ind = ERR2201;
+        }
+        else if (num_elems_appl_list > 0) {
+          ids->num_ints = PHG_MIN(num_elems_appl_list,
+                                       ret.data.int_list.num_ints - start_ind);
+          memcpy(ids->ints, &ret.data.int_list.ints[start_ind],
+                 ids->num_ints * sizeof(Pint));
+        }
+        else if (num_elems_appl_list < 0) {
+          *err_ind = ERRN153;
+        }
+      }
+    }
+  }
+}
+

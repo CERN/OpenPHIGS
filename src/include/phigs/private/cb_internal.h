@@ -91,4 +91,8 @@ extern void set_mode(
                      Pecho_switch echo_switch
                      );
 
+extern int inp_dispatch_next(
+                             Pint fn_id
+                             );
+
 #endif

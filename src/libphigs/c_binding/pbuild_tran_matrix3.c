@@ -52,6 +52,7 @@ SOFTWARE.
 
 #include "phg.h"
 #include "util.h"
+#include "private/cb_internal.h"
 
 /**
  * \file pbuild_tran_matrix3.c

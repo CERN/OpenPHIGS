@@ -1,5 +1,5 @@
 /******************************************************************************
- *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
+ *   Do NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
  *
  *   This file is part of Open PHIGS
  *   Copyright (C) 2014 Surplus Users Ham Society
@@ -19,53 +19,59 @@
  ******************************************************************************
  * Changes:   Copyright (C) 2022-2023 CERN
  ******************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <png.h>
-#ifdef GLEW
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glx.h>
-#else
-#include <epoxy/gl.h>
-#include <epoxy/glx.h>
-#endif
-#include <gl2ps.h>
 
+#include <gl2ps.h>
+#include "phigs.h"
 #include "phg.h"
-#include "css.h"
-#include "ws.h"
 #include "private/phgP.h"
 #include "private/cb_internal.h"
-#include "private/cbP.h"
 #include "private/wsglP.h"
-#include "private/wsxP.h"
+#include "css.h"
+#include "ws.h"
+#include "util/ftn.h"
 #include "phconf.h"
 
+extern int record_geom;
+
 /**
- * \file inq_filter.c
- * \brief Get workstation filter
+ * \file pqpost.c
+ * \brief Inquire posted structures
+ *
+ * \return error index, HLHRS mode update status, current HLHRS mode, requested HLHRS mode
  */
-void inq_filter(
-                       Phg_args_flt_type type,
-                       Pint ws_id,
-                       struct _Pstore *store,
-                       Pint *err_ind,
-                       Pfilter **filter
+
+FTN_SUBROUTINE(pqpost)(
+                       FTN_INTEGER(wkid),
+                       FTN_INTEGER(n),
+                       FTN_INTEGER(err_ind),
+                       FTN_INTEGER(number),
+                       FTN_INTEGER(strid),
+                       FTN_REAL(priort)
                        )
 {
-  Phg_ret ret;
-  Phg_ret_filter *pf = &ret.data.filter;
+  Pint ws_id = FTN_INTEGER_GET(wkid);
+  Pint num = FTN_INTEGER_GET(n);
   Psl_ws_info *wsinfo;
   Wst_phigs_dt *dt;
   Ws_handle wsh;
-  int size;
-  if (!phg_entry_check(PHG_ERH, 0, Pfn_INQUIRY)) {
-    *err_ind = ERR3;
-  }
-  else if (PSL_WS_STATE(PHG_PSL) != PWS_ST_WSOP) {
+  Ws_post_str * current;
+  Wsb_output_ws *owsb;
+  Ws_posted_structs posted;
+  int nposted, str_id;
+  float prio;
+
+#ifdef DEBUG
+  printf("DEBUG: PQPOST inquire work station \n");
+#endif
+  nposted = 0;
+  str_id = 0;
+  prio = 0.0;
+  if (PSL_WS_STATE(PHG_PSL) != PWS_ST_WSOP) {
     *err_ind = ERR3;
   }
   else {
@@ -89,30 +95,26 @@ void inq_filter(
       }
       else {
         wsh = PHG_WSID(ws_id);
-        (*wsh->inq_filter)(wsh, type, &ret);
-        if (ret.err) {
-          *err_ind = ret.err;
-        }
-        else {
-          *err_ind = 0;
-          size = (pf->incl.num_ints + pf->excl.num_ints) * sizeof(Pint);
-          if (phg_cb_resize_store(store, size, err_ind)) {
-            *filter = &store->data.filter;
-            (*filter)->incl_set.num_ints = pf->incl.num_ints;
-            (*filter)->excl_set.num_ints = pf->excl.num_ints;
-            (*filter)->incl_set.ints = (Pint *) store->buf;
-            (*filter)->excl_set.ints =
-              &(*filter)->incl_set.ints[(*filter)->incl_set.num_ints];
-            if (pf->incl.num_ints > 0) {
-              memcpy((*filter)->incl_set.ints, pf->incl.ints,
-                     (*filter)->incl_set.num_ints * sizeof(Pint));
-            }
-            if (pf->excl.num_ints > 0) {
-              memcpy((*filter)->excl_set.ints, pf->excl.ints,
-                     (*filter)->excl_set.num_ints * sizeof(Pint));
+        owsb = &wsh->out_ws.model.b;
+        Ws_posted_structs posted = owsb->posted;
+        current = &posted.highest;
+        while (current != NULL) {
+          if (current->structh != NULL) {
+            nposted += 1;
+            prio = current->disp_pri;
+            str_id = current->structh->struct_id;
+            if (nposted == num) {
+              *strid = str_id;
+              *priort = prio;
             }
           }
+          current = current->lower;
         }
+        *err_ind = 0;
+        *number = nposted;
+#ifdef DEBUG
+        printf("PQPOST: returning number %d, strid %d and prio %f\n", nposted, *strid, *priort);
+#endif
       }
     }
   }

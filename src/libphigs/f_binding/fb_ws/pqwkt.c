@@ -1,5 +1,5 @@
 /******************************************************************************
- *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
+ *   Do NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
  *
  *   This file is part of Open PHIGS
  *   Copyright (C) 2014 Surplus Users Ham Society
@@ -19,49 +19,54 @@
  ******************************************************************************
  * Changes:   Copyright (C) 2022-2023 CERN
  ******************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <png.h>
-#ifdef GLEW
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glx.h>
-#else
-#include <epoxy/gl.h>
-#include <epoxy/glx.h>
-#endif
-#include <gl2ps.h>
 
+#include <gl2ps.h>
+#include "phigs.h"
 #include "phg.h"
-#include "css.h"
-#include "ws.h"
 #include "private/phgP.h"
 #include "private/cb_internal.h"
-#include "private/cbP.h"
 #include "private/wsglP.h"
-#include "private/wsxP.h"
+#include "css.h"
+#include "ws.h"
+#include "util/ftn.h"
 #include "phconf.h"
 
+extern int record_geom;
+
 /**
- * \file inq_filter.c
- * \brief Get workstation filter
+ * \file pqwkt.c
+ * \brief Inquire workstation transformation 3
+ *
+ * \return error index, update state, requested window in NPC, current window in NPC, requested window in DC, current window in DC
  */
-void inq_filter(
-                       Phg_args_flt_type type,
-                       Pint ws_id,
-                       struct _Pstore *store,
-                       Pint *err_ind,
-                       Pfilter **filter
-                       )
+
+FTN_SUBROUTINE(pqwkt)(
+                      FTN_INTEGER(wkid),
+                      FTN_INTEGER(err_ind),
+                      FTN_INTEGER(tus),
+                      Pfloat*rwindo,
+                      Pfloat*cwindo,
+                      Pfloat*rviewp,
+                      Pfloat*cviewp
+                      )
 {
-  Phg_ret ret;
-  Phg_ret_filter *pf = &ret.data.filter;
+  Pint ws_id = FTN_INTEGER_GET(wkid);
+
+  Pinq_type type;
   Psl_ws_info *wsinfo;
   Wst_phigs_dt *dt;
   Ws_handle wsh;
-  int size;
+  Phg_ret ret;
+
+#ifdef DEBUG
+  printf("DEBUG: pqwkt called\n");
+#endif
+
   if (!phg_entry_check(PHG_ERH, 0, Pfn_INQUIRY)) {
     *err_ind = ERR3;
   }
@@ -79,9 +84,9 @@ void inq_filter(
             dt->ws_category == PCAT_TGA ||
             dt->ws_category == PCAT_PNG ||
             dt->ws_category == PCAT_PNGA ||
-            dt->ws_category == PCAT_EPS ||
-            dt->ws_category == PCAT_PDF ||
-            dt->ws_category == PCAT_SVG ||
+            dt->ws_category == PCAT_EPS  ||
+            dt->ws_category == PCAT_PDF  ||
+            dt->ws_category == PCAT_SVG  ||
             dt->ws_category == PCAT_OBJ ||
             dt->ws_category == PCAT_OUTIN ||
             dt->ws_category == PCAT_MO)) {
@@ -89,29 +94,32 @@ void inq_filter(
       }
       else {
         wsh = PHG_WSID(ws_id);
-        (*wsh->inq_filter)(wsh, type, &ret);
+        (*wsh->inq_disp_update_state)(wsh, &ret);
         if (ret.err) {
           *err_ind = ret.err;
-        }
-        else {
+        } else {
+          Wsb_output_ws   *owsb = &wsh->out_ws.model.b;
+          if (owsb->ws_window_pending || owsb->ws_viewport_pending) {*tus = 1;} else {*tus = 0;};
+          rwindo[0] = owsb->req_ws_window.x_min;
+          rwindo[1] = owsb->req_ws_window.x_max;
+          rwindo[2] = owsb->req_ws_window.y_min;
+          rwindo[3] = owsb->req_ws_window.y_max;
+
+          cwindo[0] = owsb->ws_window.x_min;
+          cwindo[1] = owsb->ws_window.x_max;
+          cwindo[2] = owsb->ws_window.y_min;
+          cwindo[3] = owsb->ws_window.y_max;
+
+          rviewp[0] = owsb->req_ws_viewport.x_min;
+          rviewp[1] = owsb->req_ws_viewport.x_max;
+          rviewp[2] = owsb->req_ws_viewport.y_min;
+          rviewp[3] = owsb->req_ws_viewport.y_max;
+
+          cviewp[0] = owsb->ws_viewport.x_min;
+          cviewp[1] = owsb->ws_viewport.x_max;
+          cviewp[2] = owsb->ws_viewport.y_min;
+          cviewp[3] = owsb->ws_viewport.y_max;
           *err_ind = 0;
-          size = (pf->incl.num_ints + pf->excl.num_ints) * sizeof(Pint);
-          if (phg_cb_resize_store(store, size, err_ind)) {
-            *filter = &store->data.filter;
-            (*filter)->incl_set.num_ints = pf->incl.num_ints;
-            (*filter)->excl_set.num_ints = pf->excl.num_ints;
-            (*filter)->incl_set.ints = (Pint *) store->buf;
-            (*filter)->excl_set.ints =
-              &(*filter)->incl_set.ints[(*filter)->incl_set.num_ints];
-            if (pf->incl.num_ints > 0) {
-              memcpy((*filter)->incl_set.ints, pf->incl.ints,
-                     (*filter)->incl_set.num_ints * sizeof(Pint));
-            }
-            if (pf->excl.num_ints > 0) {
-              memcpy((*filter)->excl_set.ints, pf->excl.ints,
-                     (*filter)->excl_set.num_ints * sizeof(Pint));
-            }
-          }
         }
       }
     }

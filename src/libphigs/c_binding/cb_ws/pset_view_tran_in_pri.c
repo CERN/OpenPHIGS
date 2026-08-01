@@ -45,51 +45,33 @@
 #include "phconf.h"
 
 /**
- * \file pinq_table_indices.c
- * \brief Get table indices from workstation helper function
+ * \file pset_view_tran_in_pri.c
+ * \brief Set view input priority
  */
-void pinq_table_indices(
-                               Phg_args_rep_type type,
-                               Pint ws_id,
-                               Pint num_elems_appl_list,
-                               Pint start_ind,
-                               Pint *err_ind,
-                               Pint_list *def_line_ind,
-                               Pint *num_elems_impl_list
-                               )
+void pset_view_tran_in_pri(
+                           Pint ws_id,
+                           Pint view_ind,
+                           Pint ref_view_ind,
+                           Prel_pri rel_pri
+                           )
 {
+  Psl_ws_info *wsinfo;
+  Wst_phigs_dt *dt;
   Ws_handle wsh;
-  Phg_ret ret;
 
-  wsh = PHG_WSID(ws_id);
-  if (type == PHG_ARGS_VIEWREP) {
-    (*wsh->inq_view_indices)(wsh, &ret);
-  }
-  else {
-    (*wsh->inq_bundle_indices)(wsh, type, &ret);
-  }
-
-  if (ret.err) {
-    *err_ind = ret.err;
-  }
-  else {
-    *err_ind = 0;
-    *num_elems_impl_list = ret.data.int_list.num_ints;
-    if (ret.data.int_list.num_ints > 0) {
-      if (start_ind < 0 || start_ind >= ret.data.int_list.num_ints) {
-        *err_ind = ERR2201;
-      }
-      else if (num_elems_appl_list > 0) {
-        def_line_ind->num_ints =
-          PHG_MIN(num_elems_appl_list,
-                  ret.data.int_list.num_ints - start_ind);
-        memcpy (def_line_ind->ints,
-                &ret.data.int_list.ints[start_ind],
-                def_line_ind->num_ints * sizeof(Pint));
-      }
-      else if (num_elems_appl_list < 0) {
-        *err_ind = ERRN153;
-      }
+  wsinfo = phg_ws_open(ws_id, Pfn_set_view_tran_in_pri);
+  if (wsinfo != NULL) {
+    dt = &wsinfo->wstype->desc_tbl.phigs_dt;
+    if (dt->ws_category == PCAT_MI) {
+      ERR_REPORT(PHG_ERH, ERR57);
+    }
+    else if ((view_ind < 0) || (ref_view_ind < 0)) {
+      ERR_REPORT(PHG_ERH, ERR114);
+    }
+    /* TODO: Check maximum view index */
+    else if (ref_view_ind != view_ind) {
+      wsh = PHG_WSID(ws_id);
+      (*wsh->set_view_input_priority)(wsh, view_ind, ref_view_ind, rel_pri);
     }
   }
 }

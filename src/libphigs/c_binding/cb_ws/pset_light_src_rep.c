@@ -45,51 +45,50 @@
 #include "phconf.h"
 
 /**
- * \file pinq_table_indices.c
- * \brief Get table indices from workstation helper function
+ * \file pset_light_src_rep.c
+ * \brief Set light source for workstation
  */
-void pinq_table_indices(
-                               Phg_args_rep_type type,
-                               Pint ws_id,
-                               Pint num_elems_appl_list,
-                               Pint start_ind,
-                               Pint *err_ind,
-                               Pint_list *def_line_ind,
-                               Pint *num_elems_impl_list
-                               )
+void pset_light_src_rep(
+                        Pint ws_id,
+                        Pint light_src_ind,
+                        Plight_src_bundle *light_src_rep
+                        )
 {
+  Psl_ws_info *wsinfo;
+  Wst_phigs_dt *dt;
+  Phg_args_rep_data rep;
   Ws_handle wsh;
-  Phg_ret ret;
 
-  wsh = PHG_WSID(ws_id);
-  if (type == PHG_ARGS_VIEWREP) {
-    (*wsh->inq_view_indices)(wsh, &ret);
-  }
-  else {
-    (*wsh->inq_bundle_indices)(wsh, type, &ret);
-  }
-
-  if (ret.err) {
-    *err_ind = ret.err;
-  }
-  else {
-    *err_ind = 0;
-    *num_elems_impl_list = ret.data.int_list.num_ints;
-    if (ret.data.int_list.num_ints > 0) {
-      if (start_ind < 0 || start_ind >= ret.data.int_list.num_ints) {
-        *err_ind = ERR2201;
-      }
-      else if (num_elems_appl_list > 0) {
-        def_line_ind->num_ints =
-          PHG_MIN(num_elems_appl_list,
-                  ret.data.int_list.num_ints - start_ind);
-        memcpy (def_line_ind->ints,
-                &ret.data.int_list.ints[start_ind],
-                def_line_ind->num_ints * sizeof(Pint));
-      }
-      else if (num_elems_appl_list < 0) {
-        *err_ind = ERRN153;
-      }
+  wsinfo = phg_ws_open(ws_id, Pfn_set_light_src_rep);
+  if (wsinfo != NULL) {
+    dt = &wsinfo->wstype->desc_tbl.phigs_dt;
+    if (!(dt->ws_category == PCAT_OUT ||
+          dt->ws_category == PCAT_TGA ||
+          dt->ws_category == PCAT_PNG ||
+          dt->ws_category == PCAT_PNGA ||
+          dt->ws_category == PCAT_EPS ||
+          dt->ws_category == PCAT_PDF ||
+          dt->ws_category == PCAT_SVG ||
+          dt->ws_category == PCAT_OBJ ||
+          dt->ws_category == PCAT_OUTIN ||
+          dt->ws_category == PCAT_MO)) {
+      ERR_REPORT(PHG_ERH, ERR59);
+    }
+    else if (light_src_ind < 1) {
+      ERR_REPORT(PHG_ERH, ERR129);
+    }
+    else if ((light_src_rep->type == PLIGHT_SPOT) &&
+             ((light_src_rep->rec.spot.angle < 0) ||
+              (light_src_rep->rec.spot.angle > M_PI))) {
+      ERR_REPORT(PHG_ERH, ERR132);
+    }
+    else {
+      wsh = PHG_WSID(ws_id);
+      rep.index = light_src_ind;
+      memcpy(&rep.bundl.lightsrcrep,
+             light_src_rep,
+             sizeof(Plight_src_bundle));
+      (*wsh->set_rep)(wsh, PHG_ARGS_LIGHTSRCREP, &rep);
     }
   }
 }

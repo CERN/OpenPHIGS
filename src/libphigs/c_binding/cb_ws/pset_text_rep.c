@@ -45,52 +45,28 @@
 #include "phconf.h"
 
 /**
- * \file pinq_table_indices.c
- * \brief Get table indices from workstation helper function
+ * \file pset_text_rep.c
+ * \brief Set workstation text represenation
  */
-void pinq_table_indices(
-                               Phg_args_rep_type type,
-                               Pint ws_id,
-                               Pint num_elems_appl_list,
-                               Pint start_ind,
-                               Pint *err_ind,
-                               Pint_list *def_line_ind,
-                               Pint *num_elems_impl_list
-                               )
+void pset_text_rep(
+                   Pint ws_id,
+                   Pint text_ind,
+                   Ptext_bundle *text_bundle
+                   )
 {
-  Ws_handle wsh;
-  Phg_ret ret;
+  Ws *wsh;
+  Phg_args_rep_data rep;
+  Wst_phigs_dt *dt;
 
-  wsh = PHG_WSID(ws_id);
-  if (type == PHG_ARGS_VIEWREP) {
-    (*wsh->inq_view_indices)(wsh, &ret);
-  }
-  else {
-    (*wsh->inq_bundle_indices)(wsh, type, &ret);
-  }
-
-  if (ret.err) {
-    *err_ind = ret.err;
-  }
-  else {
-    *err_ind = 0;
-    *num_elems_impl_list = ret.data.int_list.num_ints;
-    if (ret.data.int_list.num_ints > 0) {
-      if (start_ind < 0 || start_ind >= ret.data.int_list.num_ints) {
-        *err_ind = ERR2201;
-      }
-      else if (num_elems_appl_list > 0) {
-        def_line_ind->num_ints =
-          PHG_MIN(num_elems_appl_list,
-                  ret.data.int_list.num_ints - start_ind);
-        memcpy (def_line_ind->ints,
-                &ret.data.int_list.ints[start_ind],
-                def_line_ind->num_ints * sizeof(Pint));
-      }
-      else if (num_elems_appl_list < 0) {
-        *err_ind = ERRN153;
-      }
-    }
+  dt = phg_wst_check_set_rep(Pfn_set_text_rep,
+                             ws_id,
+                             text_ind,
+                             text_bundle->colr_ind);
+  if (dt != NULL) {
+    wsh = PHG_WSID(ws_id);
+    rep.index = text_ind;
+    memcpy(&rep.bundl.txrep, text_bundle, sizeof(Ptext_bundle));
+    (*wsh->set_rep)(wsh, PHG_ARGS_TXREP, &rep);
   }
 }
 

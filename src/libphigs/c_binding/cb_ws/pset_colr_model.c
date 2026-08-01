@@ -45,52 +45,41 @@
 #include "phconf.h"
 
 /**
- * \file pinq_table_indices.c
- * \brief Get table indices from workstation helper function
+ * \file pset_colr_model.c
+ * \brief Set workstation colour model
  */
-void pinq_table_indices(
-                               Phg_args_rep_type type,
-                               Pint ws_id,
-                               Pint num_elems_appl_list,
-                               Pint start_ind,
-                               Pint *err_ind,
-                               Pint_list *def_line_ind,
-                               Pint *num_elems_impl_list
-                               )
+void pset_colr_model(
+                     Pint ws_id,
+                     Pint model
+                     )
 {
-  Ws_handle wsh;
-  Phg_ret ret;
-
+  Ws *wsh;
+  Pint original_model;
   wsh = PHG_WSID(ws_id);
-  if (type == PHG_ARGS_VIEWREP) {
-    (*wsh->inq_view_indices)(wsh, &ret);
+  original_model = wsh->current_colour_model;
+  switch (model){
+  case PINDIRECT:
+    wsh->current_colour_model = PINDIRECT;
+    break;
+  case PMODEL_RGB:
+    wsh->current_colour_model = PMODEL_RGB;
+    break;
+  case PMODEL_RGBA:
+    wsh->current_colour_model = PMODEL_RGBA;
+    break;
+  default:
+    wsh->current_colour_model = wsh->type->desc_tbl.phigs_dt.out_dt.default_colour_model;
+    printf("WARNING: pset_colr_model: Unknown color model, using default\n");
+    break;
   }
-  else {
-    (*wsh->inq_bundle_indices)(wsh, type, &ret);
-  }
-
-  if (ret.err) {
-    *err_ind = ret.err;
-  }
-  else {
-    *err_ind = 0;
-    *num_elems_impl_list = ret.data.int_list.num_ints;
-    if (ret.data.int_list.num_ints > 0) {
-      if (start_ind < 0 || start_ind >= ret.data.int_list.num_ints) {
-        *err_ind = ERR2201;
-      }
-      else if (num_elems_appl_list > 0) {
-        def_line_ind->num_ints =
-          PHG_MIN(num_elems_appl_list,
-                  ret.data.int_list.num_ints - start_ind);
-        memcpy (def_line_ind->ints,
-                &ret.data.int_list.ints[start_ind],
-                def_line_ind->num_ints * sizeof(Pint));
-      }
-      else if (num_elems_appl_list < 0) {
-        *err_ind = ERRN153;
-      }
+  /* if the model has changed we should update the background */
+  if (original_model != model){
+    if (wsh->current_colour_model == PMODEL_RGBA){
+      pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgba));
+    } else {
+      pset_colr_rep(ws_id, 0, &(config[ws_id].background_color_rgb));
     }
   }
+
 }
 

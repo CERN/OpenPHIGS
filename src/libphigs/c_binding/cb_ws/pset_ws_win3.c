@@ -45,51 +45,47 @@
 #include "phconf.h"
 
 /**
- * \file pinq_table_indices.c
- * \brief Get table indices from workstation helper function
+ * \file pset_ws_win3.c
+ * \brief Set workstation window
  */
-void pinq_table_indices(
-                               Phg_args_rep_type type,
-                               Pint ws_id,
-                               Pint num_elems_appl_list,
-                               Pint start_ind,
-                               Pint *err_ind,
-                               Pint_list *def_line_ind,
-                               Pint *num_elems_impl_list
-                               )
+void pset_ws_win3(
+                  Pint ws_id,
+                  Plimit3 *window
+                  )
 {
+  Psl_ws_info *wsinfo;
+  Wst_phigs_dt *dt;
   Ws_handle wsh;
-  Phg_ret ret;
 
-  wsh = PHG_WSID(ws_id);
-  if (type == PHG_ARGS_VIEWREP) {
-    (*wsh->inq_view_indices)(wsh, &ret);
+  ERR_SET_CUR_FUNC(PHG_ERH, Pfn_set_ws_win3);
+
+  if (PSL_WS_STATE(PHG_PSL) != PWS_ST_WSOP) {
+    ERR_REPORT(PHG_ERH, ERR3);
+  }
+  else if ((wsinfo = phg_psl_get_ws_info(PHG_PSL, ws_id)) == NULL) {
+    ERR_REPORT(PHG_ERH, ERR54);
   }
   else {
-    (*wsh->inq_bundle_indices)(wsh, type, &ret);
-  }
-
-  if (ret.err) {
-    *err_ind = ret.err;
-  }
-  else {
-    *err_ind = 0;
-    *num_elems_impl_list = ret.data.int_list.num_ints;
-    if (ret.data.int_list.num_ints > 0) {
-      if (start_ind < 0 || start_ind >= ret.data.int_list.num_ints) {
-        *err_ind = ERR2201;
-      }
-      else if (num_elems_appl_list > 0) {
-        def_line_ind->num_ints =
-          PHG_MIN(num_elems_appl_list,
-                  ret.data.int_list.num_ints - start_ind);
-        memcpy (def_line_ind->ints,
-                &ret.data.int_list.ints[start_ind],
-                def_line_ind->num_ints * sizeof(Pint));
-      }
-      else if (num_elems_appl_list < 0) {
-        *err_ind = ERRN153;
-      }
+    dt = &wsinfo->wstype->desc_tbl.phigs_dt;
+    if (dt->ws_category == PCAT_MI) {
+      ERR_REPORT(PHG_ERH, ERR57);
+    }
+    else if (!PHG_IN_RANGE(PDT_NPC_XMIN, PDT_NPC_XMAX, window->x_min) ||
+             !PHG_IN_RANGE(PDT_NPC_XMIN, PDT_NPC_XMAX, window->x_max) ||
+             !PHG_IN_RANGE(PDT_NPC_YMIN, PDT_NPC_YMAX, window->y_min) ||
+             !PHG_IN_RANGE(PDT_NPC_YMIN, PDT_NPC_YMAX, window->y_max) ||
+             !PHG_IN_RANGE(PDT_NPC_ZMIN, PDT_NPC_ZMAX, window->z_min) ||
+             !PHG_IN_RANGE(PDT_NPC_ZMIN, PDT_NPC_ZMAX, window->z_max)) {
+      ERR_REPORT(PHG_ERH, ERR156);
+    }
+    else if (!(window->x_min < window->x_max) ||
+             !(window->y_min < window->y_max) ||
+             !(window->z_min <= window->z_max)) {
+      ERR_REPORT(PHG_ERH, ERR151);
+    }
+    else {
+      wsh = PHG_WSID(ws_id);
+      (*wsh->set_ws_window)(wsh, 0, window);
     }
   }
 }

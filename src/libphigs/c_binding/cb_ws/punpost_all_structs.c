@@ -45,51 +45,25 @@
 #include "phconf.h"
 
 /**
- * \file pinq_table_indices.c
- * \brief Get table indices from workstation helper function
+ * \file punpost_all_structs.c
+ * \brief Remove all posted structures from workstation
  */
-void pinq_table_indices(
-                               Phg_args_rep_type type,
-                               Pint ws_id,
-                               Pint num_elems_appl_list,
-                               Pint start_ind,
-                               Pint *err_ind,
-                               Pint_list *def_line_ind,
-                               Pint *num_elems_impl_list
-                               )
+void punpost_all_structs(
+                         Pint ws_id
+                         )
 {
   Ws_handle wsh;
-  Phg_ret ret;
 
-  wsh = PHG_WSID(ws_id);
-  if (type == PHG_ARGS_VIEWREP) {
-    (*wsh->inq_view_indices)(wsh, &ret);
-  }
-  else {
-    (*wsh->inq_bundle_indices)(wsh, type, &ret);
-  }
-
-  if (ret.err) {
-    *err_ind = ret.err;
-  }
-  else {
-    *err_ind = 0;
-    *num_elems_impl_list = ret.data.int_list.num_ints;
-    if (ret.data.int_list.num_ints > 0) {
-      if (start_ind < 0 || start_ind >= ret.data.int_list.num_ints) {
-        *err_ind = ERR2201;
-      }
-      else if (num_elems_appl_list > 0) {
-        def_line_ind->num_ints =
-          PHG_MIN(num_elems_appl_list,
-                  ret.data.int_list.num_ints - start_ind);
-        memcpy (def_line_ind->ints,
-                &ret.data.int_list.ints[start_ind],
-                def_line_ind->num_ints * sizeof(Pint));
-      }
-      else if (num_elems_appl_list < 0) {
-        *err_ind = ERRN153;
-      }
+  if (phg_entry_check(PHG_ERH, ERR3, Pfn_unpost_all_structs)) {
+    if (PSL_WS_STATE(PHG_PSL) != PWS_ST_WSOP) {
+      ERR_REPORT(PHG_ERH, ERR3);
+    }
+    else if (!phg_psl_inq_ws_open(PHG_PSL, ws_id)) {
+      ERR_REPORT(PHG_ERH, ERR54);
+    }
+    else {
+      wsh = PHG_WSID(ws_id);
+      (*wsh->unpost_all)(wsh);
     }
   }
 }

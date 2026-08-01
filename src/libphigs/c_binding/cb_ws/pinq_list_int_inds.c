@@ -45,50 +45,50 @@
 #include "phconf.h"
 
 /**
- * \file pinq_table_indices.c
- * \brief Get table indices from workstation helper function
+ * \file pinq_list_int_inds.c
+ * \brief Get workstation list of interior indices
  */
-void pinq_table_indices(
-                               Phg_args_rep_type type,
-                               Pint ws_id,
-                               Pint num_elems_appl_list,
-                               Pint start_ind,
-                               Pint *err_ind,
-                               Pint_list *def_line_ind,
-                               Pint *num_elems_impl_list
-                               )
+void pinq_list_int_inds(
+                        Pint ws_id,
+                        Pint num_elems_appl_list,
+                        Pint start_ind,
+                        Pint *err_ind,
+                        Pint_list *def_int_ind,
+                        Pint *num_elems_impl_list
+                        )
 {
-  Ws_handle wsh;
-  Phg_ret ret;
+  Psl_ws_info *wsinfo;
+  Wst_phigs_dt *dt;
 
-  wsh = PHG_WSID(ws_id);
-  if (type == PHG_ARGS_VIEWREP) {
-    (*wsh->inq_view_indices)(wsh, &ret);
+  if (!phg_entry_check(PHG_ERH, 0, Pfn_INQUIRY)) {
+    *err_ind = ERR3;
+  }
+  else if (PSL_WS_STATE(PHG_PSL) != PWS_ST_WSOP) {
+    *err_ind = ERR3;
   }
   else {
-    (*wsh->inq_bundle_indices)(wsh, type, &ret);
-  }
-
-  if (ret.err) {
-    *err_ind = ret.err;
-  }
-  else {
-    *err_ind = 0;
-    *num_elems_impl_list = ret.data.int_list.num_ints;
-    if (ret.data.int_list.num_ints > 0) {
-      if (start_ind < 0 || start_ind >= ret.data.int_list.num_ints) {
-        *err_ind = ERR2201;
+    wsinfo = phg_psl_get_ws_info(PHG_PSL, ws_id);
+    if (wsinfo == NULL) {
+      *err_ind = ERR54;
+    }
+    else {
+      dt = &wsinfo->wstype->desc_tbl.phigs_dt;
+      if (!(dt->ws_category == PCAT_OUT ||
+            dt->ws_category == PCAT_TGA ||
+            dt->ws_category == PCAT_PNG ||
+            dt->ws_category == PCAT_PNGA ||
+            dt->ws_category == PCAT_EPS ||
+            dt->ws_category == PCAT_PDF ||
+            dt->ws_category == PCAT_SVG ||
+            dt->ws_category == PCAT_OBJ ||
+            dt->ws_category == PCAT_OUTIN ||
+            dt->ws_category == PCAT_MO)) {
+        *err_ind = ERR59;
       }
-      else if (num_elems_appl_list > 0) {
-        def_line_ind->num_ints =
-          PHG_MIN(num_elems_appl_list,
-                  ret.data.int_list.num_ints - start_ind);
-        memcpy (def_line_ind->ints,
-                &ret.data.int_list.ints[start_ind],
-                def_line_ind->num_ints * sizeof(Pint));
-      }
-      else if (num_elems_appl_list < 0) {
-        *err_ind = ERRN153;
+      else {
+        pinq_table_indices(PHG_ARGS_INTERREP, ws_id, num_elems_appl_list,
+                           start_ind, err_ind,
+                           def_int_ind, num_elems_impl_list);
       }
     }
   }

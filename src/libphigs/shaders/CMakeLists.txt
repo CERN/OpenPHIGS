@@ -28,3 +28,4 @@ add_custom_target(generate_shaders_fs120 DEPENDS ${CMAKE_BINARY_DIR}/include/phi
 add_custom_target(generate_shaders_fs130 DEPENDS ${CMAKE_BINARY_DIR}/include/phigs/private/fs130.h)
 add_dependencies(phigs generate_shaders_vs120 generate_shaders_vs130 generate_shaders_fs120 generate_shaders_fs130)
 add_dependencies(phigs-shared generate_shaders_vs120 generate_shaders_vs130 generate_shaders_fs120 generate_shaders_fs130)
+add_dependencies(phigs-obj generate_shaders_vs120 generate_shaders_vs130 generate_shaders_fs120 generate_shaders_fs130)

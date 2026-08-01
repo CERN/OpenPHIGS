@@ -45,51 +45,34 @@
 #include "phconf.h"
 
 /**
- * \file pinq_table_indices.c
- * \brief Get table indices from workstation helper function
+ * \file pinq_ws_conn_type.c
+ * \brief Get workstation connection type
  */
-void pinq_table_indices(
-                               Phg_args_rep_type type,
-                               Pint ws_id,
-                               Pint num_elems_appl_list,
-                               Pint start_ind,
-                               Pint *err_ind,
-                               Pint_list *def_line_ind,
-                               Pint *num_elems_impl_list
-                               )
+void pinq_ws_conn_type(
+                       Pint ws_id,
+                       Pstore store,
+                       Pint *err_ind,
+                       void **conn_id,
+                       Pint *ws_type
+                       )
 {
-  Ws_handle wsh;
-  Phg_ret ret;
+  Psl_ws_info *ws_info;
 
-  wsh = PHG_WSID(ws_id);
-  if (type == PHG_ARGS_VIEWREP) {
-    (*wsh->inq_view_indices)(wsh, &ret);
+  if (!phg_entry_check(PHG_ERH, 0, Pfn_INQUIRY)) {
+    *err_ind = ERR3;
+  }
+  else if (PSL_WS_STATE(PHG_PSL) != PWS_ST_WSOP) {
+    *err_ind = ERR3;
   }
   else {
-    (*wsh->inq_bundle_indices)(wsh, type, &ret);
-  }
-
-  if (ret.err) {
-    *err_ind = ret.err;
-  }
-  else {
-    *err_ind = 0;
-    *num_elems_impl_list = ret.data.int_list.num_ints;
-    if (ret.data.int_list.num_ints > 0) {
-      if (start_ind < 0 || start_ind >= ret.data.int_list.num_ints) {
-        *err_ind = ERR2201;
-      }
-      else if (num_elems_appl_list > 0) {
-        def_line_ind->num_ints =
-          PHG_MIN(num_elems_appl_list,
-                  ret.data.int_list.num_ints - start_ind);
-        memcpy (def_line_ind->ints,
-                &ret.data.int_list.ints[start_ind],
-                def_line_ind->num_ints * sizeof(Pint));
-      }
-      else if (num_elems_appl_list < 0) {
-        *err_ind = ERRN153;
-      }
+    ws_info = phg_psl_get_ws_info(PHG_PSL, ws_id);
+    if (ws_info == NULL) {
+      *err_ind = ERR54;
+    }
+    else {
+      *err_ind = 0;
+      *((char **) conn_id) = ws_info->connid;
+      *ws_type = ws_info->wstype->ws_type;
     }
   }
 }

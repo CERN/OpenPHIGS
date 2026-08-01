@@ -128,8 +128,10 @@ SET(OPHIGS_ALL
   ${P_CP_SRCS}
 )
 
-add_library(phigs STATIC ${OPHIGS_ALL})
-add_library(phigs-shared SHARED ${OPHIGS_ALL})
+add_library(phigs-obj OBJECT ${OPHIGS_ALL})
+set_target_properties(phigs-obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
+add_library(phigs STATIC $<TARGET_OBJECTS:phigs-obj>)
+add_library(phigs-shared SHARED $<TARGET_OBJECTS:phigs-obj>)
 ADD_SUBDIRECTORY(shaders)
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include/phigs)
 if (APPLE)

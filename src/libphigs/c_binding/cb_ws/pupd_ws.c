@@ -45,51 +45,37 @@
 #include "phconf.h"
 
 /**
- * \file pinq_table_indices.c
- * \brief Get table indices from workstation helper function
+ * \file pupd_ws.c
+ * \brief Set workstation update state
  */
-void pinq_table_indices(
-                               Phg_args_rep_type type,
-                               Pint ws_id,
-                               Pint num_elems_appl_list,
-                               Pint start_ind,
-                               Pint *err_ind,
-                               Pint_list *def_line_ind,
-                               Pint *num_elems_impl_list
-                               )
+void pupd_ws(
+             Pint ws_id,
+             Pregen_flag regen_flag
+             )
 {
+  Psl_ws_info *wsinfo;
   Ws_handle wsh;
-  Phg_ret ret;
 
-  wsh = PHG_WSID(ws_id);
-  if (type == PHG_ARGS_VIEWREP) {
-    (*wsh->inq_view_indices)(wsh, &ret);
-  }
-  else {
-    (*wsh->inq_bundle_indices)(wsh, type, &ret);
-  }
+  wsinfo = phg_ws_open(ws_id, Pfn_upd_ws);
+  if (wsinfo != NULL) {
+    switch (wsinfo->wstype->desc_tbl.phigs_dt.ws_category) {
+    case PCAT_OUTIN:
+    case PCAT_OUT:
+    case PCAT_TGA:
+    case PCAT_PNG:
+    case PCAT_PNGA:
+    case PCAT_EPS:
+    case PCAT_PDF:
+    case PCAT_SVG:
+    case PCAT_OBJ:
+    case PCAT_MO:
+      wsh = PHG_WSID(ws_id);
+      (*wsh->update)(wsh, regen_flag);
+      break;
 
-  if (ret.err) {
-    *err_ind = ret.err;
-  }
-  else {
-    *err_ind = 0;
-    *num_elems_impl_list = ret.data.int_list.num_ints;
-    if (ret.data.int_list.num_ints > 0) {
-      if (start_ind < 0 || start_ind >= ret.data.int_list.num_ints) {
-        *err_ind = ERR2201;
-      }
-      else if (num_elems_appl_list > 0) {
-        def_line_ind->num_ints =
-          PHG_MIN(num_elems_appl_list,
-                  ret.data.int_list.num_ints - start_ind);
-        memcpy (def_line_ind->ints,
-                &ret.data.int_list.ints[start_ind],
-                def_line_ind->num_ints * sizeof(Pint));
-      }
-      else if (num_elems_appl_list < 0) {
-        *err_ind = ERRN153;
-      }
+    default:
+      ERR_REPORT(PHG_ERH, ERR59);
+      break;
     }
   }
 }

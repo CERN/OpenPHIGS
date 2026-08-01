@@ -45,23 +45,22 @@
 #include "phconf.h"
 
 /**
- * \file inq_filter.c
- * \brief Get workstation filter
+ * \file pinq_text_rep.c
+ * \brief Get workstation text representation
  */
-void inq_filter(
-                       Phg_args_flt_type type,
-                       Pint ws_id,
-                       struct _Pstore *store,
-                       Pint *err_ind,
-                       Pfilter **filter
-                       )
+void pinq_text_rep(
+                   Pint ws_id,
+                   Pint index,
+                   Pinq_type type,
+                   Pint *err_ind,
+                   Ptext_bundle *text_rep
+                   )
 {
-  Phg_ret ret;
-  Phg_ret_filter *pf = &ret.data.filter;
   Psl_ws_info *wsinfo;
   Wst_phigs_dt *dt;
   Ws_handle wsh;
-  int size;
+  Phg_ret ret;
+
   if (!phg_entry_check(PHG_ERH, 0, Pfn_INQUIRY)) {
     *err_ind = ERR3;
   }
@@ -87,31 +86,26 @@ void inq_filter(
             dt->ws_category == PCAT_MO)) {
         *err_ind = ERR59;
       }
+      else if (index < 1) {
+        *err_ind = ERR100;
+      }
       else {
         wsh = PHG_WSID(ws_id);
-        (*wsh->inq_filter)(wsh, type, &ret);
+        (*wsh->inq_representation)(wsh, index, type, PHG_ARGS_EXTTXREP,
+                                   &ret);
         if (ret.err) {
           *err_ind = ret.err;
         }
+        else if (ret.data.rep.exttxrep.colr.type != PINDIRECT) {
+          *err_ind = ERR134;
+        }
         else {
+          text_rep->font = ret.data.rep.exttxrep.font;
+          text_rep->prec = ret.data.rep.exttxrep.prec;
+          text_rep->char_expan = ret.data.rep.exttxrep.char_expan;
+          text_rep->char_space = ret.data.rep.exttxrep.char_space;
+          text_rep->colr_ind = ret.data.rep.exttxrep.colr.val.ind;
           *err_ind = 0;
-          size = (pf->incl.num_ints + pf->excl.num_ints) * sizeof(Pint);
-          if (phg_cb_resize_store(store, size, err_ind)) {
-            *filter = &store->data.filter;
-            (*filter)->incl_set.num_ints = pf->incl.num_ints;
-            (*filter)->excl_set.num_ints = pf->excl.num_ints;
-            (*filter)->incl_set.ints = (Pint *) store->buf;
-            (*filter)->excl_set.ints =
-              &(*filter)->incl_set.ints[(*filter)->incl_set.num_ints];
-            if (pf->incl.num_ints > 0) {
-              memcpy((*filter)->incl_set.ints, pf->incl.ints,
-                     (*filter)->incl_set.num_ints * sizeof(Pint));
-            }
-            if (pf->excl.num_ints > 0) {
-              memcpy((*filter)->excl_set.ints, pf->excl.ints,
-                     (*filter)->excl_set.num_ints * sizeof(Pint));
-            }
-          }
         }
       }
     }

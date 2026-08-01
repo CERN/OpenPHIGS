@@ -45,47 +45,36 @@
 #include "phconf.h"
 
 /**
- * \file pinq_table_indices.c
- * \brief Get table indices from workstation helper function
+ * \file pinq_open_wss.c
+ * \brief Get list of open workstations
  */
-void pinq_table_indices(
-                               Phg_args_rep_type type,
-                               Pint ws_id,
-                               Pint num_elems_appl_list,
-                               Pint start_ind,
-                               Pint *err_ind,
-                               Pint_list *def_line_ind,
-                               Pint *num_elems_impl_list
-                               )
+void pinq_open_wss(
+                   Pint num_elems_appl_list,
+                   Pint start_ind,
+                   Pint *err_ind,
+                   Pint_list *open_ws_ids,
+                   Pint *num_elems_impl_list
+                   )
 {
-  Ws_handle wsh;
-  Phg_ret ret;
+  Pint ws_ids[MAX_NO_OPEN_WS];
+  Pint n;
 
-  wsh = PHG_WSID(ws_id);
-  if (type == PHG_ARGS_VIEWREP) {
-    (*wsh->inq_view_indices)(wsh, &ret);
-  }
-  else {
-    (*wsh->inq_bundle_indices)(wsh, type, &ret);
-  }
-
-  if (ret.err) {
-    *err_ind = ret.err;
+  if (!phg_entry_check(PHG_ERH, 0, Pfn_INQUIRY)) {
+    *err_ind = ERR2;
   }
   else {
     *err_ind = 0;
-    *num_elems_impl_list = ret.data.int_list.num_ints;
-    if (ret.data.int_list.num_ints > 0) {
-      if (start_ind < 0 || start_ind >= ret.data.int_list.num_ints) {
+    n = phg_psl_inq_wsids(PHG_PSL, ws_ids);
+    open_ws_ids->num_ints = 0;
+    *num_elems_impl_list = n;
+    if (n > 0) {
+      if (start_ind < 0 || start_ind >= n) {
         *err_ind = ERR2201;
       }
       else if (num_elems_appl_list > 0) {
-        def_line_ind->num_ints =
-          PHG_MIN(num_elems_appl_list,
-                  ret.data.int_list.num_ints - start_ind);
-        memcpy (def_line_ind->ints,
-                &ret.data.int_list.ints[start_ind],
-                def_line_ind->num_ints * sizeof(Pint));
+        open_ws_ids->num_ints = PHG_MIN(num_elems_appl_list, n - start_ind);
+        memcpy(open_ws_ids->ints, &ws_ids[start_ind],
+               open_ws_ids->num_ints * sizeof(Pint));
       }
       else if (num_elems_appl_list < 0) {
         *err_ind = ERRN153;

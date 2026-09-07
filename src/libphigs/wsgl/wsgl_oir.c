@@ -36,7 +36,7 @@
 
 /*
  * Image units the shaders expect the two objects on. These have to agree with
- * the binding qualifiers in fs420.frag and fs420_resolve.frag.
+ * the binding qualifiers in fs430.frag and fs430_resolve.frag.
  */
 #define OIR_HEAD_POINTER_UNIT 0
 #define OIR_LIST_BUFFER_UNIT  1
@@ -50,17 +50,20 @@
  * BUGS:
  */
 void wsgl_oir_ini(Ws *ws){
+  if (ws->shader.oirModeLoc >= 0) glProgramUniform1i(ws->shader.program, ws->shader.oirModeLoc, ws->oir.mode);
   if (ws->oir.mode == 0) return;
+  if (ws->shader.oirMode>=0) glProgramUniform1i(ws->shader.oir_program, ws->shader.oirMode, ws->oir.mode);
   if (!wsgl_use_shaders) return;
   /*
-    Only the 4.20 shaders build a fragment list. Without this the older
+    Only the 4.30 shaders build a fragment list. Without this the older
     shader versions would still pay for the head pointer image and the
     fragment list, which is a lot of memory for nothing.
   */
-  if (wsgl_frag_shader_version != 420) return;
+  if (wsgl_frag_shader_version <430) return;
   Pint width = ws->ws_rect.width;
   Pint height = ws->ws_rect.height;
   size_t n_pixels = width * height;
+  printf("WSGL INI called with %d %d\n", width, height);
   if (n_pixels <= 0){
     /* At the first call things may not be initialised yet. Capture this and just ignore the call */
     return;
@@ -133,9 +136,11 @@ void wsgl_oir_ini(Ws *ws){
  * BUGS:
  */
 void wsgl_oir_cleanup(Ws * ws){
+  if (ws->shader.oirModeLoc >= 0) glProgramUniform1i(ws->shader.program, ws->shader.oirModeLoc, ws->oir.mode);
   if (ws->oir.mode == 0) return;
+  if (ws->shader.oirMode>=0) glProgramUniform1i(ws->shader.oir_program, ws->shader.oirMode, ws->oir.mode);
   if (!wsgl_use_shaders) return;
-  if (wsgl_frag_shader_version != 420) return;
+  if (wsgl_frag_shader_version < 430) return;
   glDeleteTextures(1, &ws->oir.frag_storage_texture); ws->oir.frag_storage_texture = 0;
   glDeleteBuffers(1, &ws->oir.frag_storage_buffer); ws->oir.frag_storage_buffer = 0;
   ws->oir.frag_list_capacity = 0;
@@ -156,9 +161,16 @@ void wsgl_oir_cleanup(Ws * ws){
 void wsgl_oir_reset(Ws * ws){
   Pint width = ws->ws_rect.width;
   Pint height = ws->ws_rect.height;
-  if (ws->oir.mode == 0) return;
   if (!wsgl_use_shaders) return;
+  if (ws->shader.oirModeLoc >= 0) glProgramUniform1i(ws->shader.program, ws->shader.oirModeLoc, ws->oir.mode);
+  if (ws->oir.mode == 0) return;
+  if (ws->shader.oirMode >= 0) glProgramUniform1i(ws->shader.oir_program, ws->shader.oirMode, ws->oir.mode);
   if (ws->oir.head_p_texture == 0) return;
+  if (width != ws->oir.oir_width || height != ws->oir.oir_height) {
+     wsgl_oir_cleanup(ws);      /* frees and zeroes the handles */
+     wsgl_oir_ini(ws);          /* rebuilds at the new size */
+     if (ws->oir.head_p_texture == 0) return;
+  }
   /*
     Set every head pointer back to the end of list marker by uploading the
     0xFF filled buffer built in wsgl_oir_ini(). With a pixel unpack buffer
@@ -191,19 +203,24 @@ void wsgl_oir_reset(Ws * ws){
   glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, ws->oir.acounter_buffer);
   const GLuint zero = 0;
   glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(zero), &zero);
+  /* order the clear above against last frame's appends and this frame's */
+  glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT |
+                  GL_BUFFER_UPDATE_BARRIER_BIT  |
+                  GL_ATOMIC_COUNTER_BARRIER_BIT |
+                  GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
   /*
     Tell the append shader how much room it has. Taken from the current
     program rather than passed in, so that this stays self contained.
   */
-  {
-    GLint program = 0;
-    GLint loc;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-    if (program != 0){
-      loc = glGetUniformLocation(program, "list_capacity");
-      if (loc >= 0) glUniform1ui(loc, ws->oir.frag_list_capacity);
-    }
-  }
+  //{
+  //  GLint program = 0;
+  //  GLint loc;
+  //  glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+  //  if (program != 0){
+  //    loc = glGetUniformLocation(program, "list_capacity");
+  //    if (loc >= 0) glUniform1ui(loc, ws->oir.frag_list_capacity);
+  //  }
+  //}
 }
 
 /*******************************************************************************
@@ -220,11 +237,12 @@ void wsgl_oir_resolve(Ws * ws){
   GLboolean depth_test, blend, depth_mask;
   GLint viewport[4];
 
-  if (ws->oir.mode == 0) return;
   if (!wsgl_use_shaders) return;
+  if (ws->shader.oirModeLoc >= 0) glProgramUniform1i(ws->shader.program, ws->shader.oirModeLoc, ws->oir.mode);
+  if (ws->oir.mode == 0) return;
+  if (ws->shader.oirMode>=0) glProgramUniform1i(ws->shader.oir_program, ws->shader.oirMode, ws->oir.mode);
   if (ws->oir.head_p_texture == 0) return;
   if (ws->shader.oir_program == 0) return;
-
   /* make the appends of this frame visible to the reads below */
   glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT |
                   GL_TEXTURE_FETCH_BARRIER_BIT);
@@ -240,7 +258,7 @@ void wsgl_oir_resolve(Ws * ws){
     disturb the depth buffer.
   */
   /*
-    The depth test stays on: fs420_resolve.frag reports the depth of the
+    The depth test stays on: fs430_resolve.frag reports the depth of the
     nearest transparent fragment, so opaque geometry in front of a
     transparent surface still hides it. The depth buffer itself must not be
     disturbed, hence the write mask.
@@ -260,7 +278,7 @@ void wsgl_oir_resolve(Ws * ws){
 
   glUseProgram(ws->shader.oir_program);
   /*
-    The quad is given in clip coordinates and vs420_resolve.vert passes it
+    The quad is given in clip coordinates and vs430_resolve.vert passes it
     through unchanged, so the current matrices are irrelevant here.
   */
   glBegin(GL_QUADS);

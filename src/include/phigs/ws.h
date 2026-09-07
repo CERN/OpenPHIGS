@@ -252,9 +252,11 @@ typedef struct {
     /* second program used to resolve the order independent rendering lists,
        zero when order independensrc/libphigs/ws/wsx.ct rendering is not in use */
     GLint oir_program;
-    
-    /* OIR rendering mode */
+
+    /* OIR rendering mode location */
     GLint oirMode;
+    /* OIR mode location in first pass shader */
+    GLint oirModeLoc;
 
     GLint shading_mode;
     GLint vAmbient, vDiffuse, vSpecular, vPositional;

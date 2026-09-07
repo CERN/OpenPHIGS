@@ -92,12 +92,14 @@ Ws* phg_wsx_create(
    ws->oir.frag_storage_buffer = 0;
    ws->oir.frag_storage_texture = 0;
    /* General shader pointers */
-   ws->shader.program = 0;
-   ws->shader.oir_program = 0;
+   ws->shader.program = -1;
+   ws->shader.oir_program = -1;
    ws->shader.applyTexture = 0;
    ws->shader.shading_mode = 0;
-   ws->shader.sLoc = 0;
-   ws->shader.tLoc = 0;
+   ws->shader.sLoc = -1;
+   ws->shader.tLoc = -1;
+   ws->shader.oirMode = -1;
+   ws->shader.oirModeLoc = -1;
    ws->shader.lightSource0     = 0;
    ws->shader.lightSourceTyp0  = 0;
    ws->shader.lightSourceCol0  = 0;

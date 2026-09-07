@@ -2,7 +2,7 @@ C *****************************************************************************
 C * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
 C *
 C * This file is part of Open PHIGS
-C * Copyright (C) 2026 CERN for the benefit of the OPAL collaboration
+C * Copyright (C) 2026 CERN for the benefit of the OPAL Collaboration
 C *
 C * Open PHIGS is free software: you can redistribute it and/or modify
 C * it under the terms of the GNU Lesser General Public License as published by

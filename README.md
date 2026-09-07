@@ -176,3 +176,6 @@ By default, OpenPHIGS will look for a file named phigs.def in the current direct
 * v0.6-1:  Add support for pattern filling
 * v0.6-2:  Add edge type fortran binding and fix polyline drawing
 * v0.6-3   Create documentation, bug fixes and code re-organisation
+
+## Credits
+Special thanks to members of the DELPHI and OPAL collaborations for intensive testing and contibuting code for some of the Fortran tests.

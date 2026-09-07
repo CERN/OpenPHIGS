@@ -1,5 +1,5 @@
 C *****************************************************************************
-C * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER
+C * DO NOT REMOVE COPYRIGHT NOTICES OR THIS HEADER
 C *
 C * This file is part of Open PHIGS
 C * Copyright (C) 2026 CERN for the benefit of the OPAL Collaboration

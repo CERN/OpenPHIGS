@@ -520,25 +520,21 @@ void wsgl_shaders(Ws * ws){
     }
     /*
       Order independent rendering needs a second program to resolve the
-      per pixel fragment lists. Only the 4.20 fragment shader builds those
-      lists, so for every other version oir_program stays zero and the
-      rendering path is exactly what it always was.
+      per pixel fragment lists. Only the 4.30 fragment shader builds those
+      lists (the head pointer needs an SSBO, which is not reliably available
+      as a 4.20 extension across the hardware/drivers this runs on -- see
+      the comment on wsgl_oir_wanted() in wsgl_oir.c), so for every other
+      version oir_program stays zero and the rendering path is exactly what
+      it always was.
     */
     ws->shader.oir_program = 0;
     ws->shader.oirMode = -1;
-    if (ws->oir.mode > 0){
-      if (wsgl_frag_shader_version == 420){
-        ws->shader.oir_program = wsgl_build_program(vertex_shader_text_420_resolve,
-                                                    fragment_shader_text_420_resolve,
-                                                    "OIR resolve");
-        if (ws->shader.oir_program == 0){
-          fprintf(stderr, "[ERROR] Could not build the order independent"
-                  " rendering resolve program\n");
-          abort();
-        }
-        ws->shader.oirMode = glGetUniformLocation(ws->shader.oir_program, "oirMode");
-        printf("[INFO] Order independent rendering mode is %d\n", ws->oir.mode);
-      }
+    if (ws->oir.mode > 0 && wsgl_frag_shader_version < 430){
+      fprintf(stderr, "WARNING: order independent rendering needs shader"
+              " version 430 or later (configured: %d). Continuing with OIR"
+              " disabled for this workstation.\n", wsgl_frag_shader_version);
+    }
+    else if (ws->oir.mode > 0){
       if (wsgl_frag_shader_version == 430 ){
         ws->shader.oir_program = wsgl_build_program(vertex_shader_text_430_resolve,
                                                     fragment_shader_text_430_resolve,

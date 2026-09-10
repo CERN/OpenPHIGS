@@ -176,14 +176,19 @@ static void wsgl_oir_publish_state(Ws * ws, int enabled)
 /*
  * wsgl_oir_wanted: is order independent rendering asked for and supported?
  *
- * The 4.20 and later fragment shaders are the ones that build fragment lists,
- * so anything older must not allocate the buffers, and must not be told that
- * order independent rendering is on.
+ * Requires 4.30+: the head pointer is a shader storage buffer (see the
+ * comment on head_p_buffer in ws.h for why), and SSBOs need either GLSL 430
+ * core or GL_ARB_shader_storage_buffer_object as an extension on 4.20 --
+ * which is not available on all hardware that otherwise runs 4.20-level
+ * shaders fine (seen failing to compile on an Intel/Mesa driver). fs420.frag
+ * stays a plain (non-OIR-capable) shader at that version rather than
+ * chasing 4.20 hardware/driver combinations that may or may not have the
+ * extension.
  */
 static int wsgl_oir_wanted(Ws * ws)
 {
   return (ws->oir.mode > 0) && wsgl_use_shaders &&
-         (wsgl_frag_shader_version >= 420);
+         (wsgl_frag_shader_version >= 430);
 }
 
 /*******************************************************************************

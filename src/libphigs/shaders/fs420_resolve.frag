@@ -1,12 +1,5 @@
 #version 420 compatibility
 /*
- * Shader storage buffer objects (the "buffer" block below, for the head
- * pointer) are core in GLSL 4.30 and later; on this 4.20 shader they need
- * this extension enabled explicitly, or the compiler rejects "buffer" as
- * an unrecognised identifier instead of a storage qualifier.
- */
-#extension GL_ARB_shader_storage_buffer_object : require
-/*
  * Order independent rendering, pass 2 of 2: resolve.
  *
  * One invocation per pixel, run after all geometry has been rasterised by
@@ -21,15 +14,15 @@
  * The bindings have to match the ones wsgl_oir_reset() sets up, and the ones
  * fs420.frag appends through.
  *
- * The head pointer is a shader storage buffer of one uint per pixel, indexed
- * as y * oirWidth + x, rather than a uimage2D -- see the matching comment in
- * fs420.frag for why.
+ * NOTE: not actually built/used any more (wsgl_oir_wanted() in wsgl_oir.c
+ * requires 4.30+); kept only so this file stays close to
+ * fs430_resolve.frag's structure. See the matching note in fs420.frag for
+ * why it does not use an SSBO for the head pointer, unlike fs430_resolve.frag.
  */
-layout (std430, binding = 0)   readonly buffer HeadPointers { uint head_pointers[]; };
+layout (binding = 0, r32ui)    coherent uniform uimage2D     head_pointer_image;
 layout (binding = 1, rgba32ui) coherent uniform uimageBuffer list_buffer;
 /* entries the fragment list holds, set by wsgl_oir_reset() */
 uniform uint list_capacity;
-uniform uint oirWidth;
 
 #define MAX_FRAGMENTS 16
 #define LIST_END 0xFFFFFFFFu
@@ -60,8 +53,7 @@ uvec4 fragments[MAX_FRAGMENTS];
 int createFragmentList(){
   int n = 0;
   int steps = 0;
-  uint headIndex = uint(gl_FragCoord.y) * oirWidth + uint(gl_FragCoord.x);
-  uint current = head_pointers[headIndex];
+  uint current = imageLoad(head_pointer_image, ivec2(gl_FragCoord.xy)).x;
   while (current != LIST_END && steps < MAX_WALK){
     steps++;
     /*

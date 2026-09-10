@@ -210,10 +210,21 @@ bool appendFragment(vec4 fragCol){
 void main()
 {
   vec4 col = fragColor(Color);
-  if (oirEnable == 0){
-    gl_FragColor = col;    /* OIR disabled, straight out */
+  /*
+   * Opaque fragments must not go into the list: appending them buys
+   * nothing (they cannot have anything show through), while writing their
+   * real depth here is what lets ordinary Z-buffer testing keep them
+   * correctly ordered against both other opaque geometry and any
+   * transparent surface resolved later. It also keeps the list itself
+   * short -- createFragmentList() in the resolve pass caps how many links
+   * of a pixel's chain it will walk (MAX_WALK), so a busy scene that
+   * funnelled every opaque fragment through here too could grow a pixel's
+   * chain past that cap and silently lose early entries, such as an
+   * opaque fill sitting underneath everything else drawn that frame.
+   */
+  if (oirEnable == 0 || col.a >= 1.0){
+    gl_FragColor = col;    /* OIR disabled, or opaque: straight out */
   } else {
-    /* Everything goes here */
     if (!appendFragment(col)) {
       gl_FragColor = col;    /* no room in the list: draw it, unsorted */
       return;

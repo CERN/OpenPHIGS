@@ -13,11 +13,16 @@
  *
  * The bindings have to match the ones wsgl_oir_reset() sets up, and the ones
  * fs420.frag appends through.
+ *
+ * The head pointer is a shader storage buffer of one uint per pixel, indexed
+ * as y * oirWidth + x, rather than a uimage2D -- see the matching comment in
+ * fs420.frag for why.
  */
-layout (binding = 0, r32ui)    coherent uniform uimage2D     head_pointer_image;
+layout (std430, binding = 0)   readonly buffer HeadPointers { uint head_pointers[]; };
 layout (binding = 1, rgba32ui) coherent uniform uimageBuffer list_buffer;
 /* entries the fragment list holds, set by wsgl_oir_reset() */
 uniform uint list_capacity;
+uniform uint oirWidth;
 
 #define MAX_FRAGMENTS 16
 #define LIST_END 0xFFFFFFFFu
@@ -48,7 +53,8 @@ uvec4 fragments[MAX_FRAGMENTS];
 int createFragmentList(){
   int n = 0;
   int steps = 0;
-  uint current = imageLoad(head_pointer_image, ivec2(gl_FragCoord.xy)).x;
+  uint headIndex = uint(gl_FragCoord.y) * oirWidth + uint(gl_FragCoord.x);
+  uint current = head_pointers[headIndex];
   while (current != LIST_END && steps < MAX_WALK){
     steps++;
     /*

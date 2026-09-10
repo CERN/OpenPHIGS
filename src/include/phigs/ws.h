@@ -229,14 +229,20 @@ typedef struct {
    * the resolve will not walk more than that many entries anyway.
    */
   Pint layersPerPixel;
-  /* size of the head pointer image, so that the resolve can cover all of it */
+  /* size of the head pointer buffer, so that the resolve can cover all of it */
   Pint oir_width;
   Pint oir_height;
   /* entries the list can hold, handed to the shaders as list_capacity */
   GLuint frag_list_capacity;
-  char * data;
-  GLuint head_p_texture;
-  GLuint head_p_initializer;
+/*
+ * The head pointer is a std430 SSBO of one uint per pixel, indexed as
+ * y * oir_width + x, rather than a uimage2D: at least one NVIDIA driver
+ * (580.178.04) does not reliably make a uimage2D's contents visible to
+ * imageLoad() in a separately linked program (confirmed with
+ * tools/oir_repro.c), even though the equivalent SSBO does not show the
+ * problem. Cleared every frame with glClearBufferSubData().
+ */
+  GLuint head_p_buffer;
   GLuint acounter_buffer;
   GLuint frag_storage_buffer;
 /*

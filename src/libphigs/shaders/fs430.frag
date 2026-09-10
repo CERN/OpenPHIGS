@@ -64,6 +64,8 @@ uniform int applyTexture;
 /* number of entries the fragment list can hold, set by wsgl_oir_reset() */
 uniform uint list_capacity;
 uniform int oirEnable;
+/* width of the canvas, so gl_FragCoord can be turned into a head pointer index */
+uniform uint oirWidth;
 
 in vec4 Normal;
 in vec4 Color;
@@ -71,12 +73,19 @@ in vec4 VertexPosEye;
 in vec2 TexCoord;
 
 /*
- * Order independent rendering state. The head pointer image and the fragment
- * list are read back with imageLoad rather than through a second pair of
- * sampler uniforms, so each object needs only the one binding below.
+ * Order independent rendering state.
  *
- * head_pointer_image is bound to image unit 0 by wsgl_oir_reset(), the
- * fragment list still needs a texture and a binding to unit 1 on the C side.
+ * The head pointer is a shader storage buffer of one uint per pixel, indexed
+ * as y * oirWidth + x, rather than a uimage2D: at least one NVIDIA driver
+ * (580.178.04) does not reliably make a uimage2D's contents visible to
+ * imageLoad() in a separately linked program (confirmed with
+ * tools/oir_repro.c in the OpenPHIGS repository), even though the equivalent
+ * SSBO does not show the problem. The fragment list is unaffected by that and
+ * stays a uimageBuffer, read back with imageLoad through the one binding
+ * below.
+ *
+ * head_pointers is bound to binding point 0 (GL_SHADER_STORAGE_BUFFER) by
+ * wsgl_oir_reset(), list_buffer to image unit 1.
  */
 /*
  * NOTE: early_fragment_tests must NOT be used here. It moves the depth test
@@ -88,8 +97,7 @@ in vec2 TexCoord;
  * little work on hidden fragments and keeps transparency correct.
  */
 layout (binding = 0, offset = 0) uniform atomic_uint index_counter;
-/* number of entries the fragment list can hold, set by wsgl_oir_reset() */
-layout (binding = 0, r32ui)      coherent uniform uimage2D     head_pointer_image;
+layout (std430, binding = 0)     coherent buffer HeadPointers { uint head_pointers[]; };
 layout (binding = 1, rgba32ui)   coherent uniform uimageBuffer list_buffer;
 
 /*
@@ -188,9 +196,8 @@ vec4 fragColor(vec4 inColor){
 bool appendFragment(vec4 fragCol){
   uint index = atomicCounterIncrement(index_counter);
   if (index >= list_capacity) return false;
-  uint old_head = imageAtomicExchange(head_pointer_image,
-                                      ivec2(gl_FragCoord.xy),
-                                      index);
+  uint headIndex = uint(gl_FragCoord.y) * oirWidth + uint(gl_FragCoord.x);
+  uint old_head = atomicExchange(head_pointers[headIndex], index);
   uvec4 item;
   item.x = old_head;
   item.y = packUnorm4x8(fragCol);

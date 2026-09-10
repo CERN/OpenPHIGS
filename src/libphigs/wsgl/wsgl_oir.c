@@ -36,11 +36,14 @@
 #include "private/wsglP.h"
 
 /*
- * Image units the shaders expect the two objects on. These have to agree with
- * the binding qualifiers in fs430.frag and fs430_resolve.frag.
+ * Bindings the shaders expect the two objects on. These have to agree with
+ * the binding qualifiers in fs420/fs430.frag and fs420/fs430_resolve.frag.
+ *
+ * The head pointer is a shader storage buffer (its own binding namespace),
+ * not an image; the fragment list is still a uimageBuffer on an image unit.
  */
-#define OIR_HEAD_POINTER_UNIT 0
-#define OIR_LIST_BUFFER_UNIT  1
+#define OIR_HEAD_POINTER_BINDING 0
+#define OIR_LIST_BUFFER_UNIT     1
 
 /*
  * wsgl_oir_check_gl: drain the GL error queue and print anything found. Used
@@ -67,8 +70,8 @@ static void wsgl_oir_check_gl(const char * where)
 static void wsgl_oir_dump_bindings(Ws * ws)
 {
   static int done = 0;
-  GLint name = -1, format = -1, access = -1, layered = -1, level = -1;
-  GLint counter_buf = -1;
+  GLint name = -1, format = -1, access = -1;
+  GLint counter_buf = -1, ssbo_buf = -1;
 
   if (done) return;
   done = 1;
@@ -77,17 +80,10 @@ static void wsgl_oir_dump_bindings(Ws * ws)
           (const char *) glGetString(GL_VENDOR),
           (const char *) glGetString(GL_RENDERER));
 
-  glGetIntegeri_v(GL_IMAGE_BINDING_NAME, OIR_HEAD_POINTER_UNIT, &name);
-  glGetIntegeri_v(GL_IMAGE_BINDING_FORMAT, OIR_HEAD_POINTER_UNIT, &format);
-  glGetIntegeri_v(GL_IMAGE_BINDING_ACCESS, OIR_HEAD_POINTER_UNIT, &access);
-  glGetIntegeri_v(GL_IMAGE_BINDING_LAYERED, OIR_HEAD_POINTER_UNIT, &layered);
-  glGetIntegeri_v(GL_IMAGE_BINDING_LEVEL, OIR_HEAD_POINTER_UNIT, &level);
-  fprintf(stderr, "[OIR][DIAG] image unit %d (head pointer): name=%d"
-          " (expected %u), format=0x%04x (expected 0x%04x), access=0x%04x,"
-          " layered=%d, level=%d\n",
-          OIR_HEAD_POINTER_UNIT, name, ws->oir.head_p_texture,
-          format, GL_R32UI, access, layered, level);
-  wsgl_oir_check_gl("glGetIntegeri_v(head pointer image)");
+  glGetIntegeri_v(GL_SHADER_STORAGE_BUFFER_BINDING, OIR_HEAD_POINTER_BINDING, &ssbo_buf);
+  fprintf(stderr, "[OIR][DIAG] SSBO binding %d (head pointer): buffer=%d"
+          " (expected %u)\n", OIR_HEAD_POINTER_BINDING, ssbo_buf, ws->oir.head_p_buffer);
+  wsgl_oir_check_gl("glGetIntegeri_v(head pointer SSBO)");
 
   glGetIntegeri_v(GL_IMAGE_BINDING_NAME, OIR_LIST_BUFFER_UNIT, &name);
   glGetIntegeri_v(GL_IMAGE_BINDING_FORMAT, OIR_LIST_BUFFER_UNIT, &format);
@@ -144,6 +140,16 @@ static void wsgl_oir_publish_state(Ws * ws, int enabled)
     glProgramUniform1ui(ws->shader.program, loc,
                         enabled ? ws->oir.frag_list_capacity : 0u);
   }
+  /*
+    appendFragment() turns gl_FragCoord into a linear index into the head
+    pointer SSBO itself (y * oirWidth + x), so it needs the canvas width.
+    Harmless to leave at a stale value while disabled: appendFragment() is
+    never called when oirEnable is 0.
+  */
+  loc = glGetUniformLocation(ws->shader.program, "oirWidth");
+  if (loc >= 0){
+    glProgramUniform1ui(ws->shader.program, loc, (GLuint) ws->oir.oir_width);
+  }
   if (ws->shader.oir_program <= 0) return;
   if (enabled && ws->shader.oirMode >= 0){
     glProgramUniform1i(ws->shader.oir_program, ws->shader.oirMode,
@@ -159,6 +165,11 @@ static void wsgl_oir_publish_state(Ws * ws, int enabled)
   if (loc >= 0){
     glProgramUniform1ui(ws->shader.oir_program, loc,
                         enabled ? ws->oir.frag_list_capacity : 0u);
+  }
+  /* the resolve pass needs oirWidth too, to index the same SSBO the same way */
+  loc = glGetUniformLocation(ws->shader.oir_program, "oirWidth");
+  if (loc >= 0){
+    glProgramUniform1ui(ws->shader.oir_program, loc, (GLuint) ws->oir.oir_width);
   }
 }
 
@@ -206,39 +217,20 @@ void wsgl_oir_ini(Ws *ws){
     path it runs twice for one workstation. Without this guard the second call
     would allocate a second set of objects and leak the first.
   */
-  if (ws->oir.head_p_texture != 0) return;
+  if (ws->oir.head_p_buffer != 0) return;
   ws->oir.oir_width  = width;
   ws->oir.oir_height = height;
-  glGenTextures(1, &ws->oir.head_p_texture);
-  glBindTexture(GL_TEXTURE_2D, ws->oir.head_p_texture);
-  glTexImage2D(GL_TEXTURE_2D, 0,
-               GL_R32UI,
-               width, height,
-               0,
-               GL_RED_INTEGER,
-               GL_UNSIGNED_INT,
-               NULL
-               );
-  glGenBuffers(1, &ws->oir.head_p_initializer);
-  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, ws->oir.head_p_initializer);
-  glBufferData(GL_PIXEL_UNPACK_BUFFER, n_pixels* sizeof(GLuint), NULL, GL_STATIC_DRAW);
-  ws->oir.data = (char*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-  if (ws->oir.data == NULL){
-    fprintf(stderr, "WARNING: could not map the head pointer initialiser,"
-            " order independent rendering is disabled\n");
-    ws->oir.head_p_texture = 0;
-    ws->oir.mode = 0;
-    glDeleteBuffers(1, &ws->oir.head_p_initializer);
-    glDeleteTextures(1, &ws->oir.head_p_texture);
-    ws->oir.head_p_initializer = 0;
-    ws->oir.head_p_texture = 0;
-    return;
-  }
-  memset(ws->oir.data, 0xFF, n_pixels*sizeof(GLuint));
-  glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-  /* leaving this bound would turn the data pointer of every later texture
-     upload in the library into an offset into this buffer */
-  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+  /*
+    One uint per pixel, indexed as y * width + x. wsgl_oir_reset() clears it
+    every frame with glClearBufferSubData(); it does not need any content
+    here, since reset() always runs before the first geometry of a frame.
+  */
+  glGenBuffers(1, &ws->oir.head_p_buffer);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, ws->oir.head_p_buffer);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, (GLsizeiptr) n_pixels * sizeof(GLuint),
+               NULL, GL_DYNAMIC_COPY);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+  wsgl_oir_check_gl("wsgl_oir_ini: head pointer SSBO setup");
 
   glGenBuffers(1, &ws->oir.acounter_buffer);
   glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, ws->oir.acounter_buffer);
@@ -283,9 +275,7 @@ void wsgl_oir_cleanup(Ws * ws){
   glDeleteBuffers(1, &ws->oir.frag_storage_buffer); ws->oir.frag_storage_buffer = 0;
   ws->oir.frag_list_capacity = 0;
   glDeleteBuffers(1, &ws->oir.acounter_buffer); ws->oir.acounter_buffer = 0;
-  glDeleteBuffers(1, &ws->oir.head_p_initializer);ws->oir.head_p_initializer = 0;
-  ws->oir.data = NULL;
-  glDeleteTextures(1, &ws->oir.head_p_texture); ws->oir.head_p_texture = 0;
+  glDeleteBuffers(1, &ws->oir.head_p_buffer); ws->oir.head_p_buffer = 0;
 }
 
 /*******************************************************************************
@@ -300,34 +290,28 @@ void wsgl_oir_reset(Ws * ws){
   Pint width = ws->ws_rect.width;
   Pint height = ws->ws_rect.height;
   if (!wsgl_oir_wanted(ws)) return;
-  if (ws->oir.head_p_texture == 0) return;
+  if (ws->oir.head_p_buffer == 0) return;
   if (width != ws->oir.oir_width || height != ws->oir.oir_height) {
      wsgl_oir_cleanup(ws);      /* frees and zeroes the handles */
      wsgl_oir_ini(ws);          /* rebuilds at the new size */
-     if (ws->oir.head_p_texture == 0) return;
+     if (ws->oir.head_p_buffer == 0) return;
   }
   /*
-    Set every head pointer back to the end of list marker by uploading the
-    0xFF filled buffer built in wsgl_oir_ini(). With a pixel unpack buffer
-    bound the NULL below is an offset into that buffer, not a host pointer.
+    Set every head pointer back to the end of list marker, directly on the
+    GPU: this is the same operation imageLoad()/atomicExchange() in the
+    shaders will use, unlike a glTex(Sub)Image2D-based clear of a uimage2D
+    (see the comment on head_p_buffer in ws.h for why that distinction
+    matters here).
   */
-  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, ws->oir.head_p_initializer);
-  glBindTexture(GL_TEXTURE_2D, ws->oir.head_p_texture);
-  glTexImage2D(GL_TEXTURE_2D, 0,
-               GL_R32UI,
-               width, height,
-               0,
-               GL_RED_INTEGER,
-               GL_UNSIGNED_INT,
-               NULL );
-  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-  glBindImageTexture(OIR_HEAD_POINTER_UNIT,
-                     ws->oir.head_p_texture,
-                     0,
-                     GL_FALSE,
-                     0,
-                     GL_READ_WRITE,
-                     GL_R32UI);
+  {
+    size_t n_pixels = (size_t) width * (size_t) height;
+    const GLuint list_end = 0xFFFFFFFFu;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ws->oir.head_p_buffer);
+    glClearBufferSubData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, 0,
+                         (GLsizeiptr) n_pixels * sizeof(GLuint),
+                         GL_RED_INTEGER, GL_UNSIGNED_INT, &list_end);
+  }
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, OIR_HEAD_POINTER_BINDING, ws->oir.head_p_buffer);
   glBindImageTexture(OIR_LIST_BUFFER_UNIT,
                      ws->oir.frag_storage_texture,
                      0,
@@ -336,7 +320,7 @@ void wsgl_oir_reset(Ws * ws){
                      GL_READ_WRITE,
                      GL_RGBA32UI);
   glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, ws->oir.acounter_buffer);
-  wsgl_oir_check_gl("wsgl_oir_reset: image/atomic counter binding");
+  wsgl_oir_check_gl("wsgl_oir_reset: buffer/image/atomic counter binding");
   /*
     Before clearing the counter, read what the previous frame asked for. The
     counter keeps rising past the capacity when the list is full, so a value
@@ -362,10 +346,10 @@ void wsgl_oir_reset(Ws * ws){
   }
   const GLuint zero = 0;
   glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(zero), &zero);
-  /* order the clear above against last frame's appends and this frame's */
-  glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT |
-                  GL_BUFFER_UPDATE_BARRIER_BIT  |
-                  GL_ATOMIC_COUNTER_BARRIER_BIT |
+  /* order the clears above against last frame's appends and this frame's */
+  glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT   |
+                  GL_ATOMIC_COUNTER_BARRIER_BIT  |
+                  GL_SHADER_STORAGE_BARRIER_BIT  |
                   GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
   /*
     Republish the capacity every frame. It is cheap and it means a resize,
@@ -462,10 +446,12 @@ void wsgl_oir_resolve(Ws * ws){
   GLint viewport[4];
 
   if (!wsgl_oir_wanted(ws)) return;
-  if (ws->oir.head_p_texture == 0) return;
+  if (ws->oir.head_p_buffer == 0) return;
   if (ws->shader.oir_program <= 0) return;
-  /* make the appends of this frame visible to the reads below */
-  glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT |
+  /* make the appends of this frame (SSBO writes, list_buffer image writes)
+     visible to the reads below */
+  glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT |
+                  GL_SHADER_IMAGE_ACCESS_BARRIER_BIT |
                   GL_TEXTURE_FETCH_BARRIER_BIT);
 
   depth_test = glIsEnabled(GL_DEPTH_TEST);

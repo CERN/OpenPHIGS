@@ -42,6 +42,52 @@
 #define OIR_LIST_BUFFER_UNIT  1
 
 /*******************************************************************************
+ * wsgl_oir_publish_state
+ *
+ * DESCR:       Hand the current order independent rendering state to the
+ *              shaders. oirEnable tells the first pass whether to append at
+ *              all, list_capacity tells it how much room the list has.
+ *
+ *              Both have to be pushed together: telling the first pass that
+ *              order independent rendering is on while list_capacity is still
+ *              zero makes every appendFragment() call fail, which silently
+ *              turns the whole thing back into unsorted direct drawing.
+ * RETURNS:     N/A
+ */
+static void wsgl_oir_publish_state(Ws * ws, int enabled)
+{
+  GLint loc;
+
+  if (ws->shader.program <= 0) return;
+  if (ws->shader.oirModeLoc >= 0){
+    glProgramUniform1i(ws->shader.program, ws->shader.oirModeLoc,
+                       enabled ? ws->oir.mode : 0);
+  }
+  loc = glGetUniformLocation(ws->shader.program, "list_capacity");
+  if (loc >= 0){
+    glProgramUniform1ui(ws->shader.program, loc,
+                        enabled ? ws->oir.frag_list_capacity : 0u);
+  }
+  if (enabled && ws->shader.oir_program > 0 && ws->shader.oirMode >= 0){
+    glProgramUniform1i(ws->shader.oir_program, ws->shader.oirMode,
+                       ws->oir.mode);
+  }
+}
+
+/*
+ * wsgl_oir_wanted: is order independent rendering asked for and supported?
+ *
+ * The 4.20 and later fragment shaders are the ones that build fragment lists,
+ * so anything older must not allocate the buffers, and must not be told that
+ * order independent rendering is on.
+ */
+static int wsgl_oir_wanted(Ws * ws)
+{
+  return (ws->oir.mode > 0) && wsgl_use_shaders &&
+         (wsgl_frag_shader_version >= 420);
+}
+
+/*******************************************************************************
  * wsgl_oir_ini
  *
  * DESCR:       Initialise Order Independent Rendering
@@ -50,22 +96,21 @@
  * BUGS:
  */
 void wsgl_oir_ini(Ws *ws){
-  if (ws->shader.oirModeLoc >= 0) glProgramUniform1i(ws->shader.program, ws->shader.oirModeLoc, ws->oir.mode);
-  if (ws->oir.mode == 0) return;
-  if (ws->shader.oirMode>=0) glProgramUniform1i(ws->shader.oir_program, ws->shader.oirMode, ws->oir.mode);
-  if (!wsgl_use_shaders) return;
   /*
-    Only the 4.30 shaders build a fragment list. Without this the older
-    shader versions would still pay for the head pointer image and the
-    fragment list, which is a lot of memory for nothing.
+    Until the buffers below exist the first pass must not append, so the
+    shaders are told order independent rendering is off on every path that
+    leaves this function early.
   */
-  if (wsgl_frag_shader_version <430) return;
+  if (!wsgl_oir_wanted(ws)){
+    wsgl_oir_publish_state(ws, 0);
+    return;
+  }
   Pint width = ws->ws_rect.width;
   Pint height = ws->ws_rect.height;
   size_t n_pixels = width * height;
-  printf("WSGL INI called with %d %d\n", width, height);
   if (n_pixels <= 0){
     /* At the first call things may not be initialised yet. Capture this and just ignore the call */
+    wsgl_oir_publish_state(ws, 0);
     return;
   }
   /*
@@ -125,6 +170,9 @@ void wsgl_oir_ini(Ws *ws){
   glGenTextures(1, &ws->oir.frag_storage_texture);
   glBindTexture(GL_TEXTURE_BUFFER, ws->oir.frag_storage_texture);
   glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32UI, ws->oir.frag_storage_buffer);
+
+  /* the buffers exist now, so the first pass may append into them */
+  wsgl_oir_publish_state(ws, 1);
 }
 
 /*******************************************************************************
@@ -136,11 +184,9 @@ void wsgl_oir_ini(Ws *ws){
  * BUGS:
  */
 void wsgl_oir_cleanup(Ws * ws){
-  if (ws->shader.oirModeLoc >= 0) glProgramUniform1i(ws->shader.program, ws->shader.oirModeLoc, ws->oir.mode);
-  if (ws->oir.mode == 0) return;
-  if (ws->shader.oirMode>=0) glProgramUniform1i(ws->shader.oir_program, ws->shader.oirMode, ws->oir.mode);
-  if (!wsgl_use_shaders) return;
-  if (wsgl_frag_shader_version < 430) return;
+  /* the buffers are about to go away, so stop the first pass appending */
+  wsgl_oir_publish_state(ws, 0);
+  if (!wsgl_oir_wanted(ws)) return;
   glDeleteTextures(1, &ws->oir.frag_storage_texture); ws->oir.frag_storage_texture = 0;
   glDeleteBuffers(1, &ws->oir.frag_storage_buffer); ws->oir.frag_storage_buffer = 0;
   ws->oir.frag_list_capacity = 0;
@@ -161,10 +207,7 @@ void wsgl_oir_cleanup(Ws * ws){
 void wsgl_oir_reset(Ws * ws){
   Pint width = ws->ws_rect.width;
   Pint height = ws->ws_rect.height;
-  if (!wsgl_use_shaders) return;
-  if (ws->shader.oirModeLoc >= 0) glProgramUniform1i(ws->shader.program, ws->shader.oirModeLoc, ws->oir.mode);
-  if (ws->oir.mode == 0) return;
-  if (ws->shader.oirMode >= 0) glProgramUniform1i(ws->shader.oir_program, ws->shader.oirMode, ws->oir.mode);
+  if (!wsgl_oir_wanted(ws)) return;
   if (ws->oir.head_p_texture == 0) return;
   if (width != ws->oir.oir_width || height != ws->oir.oir_height) {
      wsgl_oir_cleanup(ws);      /* frees and zeroes the handles */
@@ -209,18 +252,11 @@ void wsgl_oir_reset(Ws * ws){
                   GL_ATOMIC_COUNTER_BARRIER_BIT |
                   GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
   /*
-    Tell the append shader how much room it has. Taken from the current
-    program rather than passed in, so that this stays self contained.
+    Republish the capacity every frame. It is cheap and it means a resize,
+    which reallocates the list through wsgl_oir_cleanup()/wsgl_oir_ini(),
+    can never leave the first pass with a stale or zero capacity.
   */
-  //{
-  //  GLint program = 0;
-  //  GLint loc;
-  //  glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-  //  if (program != 0){
-  //    loc = glGetUniformLocation(program, "list_capacity");
-  //    if (loc >= 0) glUniform1ui(loc, ws->oir.frag_list_capacity);
-  //  }
-  //}
+  wsgl_oir_publish_state(ws, 1);
 }
 
 /*******************************************************************************
@@ -237,12 +273,9 @@ void wsgl_oir_resolve(Ws * ws){
   GLboolean depth_test, blend, depth_mask;
   GLint viewport[4];
 
-  if (!wsgl_use_shaders) return;
-  if (ws->shader.oirModeLoc >= 0) glProgramUniform1i(ws->shader.program, ws->shader.oirModeLoc, ws->oir.mode);
-  if (ws->oir.mode == 0) return;
-  if (ws->shader.oirMode>=0) glProgramUniform1i(ws->shader.oir_program, ws->shader.oirMode, ws->oir.mode);
+  if (!wsgl_oir_wanted(ws)) return;
   if (ws->oir.head_p_texture == 0) return;
-  if (ws->shader.oir_program == 0) return;
+  if (ws->shader.oir_program <= 0) return;
   /* make the appends of this frame visible to the reads below */
   glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT |
                   GL_TEXTURE_FETCH_BARRIER_BIT);

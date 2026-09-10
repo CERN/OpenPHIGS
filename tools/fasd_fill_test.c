@@ -35,10 +35,11 @@
 
 int main(int argc, char ** argv)
 {
-  int disting = 0, nohlhsr = 0, i;
+  int disting = 0, nohlhsr = 0, zbuff = 0, i;
   for (i = 1; i < argc; i++){
     if (!strcmp(argv[i], "disting")) disting = 1;
     if (!strcmp(argv[i], "nohlhsr")) nohlhsr = 1;
+    if (!strcmp(argv[i], "zbuff")) zbuff = 1;
   }
   Ppoint3 verts[6] = {
     {0.2, 0.2, 0.0}, {0.8, 0.2, 0.0}, {0.8, 0.8, 0.0},
@@ -72,7 +73,8 @@ int main(int argc, char ** argv)
   /* matches the DELPHI banner's own workstation: 2D content, no hidden
      surface removal, so GL_DEPTH_TEST ends up disabled (see wsgl.c) --
      unless "nohlhsr" is passed, to see what the untouched default is */
-  if (!nohlhsr) pset_hlhsr_mode(0, PHIGS_HLHSR_MODE_NONE);
+  if (zbuff) pset_hlhsr_mode(0, PHIGS_HLHSR_MODE_ZBUFF);
+  else if (!nohlhsr) pset_hlhsr_mode(0, PHIGS_HLHSR_MODE_NONE);
   ppost_struct(0, 1, 0.0);
   pupd_ws(0, PFLAG_PERFORM);
   printf("GL_DEPTH_TEST enabled after the frame: %d\n",

@@ -442,7 +442,7 @@ void wsgl_oir_diag_readback(Ws * ws)
  * RETURNS:     N/A
  */
 void wsgl_oir_resolve(Ws * ws){
-  GLboolean depth_test, blend, depth_mask, scissor_test;
+  GLboolean depth_test, blend, depth_mask, scissor_test, alpha_test;
   GLint viewport[4];
 
   if (!wsgl_oir_wanted(ws)) return;
@@ -472,6 +472,17 @@ void wsgl_oir_resolve(Ws * ws){
   */
   scissor_test = glIsEnabled(GL_SCISSOR_TEST);
   if (scissor_test) glDisable(GL_SCISSOR_TEST);
+  /*
+    wsgl_begin_rendering() turns GL_ALPHA_TEST on (GL_GREATER, 0.01) whenever
+    hidden surface removal is in z-buffer mode, to keep fully-discarded
+    fragments from writing depth. That threshold is meaningless for this
+    quad: finalColor1()/finalColor2() can legitimately return a low but
+    non-zero alpha for a pixel with only faint translucent contributions,
+    and the whole point of this pass is to blend that in, not have it
+    silently discarded before the blend it depends on ever happens.
+  */
+  alpha_test = glIsEnabled(GL_ALPHA_TEST);
+  if (alpha_test) glDisable(GL_ALPHA_TEST);
 
   /*
     The resolve covers the viewport with one quad, so it must not be depth
@@ -515,4 +526,5 @@ void wsgl_oir_resolve(Ws * ws){
   if (!depth_test) glDisable(GL_DEPTH_TEST);
   glDepthMask(depth_mask);
   if (scissor_test) glEnable(GL_SCISSOR_TEST);
+  if (alpha_test) glEnable(GL_ALPHA_TEST);
 }

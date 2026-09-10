@@ -102,4 +102,51 @@ actually on, matching `pfill_area()`'s plain 2D path, which never applied
 it at all. `fasd_fill_test.c`/`fasd_stack_test.c` pass with and without this
 fix in the isolated cases tried so far, so it is a real, defensible
 correctness fix but not confirmed as the complete explanation for the
-dolphin's specific symptom -- retest against the real application.
+dolphin's specific symptom.
+
+Follow-up after reading `delgrasubs.f` directly: `KYDELP`'s PFASD calls use
+`fflag=PFNO` (`PFACET_NONE`) and `vflag=PCD` (`PVERT_COORD`) -- the per-facet/
+per-vertex colour arguments are supplied but unused; the actual colour comes
+from the *ambient* `PSICI`/`PSBICI` (current interior colour index)
+attribute. Chased a theory that `wsgl_set_colr()`'s `PINDIRECT` case (a bare
+`glIndexi()`, which does not touch the `vColor` vertex attribute
+fs420/fs430.frag actually reads -- see `fasd_indirect_test.c` below, which
+does reproduce a stale-grey fill this way) was involved, but ruled it out:
+`delgrasubs.f` calls `PSCM(IWK1, 2)` (`PMODEL_RGBA`), so `phg_get_colr_ind()`
+(`phg.c`) resolves `PSICI`'s index against the workstation's colour table
+into real RGBA before it ever reaches `wsgl_set_colr()` -- the `PINDIRECT`/
+`glIndexi()` path is never actually taken for this workstation.
+
+`fasd_fill_test.c` gained a `zbuff` flag to call
+`pset_hlhsr_mode(0, PHIGS_HLHSR_MODE_ZBUFF)`, matching what `IWK1` almost
+certainly uses (it is shared with the 3D detector view, toggled by an
+interactive "Hidden" menu calling `PSHRM`, and the hourglass model's correct
+depth in every screenshot points at z-buffer mode being active). Rerunning
+the exact fflag=PFACET_NONE/vflag=PVERT_COORD PFASD shape under `zbuff`:
+**intermittent** -- roughly 13-15 out of 20 runs PASS, the rest FAIL with
+the fill missing, no code changes between runs. Adding a `glFinish()` right
+after the pass-1-to-resolve memory barrier (a blunt full-GPU-sync check for
+a simple command-ordering race) did not change the failure rate, so it is
+not that. Root cause of the intermittency not found. While investigating,
+found and fixed one more real, separate bug of the same shape as the
+`GL_SCISSOR_TEST` one above: `wsgl_oir_resolve()` never saved/disabled/
+restored `GL_ALPHA_TEST`, which `wsgl_begin_rendering()` turns on
+(`GL_GREATER, 0.01`) whenever hidden surface removal is in z-buffer mode --
+worth fixing regardless, but shown not to explain this specific symptom (the
+accumulated alpha of an "over" composite that includes any fully opaque
+layer, such as the banner's background box, is always exactly 1.0
+regardless of what other layers contribute, so alpha testing the combined
+resolve output can never single out one layer this way).
+
+## fasd_indirect_test.c
+
+Isolates the `PINDIRECT`/`glIndexi()` gap mentioned above on its own: fills
+a quad via `pfill_area_set_data()` with `vflag=PVERT_COORD_COLOUR`,
+`colr_type=PINDIRECT`, and a per-vertex colour table index set up with
+`pset_colr_rep()` beforehand. Reads back as flat mid-grey
+(`0.5,0.5,0.5,1.0`, the hardcoded initial value of the `vColor` vertex
+attribute set once in `wsgl_shaders()`) instead of the expected colour, with
+OIR either on or off -- confirming `wsgl_set_colr()`'s `PINDIRECT` case is a
+real, pre-existing, OIR-independent bug on its own, just not the one
+responsible for the dolphin's fill loss (which never reaches that code
+path, per above).

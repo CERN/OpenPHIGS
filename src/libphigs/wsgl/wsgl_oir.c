@@ -442,7 +442,7 @@ void wsgl_oir_diag_readback(Ws * ws)
  * RETURNS:     N/A
  */
 void wsgl_oir_resolve(Ws * ws){
-  GLboolean depth_test, blend, depth_mask;
+  GLboolean depth_test, blend, depth_mask, scissor_test;
   GLint viewport[4];
 
   if (!wsgl_oir_wanted(ws)) return;
@@ -458,6 +458,20 @@ void wsgl_oir_resolve(Ws * ws){
   blend      = glIsEnabled(GL_BLEND);
   glGetBooleanv(GL_DEPTH_WRITEMASK, &depth_mask);
   glGetIntegerv(GL_VIEWPORT, viewport);
+  /*
+    A view can restrict its drawing to a sub-rectangle of the window with
+    glScissor/GL_SCISSOR_TEST (PHIGS views are free to only cover part of
+    the workstation viewport). Whatever the last piece of geometry left
+    active would otherwise clip this quad down to that same sub-rectangle,
+    so most of a multi-view frame's resolve would silently be skipped: only
+    the fragments belonging to whichever scissor rectangle happened to be
+    left active would ever reach the screen. Disabling it here, and
+    restoring it below, is exactly the same reasoning as the viewport
+    override just below: the resolve has to cover the whole head pointer
+    buffer, not whatever sub-rectangle happens to be current.
+  */
+  scissor_test = glIsEnabled(GL_SCISSOR_TEST);
+  if (scissor_test) glDisable(GL_SCISSOR_TEST);
 
   /*
     The resolve covers the viewport with one quad, so it must not be depth
@@ -500,4 +514,5 @@ void wsgl_oir_resolve(Ws * ws){
   if (!blend) glDisable(GL_BLEND);
   if (!depth_test) glDisable(GL_DEPTH_TEST);
   glDepthMask(depth_mask);
+  if (scissor_test) glEnable(GL_SCISSOR_TEST);
 }

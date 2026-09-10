@@ -1,5 +1,12 @@
 #version 420 compatibility
 /*
+ * Shader storage buffer objects (the "buffer" block below, for the head
+ * pointer) are core in GLSL 4.30 and later; on this 4.20 shader they need
+ * this extension enabled explicitly, or the compiler rejects "buffer" as
+ * an unrecognised identifier instead of a storage qualifier.
+ */
+#extension GL_ARB_shader_storage_buffer_object : require
+/*
  * Order independent rendering, pass 2 of 2: resolve.
  *
  * One invocation per pixel, run after all geometry has been rasterised by

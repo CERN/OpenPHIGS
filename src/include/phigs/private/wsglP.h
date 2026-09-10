@@ -1357,6 +1357,17 @@ extern "C" {
   void wsgl_oir_resolve(Ws * ws);
 
   /*******************************************************************************
+   * wsgl_oir_diag_readback
+   *
+   * DESCR:       Temporary diagnostic: read the framebuffer back after the
+   *              frame is composited and report how much of it is blank, to
+   *              track down the NVIDIA vs Mesa order independent rendering
+   *              divergence. Prints for only the first few frames.
+   * RETURNS:     N/A
+   */
+  void wsgl_oir_diag_readback(Ws * ws);
+
+  /*******************************************************************************
    * wsgl_close_struct
    *
    * DESCR:       Close

@@ -488,6 +488,7 @@ void wsgl_end_rendering(
     opaque image. Does nothing unless order independent rendering is in use.
   */
   wsgl_oir_resolve(ws);
+  wsgl_oir_diag_readback(ws);
 
   if (ws->has_double_buffer) {
 #ifdef DEBUG

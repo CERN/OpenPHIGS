@@ -18,6 +18,7 @@
  *   along with Open PHIGS. If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
@@ -40,6 +41,81 @@
  */
 #define OIR_HEAD_POINTER_UNIT 0
 #define OIR_LIST_BUFFER_UNIT  1
+
+/*
+ * wsgl_oir_check_gl: drain the GL error queue and print anything found. Used
+ * around the calls that set up the state order independent rendering depends
+ * on, so a driver that silently refuses one of them (rather than aborting or
+ * corrupting the image visibly) leaves a trace on stderr instead of just a
+ * blank/white frame.
+ */
+static void wsgl_oir_check_gl(const char * where)
+{
+  GLenum err;
+  while ((err = glGetError()) != GL_NO_ERROR){
+    fprintf(stderr, "[OIR][GL ERROR] %s: 0x%04x\n", where, err);
+  }
+}
+
+/*
+ * wsgl_oir_dump_bindings: read back, rather than assume, what actually ended
+ * up bound to the image units and the atomic counter binding point after
+ * wsgl_oir_reset() set them up. Printed once, since this is diagnostic output
+ * for tracking down driver-specific behaviour (e.g. NVIDIA vs Mesa), not
+ * something needed every frame.
+ */
+static void wsgl_oir_dump_bindings(Ws * ws)
+{
+  static int done = 0;
+  GLint name = -1, format = -1, access = -1, layered = -1, level = -1;
+  GLint counter_buf = -1;
+
+  if (done) return;
+  done = 1;
+
+  fprintf(stderr, "[OIR][DIAG] Vendor: %s, Renderer: %s\n",
+          (const char *) glGetString(GL_VENDOR),
+          (const char *) glGetString(GL_RENDERER));
+
+  glGetIntegeri_v(GL_IMAGE_BINDING_NAME, OIR_HEAD_POINTER_UNIT, &name);
+  glGetIntegeri_v(GL_IMAGE_BINDING_FORMAT, OIR_HEAD_POINTER_UNIT, &format);
+  glGetIntegeri_v(GL_IMAGE_BINDING_ACCESS, OIR_HEAD_POINTER_UNIT, &access);
+  glGetIntegeri_v(GL_IMAGE_BINDING_LAYERED, OIR_HEAD_POINTER_UNIT, &layered);
+  glGetIntegeri_v(GL_IMAGE_BINDING_LEVEL, OIR_HEAD_POINTER_UNIT, &level);
+  fprintf(stderr, "[OIR][DIAG] image unit %d (head pointer): name=%d"
+          " (expected %u), format=0x%04x (expected 0x%04x), access=0x%04x,"
+          " layered=%d, level=%d\n",
+          OIR_HEAD_POINTER_UNIT, name, ws->oir.head_p_texture,
+          format, GL_R32UI, access, layered, level);
+  wsgl_oir_check_gl("glGetIntegeri_v(head pointer image)");
+
+  glGetIntegeri_v(GL_IMAGE_BINDING_NAME, OIR_LIST_BUFFER_UNIT, &name);
+  glGetIntegeri_v(GL_IMAGE_BINDING_FORMAT, OIR_LIST_BUFFER_UNIT, &format);
+  glGetIntegeri_v(GL_IMAGE_BINDING_ACCESS, OIR_LIST_BUFFER_UNIT, &access);
+  fprintf(stderr, "[OIR][DIAG] image unit %d (fragment list): name=%d"
+          " (expected %u), format=0x%04x (expected 0x%04x), access=0x%04x\n",
+          OIR_LIST_BUFFER_UNIT, name, ws->oir.frag_storage_texture,
+          format, GL_RGBA32UI, access);
+  wsgl_oir_check_gl("glGetIntegeri_v(fragment list image)");
+
+  glGetIntegeri_v(GL_ATOMIC_COUNTER_BUFFER_BINDING, 0, &counter_buf);
+  fprintf(stderr, "[OIR][DIAG] atomic counter binding point 0: buffer=%d"
+          " (expected %u)\n", counter_buf, ws->oir.acounter_buffer);
+  wsgl_oir_check_gl("glGetIntegeri_v(atomic counter buffer)");
+
+  if (ws->shader.program > 0){
+    GLint enabled = -1;
+    GLuint cap = (GLuint) -1;
+    GLint loc = glGetUniformLocation(ws->shader.program, "oirEnable");
+    if (loc >= 0) glGetUniformiv(ws->shader.program, loc, &enabled);
+    loc = glGetUniformLocation(ws->shader.program, "list_capacity");
+    if (loc >= 0) glGetUniformuiv(ws->shader.program, loc, &cap);
+    fprintf(stderr, "[OIR][DIAG] 1st pass program %d: oirEnable=%d,"
+            " list_capacity=%u (expected %u)\n",
+            ws->shader.program, enabled, cap, ws->oir.frag_list_capacity);
+  }
+  fprintf(stderr, "[OIR][DIAG] resolve program: %d\n", ws->shader.oir_program);
+}
 
 /*******************************************************************************
  * wsgl_oir_publish_state
@@ -185,6 +261,7 @@ void wsgl_oir_ini(Ws *ws){
   glGenTextures(1, &ws->oir.frag_storage_texture);
   glBindTexture(GL_TEXTURE_BUFFER, ws->oir.frag_storage_texture);
   glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32UI, ws->oir.frag_storage_buffer);
+  wsgl_oir_check_gl("wsgl_oir_ini: buffer/texture setup");
 
   /* the buffers exist now, so the first pass may append into them */
   wsgl_oir_publish_state(ws, 1);
@@ -259,6 +336,7 @@ void wsgl_oir_reset(Ws * ws){
                      GL_READ_WRITE,
                      GL_RGBA32UI);
   glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, ws->oir.acounter_buffer);
+  wsgl_oir_check_gl("wsgl_oir_reset: image/atomic counter binding");
   /*
     Before clearing the counter, read what the previous frame asked for. The
     counter keeps rising past the capacity when the list is full, so a value
@@ -295,6 +373,78 @@ void wsgl_oir_reset(Ws * ws){
     can never leave the first pass with a stale or zero capacity.
   */
   wsgl_oir_publish_state(ws, 1);
+  wsgl_oir_check_gl("wsgl_oir_reset: end");
+  wsgl_oir_dump_bindings(ws);
+}
+
+/*******************************************************************************
+ * wsgl_oir_diag_readback
+ *
+ * DESCR:       Temporary diagnostic. Reads the just-composited frame back
+ *              from the framebuffer and reports how much of it is blank
+ *              (matching the workstation background), to check from inside
+ *              the process itself whether a frame actually got painted,
+ *              without depending on being able to screenshot the window.
+ * RETURNS:     N/A
+ */
+void wsgl_oir_diag_readback(Ws * ws)
+{
+  static int calls = 0;
+  GLint width, height;
+  GLubyte * pixels;
+  long total, i, blank, near_blank;
+  GLubyte bg_r, bg_g, bg_b;
+  GLfloat clear_colour[4];
+
+  if (calls >= 3) return;
+  calls++;
+
+  width = ws->ws_rect.width;
+  height = ws->ws_rect.height;
+  if (width <= 0 || height <= 0) return;
+
+  pixels = (GLubyte *) malloc((size_t) width * (size_t) height * 3);
+  if (pixels == NULL) return;
+
+  if (ws->has_double_buffer) glReadBuffer(GL_BACK);
+  glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+  wsgl_oir_check_gl("wsgl_oir_diag_readback: glReadPixels");
+
+  /* the colour last passed to glClearColor(), i.e. the workstation background */
+  glGetFloatv(GL_COLOR_CLEAR_VALUE, clear_colour);
+  bg_r = (GLubyte) (clear_colour[0] * 255.0f + 0.5f);
+  bg_g = (GLubyte) (clear_colour[1] * 255.0f + 0.5f);
+  bg_b = (GLubyte) (clear_colour[2] * 255.0f + 0.5f);
+
+  total = (long) width * (long) height;
+  blank = 0;
+  near_blank = 0;
+  for (i = 0; i < total; i++){
+    GLubyte r = pixels[i * 3];
+    GLubyte g = pixels[i * 3 + 1];
+    GLubyte b = pixels[i * 3 + 2];
+    if (r == bg_r && g == bg_g && b == bg_b) blank++;
+    else if (abs(r - bg_r) < 8 && abs(g - bg_g) < 8 && abs(b - bg_b) < 8) near_blank++;
+  }
+  fprintf(stderr, "[OIR][DIAG] readback #%d, ws %dx%d, background=(%d,%d,%d):"
+          " %ld/%ld pixels exactly background (%.2f%%), %ld more near it\n",
+          calls, width, height, bg_r, bg_g, bg_b,
+          blank, total, 100.0 * (double) blank / (double) total, near_blank);
+  {
+    /* sample a handful of individual pixels: 4 corners and the centre */
+    long samples[5][2] = {
+      {5, 5}, {width - 5, 5}, {5, height - 5},
+      {width - 5, height - 5}, {width / 2, height / 2}
+    };
+    int s;
+    for (s = 0; s < 5; s++){
+      long x = samples[s][0], y = samples[s][1];
+      long idx = (y * width + x) * 3;
+      fprintf(stderr, "[OIR][DIAG]   pixel (%ld,%ld) = (%d,%d,%d)\n",
+              x, y, pixels[idx], pixels[idx + 1], pixels[idx + 2]);
+    }
+  }
+  free(pixels);
 }
 
 /*******************************************************************************

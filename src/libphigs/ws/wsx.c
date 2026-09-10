@@ -91,6 +91,8 @@ Ws* phg_wsx_create(
    ws->oir.acounter_buffer = 0;
    ws->oir.frag_storage_buffer = 0;
    ws->oir.frag_storage_texture = 0;
+   ws->oir.frag_peak_used = 0;
+   ws->oir.overflow_warned = 0;
    /* General shader pointers */
    ws->shader.program = -1;
    ws->shader.oir_program = -1;

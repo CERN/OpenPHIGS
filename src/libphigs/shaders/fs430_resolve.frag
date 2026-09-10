@@ -20,6 +20,14 @@ uniform uint list_capacity;
 
 #define MAX_FRAGMENTS 16
 #define LIST_END 0xFFFFFFFFu
+/*
+  Hard cap on how many links of a pixel's chain we are willing to follow.
+  The chain is built by concurrent appends, so a torn entry can leave a bogus
+  next index and, in the worst case, a cycle. The walk below no longer stops
+  at MAX_FRAGMENTS, so without this bound a corrupt list would hang the
+  shader, and with it the display.
+*/
+#define MAX_WALK 256
 
 /* Define the mode in which the final color is calculated */
 uniform int oirMode;
@@ -29,9 +37,12 @@ uvec4 fragments[MAX_FRAGMENTS];
 /*
  * createFragmentList: collect the fragments of this pixel, head first.
  *
- * The head is the most recently appended fragment, so when a pixel holds more
- * than MAX_FRAGMENTS transparent layers the ones dropped here are the ones
- * that were drawn first.
+ * The whole chain is walked, but only MAX_FRAGMENTS entries are kept, and the
+ * ones kept are the NEAREST rather than the most recently appended. Keeping
+ * the newest would make the choice depend on draw order, so a thin primitive
+ * such as a track could be dropped purely because many layers happened to be
+ * appended after it. Sorting by depth instead means the fragments discarded
+ * are the far ones, whose contribution is the most attenuated anyway.
  */
 int createFragmentList(){
   int n = 0;
@@ -39,13 +50,27 @@ int createFragmentList(){
   //ivec2 sz = imageSize(head_pointer_image);
   //  if (coord.x >= sz.x || coord.y >= sz.y) return 0;
 
+  int steps = 0;
   uint current = imageLoad(head_pointer_image, ivec2(gl_FragCoord.xy)).x;
-  while (current != LIST_END && n < MAX_FRAGMENTS){
-    if (current >= list_capacity) break;     /* needs the uniform here too */
+  while (current != LIST_END && steps < MAX_WALK){
+    steps++;
+    if (current >= list_capacity) break;
     uvec4 item = imageLoad(list_buffer, int(current));
     current = item.x;
-    fragments[n] = item;
-    n++;
+    if (n < MAX_FRAGMENTS){
+      fragments[n] = item;
+      n++;
+    } else {
+      /* full: let this fragment displace the farthest one held, if nearer */
+      int far = 0;
+      float fardepth = uintBitsToFloat(fragments[0].z);
+      int i;
+      for (i = 1; i < MAX_FRAGMENTS; i++){
+        float d = uintBitsToFloat(fragments[i].z);
+        if (d > fardepth){ fardepth = d; far = i; }
+      }
+      if (uintBitsToFloat(item.z) < fardepth) fragments[far] = item;
+    }
   }
   return(n);
 }

@@ -68,9 +68,21 @@ static void wsgl_oir_publish_state(Ws * ws, int enabled)
     glProgramUniform1ui(ws->shader.program, loc,
                         enabled ? ws->oir.frag_list_capacity : 0u);
   }
-  if (enabled && ws->shader.oir_program > 0 && ws->shader.oirMode >= 0){
+  if (ws->shader.oir_program <= 0) return;
+  if (enabled && ws->shader.oirMode >= 0){
     glProgramUniform1i(ws->shader.oir_program, ws->shader.oirMode,
                        ws->oir.mode);
+  }
+  /*
+    The resolve pass needs the capacity as well: fs430_resolve.frag uses it to
+    bound the list walk, so leaving it at zero makes the walk stop before the
+    first entry and every pixel is discarded. fs420_resolve.frag has no such
+    uniform, in which case the lookup below simply finds nothing.
+  */
+  loc = glGetUniformLocation(ws->shader.oir_program, "list_capacity");
+  if (loc >= 0){
+    glProgramUniform1ui(ws->shader.oir_program, loc,
+                        enabled ? ws->oir.frag_list_capacity : 0u);
   }
 }
 
@@ -157,6 +169,9 @@ void wsgl_oir_ini(Ws *ws){
   glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), NULL, GL_DYNAMIC_COPY);
 
   ws->oir.frag_list_capacity = (GLuint)(ws->oir.layersPerPixel * n_pixels);
+  /* the capacity just changed, so let the overflow warning fire again */
+  ws->oir.frag_peak_used = 0;
+  ws->oir.overflow_warned = 0;
   glGenBuffers(1, &ws->oir.frag_storage_buffer);
   glBindBuffer(GL_TEXTURE_BUFFER, ws->oir.frag_storage_buffer);
   glBufferData(GL_TEXTURE_BUFFER,
@@ -244,6 +259,29 @@ void wsgl_oir_reset(Ws * ws){
                      GL_READ_WRITE,
                      GL_RGBA32UI);
   glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, ws->oir.acounter_buffer);
+  /*
+    Before clearing the counter, read what the previous frame asked for. The
+    counter keeps rising past the capacity when the list is full, so a value
+    above frag_list_capacity means fragments were dropped and the picture is
+    missing layers. Reading here rather than at the end of the frame costs
+    nothing: the frame it refers to finished long ago, so this cannot stall.
+  */
+  {
+    GLuint used = 0;
+    glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(used), &used);
+    if (used > ws->oir.frag_peak_used) ws->oir.frag_peak_used = used;
+    if (used > ws->oir.frag_list_capacity && !ws->oir.overflow_warned){
+      ws->oir.overflow_warned = 1;
+      fprintf(stderr,
+              "WARNING: OIR fragment list overflowed: %u fragments wanted,"
+              " %u available (%d layers per pixel).\n",
+              used, ws->oir.frag_list_capacity, ws->oir.layersPerPixel);
+      fprintf(stderr,
+              "WARNING: fragments beyond the capacity were dropped, so the"
+              " image is missing layers. Raise %%lpp in the configuration"
+              " (maximum 16), or reduce the window size.\n");
+    }
+  }
   const GLuint zero = 0;
   glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(zero), &zero);
   /* order the clear above against last frame's appends and this frame's */

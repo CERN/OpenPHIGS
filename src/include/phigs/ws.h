@@ -244,6 +244,15 @@ typedef struct {
  * which needs a buffer texture on top of the buffer.
  */
   GLuint frag_storage_texture;
+/*
+ * Overflow bookkeeping. frag_peak_used is the highest number of fragments any
+ * frame has asked for, read back from the atomic counter; it exceeds
+ * frag_list_capacity when a frame wanted more room than the list has, in
+ * which case fragments were dropped. overflow_warned keeps the warning from
+ * repeating on every frame.
+ */
+  GLuint frag_peak_used;
+  int overflow_warned;
 } Wsgl_oir;
 
   typedef struct {

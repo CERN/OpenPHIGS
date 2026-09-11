@@ -1,4 +1,4 @@
-#version 420 compatibility
+#version 430 compatibility
 /*
  * Order independent rendering, pass 2 of 2: resolve.
  *
@@ -12,17 +12,16 @@
  * transparent surface.
  *
  * The bindings have to match the ones wsgl_oir_reset() sets up, and the ones
- * fs420.frag appends through.
+ * fs430.frag appends through.
  *
- * NOTE: not actually built/used any more (wsgl_oir_wanted() in wsgl_oir.c
- * requires 4.30+); kept only so this file stays close to
- * fs430_resolve.frag's structure. See the matching note in fs420.frag for
- * why it does not use an SSBO for the head pointer, unlike fs430_resolve.frag.
+ * The head pointer is a shader storage buffer of one uint per pixel, indexed
+ * as y * oirWidth + x, rather than a uimage2D -- see the matching comment in
+ * fs430.frag for why.
  */
-layout (binding = 0, r32ui)    coherent uniform uimage2D     head_pointer_image;
+layout (std430, binding = 0)   readonly buffer HeadPointers { uint head_pointers[]; };
 layout (binding = 1, rgba32ui) coherent uniform uimageBuffer list_buffer;
-/* entries the fragment list holds, set by wsgl_oir_reset() */
 uniform uint list_capacity;
+uniform uint oirWidth;
 
 #define MAX_FRAGMENTS 16
 #define LIST_END 0xFFFFFFFFu
@@ -53,14 +52,10 @@ uvec4 fragments[MAX_FRAGMENTS];
 int createFragmentList(){
   int n = 0;
   int steps = 0;
-  uint current = imageLoad(head_pointer_image, ivec2(gl_FragCoord.xy)).x;
+  uint headIndex = uint(gl_FragCoord.y) * oirWidth + uint(gl_FragCoord.x);
+  uint current = head_pointers[headIndex];
   while (current != LIST_END && steps < MAX_WALK){
     steps++;
-    /*
-      Refuse to follow an index that cannot be in the list. A stale head
-      pointer, or a chain left over from a frame whose appends overran the
-      capacity, would otherwise make the imageLoad below read out of range.
-    */
     if (current >= list_capacity) break;
     uvec4 item = imageLoad(list_buffer, int(current));
     current = item.x;
@@ -136,9 +131,13 @@ vec4 finalColor1(int nfrag){
 /*
  * Alternative approach: walk the fragments nearest-first, scaling each by a
  * factor (e.g. 0.6) so ones further away contribute less and appear darker.
- * See the matching note in fs430_resolve.frag for why this starts from the
- * same fully transparent (background) seed as finalColor1() instead of the
- * nearest fragment's own raw colour.
+ *
+ * Starts from the same fully transparent seed as finalColor1(), i.e. the
+ * background, rather than the nearest fragment's own raw colour: seeding
+ * with the nearest fragment made it count twice (once unweighted as the
+ * seed, once more through the loop below) and skipped the 0.6 attenuation
+ * every other layer gets, which is not "starting from the background", it is
+ * starting from the frontmost layer with no background at all.
  */
 vec4 finalColor2(int nfrag){
   vec3 acc = vec3(0.0, 0.0, 0.0);

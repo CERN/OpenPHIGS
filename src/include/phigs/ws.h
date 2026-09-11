@@ -229,14 +229,20 @@ typedef struct {
    * the resolve will not walk more than that many entries anyway.
    */
   Pint layersPerPixel;
-  /* size of the head pointer image, so that the resolve can cover all of it */
+  /* size of the head pointer buffer, so that the resolve can cover all of it */
   Pint oir_width;
   Pint oir_height;
   /* entries the list can hold, handed to the shaders as list_capacity */
   GLuint frag_list_capacity;
-  char * data;
-  GLuint head_p_texture;
-  GLuint head_p_initializer;
+/*
+ * The head pointer is a std430 SSBO of one uint per pixel, indexed as
+ * y * oir_width + x, rather than a uimage2D: at least one NVIDIA driver
+ * (580.178.04) does not reliably make a uimage2D's contents visible to
+ * imageLoad() in a separately linked program (confirmed with
+ * tools/oir_repro.c), even though the equivalent SSBO does not show the
+ * problem. Cleared every frame with glClearBufferSubData().
+ */
+  GLuint head_p_buffer;
   GLuint acounter_buffer;
   GLuint frag_storage_buffer;
 /*
@@ -244,6 +250,15 @@ typedef struct {
  * which needs a buffer texture on top of the buffer.
  */
   GLuint frag_storage_texture;
+/*
+ * Overflow bookkeeping. frag_peak_used is the highest number of fragments any
+ * frame has asked for, read back from the atomic counter; it exceeds
+ * frag_list_capacity when a frame wanted more room than the list has, in
+ * which case fragments were dropped. overflow_warned keeps the warning from
+ * repeating on every frame.
+ */
+  GLuint frag_peak_used;
+  int overflow_warned;
 } Wsgl_oir;
 
   typedef struct {
@@ -252,9 +267,11 @@ typedef struct {
     /* second program used to resolve the order independent rendering lists,
        zero when order independensrc/libphigs/ws/wsx.ct rendering is not in use */
     GLint oir_program;
-    
-    /* OIR rendering mode */
+
+    /* OIR rendering mode location */
     GLint oirMode;
+    /* OIR mode location in first pass shader */
+    GLint oirModeLoc;
 
     GLint shading_mode;
     GLint vAmbient, vDiffuse, vSpecular, vPositional;

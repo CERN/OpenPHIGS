@@ -1,4 +1,4 @@
-#version 420 compatibility
+#version 430 compatibility
 /*
  * Order independent rendering.
  *
@@ -17,13 +17,23 @@
  * fs430_resolve.frag is pass 2: it walks each pixel's list, sorts it by depth
  * and composites the result over the opaque image left behind by this pass.
  *
- * TRADE-OFF, not a clean split: see the matching note in fs430.frag -- letting
- * opaque fragments skip the list means the resolve pass gets only one depth
- * test against the real depth buffer per pixel, which is wrong for an opaque
- * object sandwiched between two transparent surfaces at different depths
- * (e.g. a detector track behind a transparent shell's near face but in front
- * of its far face). This shader is dead code at this GLSL version regardless
- * (wsgl_oir_wanted() requires 4.30+), kept only for structural parity.
+ * TRADE-OFF, not a clean split: letting opaque geometry skip the list is
+ * what keeps a busy scene's per-pixel chains short enough for
+ * createFragmentList() in the resolve pass to walk (see MAX_WALK there), but
+ * it means the resolve pass only gets ONE depth test against the real depth
+ * buffer per pixel. That is correct with at most one transparent surface at
+ * that pixel, but not with an opaque object sandwiched between two
+ * transparent surfaces at different depths -- e.g. a detector track behind
+ * the near face of a transparent shell but in front of its far face: the
+ * single test cannot show the near face, hide the track behind it, and still
+ * let the far face shine through from behind, all at once. Routing opaque
+ * fragments through the list too (so every layer at a pixel is sorted and
+ * composited together) handles that correctly; it was changed to this
+ * straight-out split instead to stop simpler, busier 2D scenes (unrelated
+ * geometry all funnelled through the same short-capacity global list)
+ * silently losing early-appended layers. If detector views with tracks
+ * behind transparent surfaces start looking wrong again, this is the first
+ * place to look.
  */
 uniform int ShadingMode;
 uniform vec4 vAmbient;
@@ -69,6 +79,8 @@ uniform int applyTexture;
 /* number of entries the fragment list can hold, set by wsgl_oir_reset() */
 uniform uint list_capacity;
 uniform int oirEnable;
+/* width of the canvas, so gl_FragCoord can be turned into a head pointer index */
+uniform uint oirWidth;
 
 in vec4 Normal;
 in vec4 Color;
@@ -76,23 +88,19 @@ in vec4 VertexPosEye;
 in vec2 TexCoord;
 
 /*
- * Order independent rendering state. The head pointer image and the fragment
- * list are read back with imageLoad rather than through a second pair of
- * sampler uniforms, so each object needs only the one binding below.
+ * Order independent rendering state.
  *
- * head_pointer_image is bound to image unit 0 by wsgl_oir_reset(), the
- * fragment list still needs a texture and a binding to unit 1 on the C side.
+ * The head pointer is a shader storage buffer of one uint per pixel, indexed
+ * as y * oirWidth + x, rather than a uimage2D: at least one NVIDIA driver
+ * (580.178.04) does not reliably make a uimage2D's contents visible to
+ * imageLoad() in a separately linked program (confirmed with
+ * tools/oir_repro.c in the OpenPHIGS repository), even though the equivalent
+ * SSBO does not show the problem. The fragment list is unaffected by that and
+ * stays a uimageBuffer, read back with imageLoad through the one binding
+ * below.
  *
- * NOTE: this pass is compiled unconditionally whenever OpenPHIGS is
- * configured to use 4.20-level shaders, whether or not OIR is actually
- * requested, so it has to compile everywhere -- unlike fs430.frag, it
- * cannot use an SSBO (std430 "buffer" block) for the head pointer: that
- * needs GL_ARB_shader_storage_buffer_object, which is not available on all
- * hardware that otherwise runs 4.20-level shaders fine (seen failing on an
- * Intel/Mesa driver). wsgl_oir_wanted() in wsgl_oir.c requires 4.30+, so
- * appendFragment() below is unreachable code at this shader version --
- * oirEnable is always 0 -- kept only so this file stays close to
- * fs430.frag's structure.
+ * head_pointers is bound to binding point 0 (GL_SHADER_STORAGE_BUFFER) by
+ * wsgl_oir_reset(), list_buffer to image unit 1.
  */
 /*
  * NOTE: early_fragment_tests must NOT be used here. It moves the depth test
@@ -104,7 +112,7 @@ in vec2 TexCoord;
  * little work on hidden fragments and keeps transparency correct.
  */
 layout (binding = 0, offset = 0) uniform atomic_uint index_counter;
-layout (binding = 0, r32ui)      coherent uniform uimage2D     head_pointer_image;
+layout (std430, binding = 0)     coherent buffer HeadPointers { uint head_pointers[]; };
 layout (binding = 1, rgba32ui)   coherent uniform uimageBuffer list_buffer;
 
 /*
@@ -203,9 +211,8 @@ vec4 fragColor(vec4 inColor){
 bool appendFragment(vec4 fragCol){
   uint index = atomicCounterIncrement(index_counter);
   if (index >= list_capacity) return false;
-  uint old_head = imageAtomicExchange(head_pointer_image,
-                                      ivec2(gl_FragCoord.xy),
-                                      index);
+  uint headIndex = uint(gl_FragCoord.y) * oirWidth + uint(gl_FragCoord.x);
+  uint old_head = atomicExchange(head_pointers[headIndex], index);
   uvec4 item;
   item.x = old_head;
   item.y = packUnorm4x8(fragCol);
@@ -218,8 +225,15 @@ bool appendFragment(vec4 fragCol){
 void main()
 {
   vec4 col = fragColor(Color);
-  /* see the matching branch in fs430.frag for why opaque fragments must
-     bypass the list */
+  /*
+   * Opaque fragments skip the list -- see the TRADE-OFF note at the top of
+   * this file for what that costs against detector-style scenes with an
+   * opaque object between two transparent surfaces, and why it was done
+   * anyway (a busy scene that appended everything, opaque included, could
+   * grow a pixel's chain past MAX_WALK in createFragmentList() and silently
+   * lose early entries, such as an opaque fill sitting underneath
+   * everything else drawn that frame).
+   */
   if (oirEnable == 0 || col.a >= 1.0){
     gl_FragColor = col;    /* OIR disabled, or opaque: straight out */
   } else {

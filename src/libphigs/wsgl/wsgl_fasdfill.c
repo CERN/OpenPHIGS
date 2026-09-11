@@ -276,14 +276,29 @@ void wsgl_fill_area_set_data_front(
   Pfacet_vdata_list3 vdata;
   Pcoval colr;
   Pvec3 norm;
+  GLboolean depth_test;
 
   fasd3.edata = &edata;
   fasd3.vdata = &vdata;
   fasd3_head(&fasd3, pdata);
 
-  glPolygonOffset(WS_FILL_AREA_OFFSET, wsgl_get_edge_width(ast));
-  glEnable(GL_POLYGON_OFFSET_FILL);
-  glEnable(GL_POLYGON_OFFSET_LINE);
+  /*
+    The offset exists to stop a fill from Z-fighting with edges coincident
+    with it, which only matters when the depth test is actually deciding
+    what is in front of what. With hidden surface removal off (2D content,
+    or any workstation with PHIGS_HLHSR_MODE_NONE), the depth test is
+    disabled and visibility is decided by draw order alone -- but order
+    independent rendering still sorts by gl_FragCoord.z regardless, so the
+    tiny nudge this offset adds would no longer be tie-broken by draw order
+    against the rest of a same-Z (Z=0) 2D scene, it would make this fill
+    genuinely farther than everything else and get hidden behind it.
+  */
+  depth_test = glIsEnabled(GL_DEPTH_TEST);
+  if (depth_test){
+    glPolygonOffset(WS_FILL_AREA_OFFSET, wsgl_get_edge_width(ast));
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glEnable(GL_POLYGON_OFFSET_LINE);
+  }
   wsgl_setup_int_attr_nocol(ws, ast);
 
   switch (fasd3.vflag) {
@@ -451,8 +466,10 @@ void wsgl_fill_area_set_data_front(
     break;
   }
 
-  glDisable(GL_POLYGON_OFFSET_LINE);
-  glDisable(GL_POLYGON_OFFSET_FILL);
+  if (depth_test){
+    glDisable(GL_POLYGON_OFFSET_LINE);
+    glDisable(GL_POLYGON_OFFSET_FILL);
+  }
 }
 
 /*******************************************************************************
@@ -474,14 +491,19 @@ void wsgl_fill_area_set_data_back(
   Pfacet_vdata_list3 vdata;
   Pcoval colr;
   Pvec3 norm;
+  GLboolean depth_test;
 
   fasd3.edata = &edata;
   fasd3.vdata = &vdata;
   fasd3_head(&fasd3, pdata);
 
-  glPolygonOffset(WS_FILL_AREA_OFFSET, wsgl_get_edge_width(ast));
-  glEnable(GL_POLYGON_OFFSET_FILL);
-  glEnable(GL_POLYGON_OFFSET_LINE);
+  /* see wsgl_fill_area_set_data_front() for why this is conditional */
+  depth_test = glIsEnabled(GL_DEPTH_TEST);
+  if (depth_test){
+    glPolygonOffset(WS_FILL_AREA_OFFSET, wsgl_get_edge_width(ast));
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glEnable(GL_POLYGON_OFFSET_LINE);
+  }
   wsgl_setup_back_int_attr_nocol(ws, ast);
 
   switch (fasd3.vflag) {
@@ -664,6 +686,8 @@ void wsgl_fill_area_set_data_back(
     break;
   }
 
-  glDisable(GL_POLYGON_OFFSET_LINE);
-  glDisable(GL_POLYGON_OFFSET_FILL);
+  if (depth_test){
+    glDisable(GL_POLYGON_OFFSET_LINE);
+    glDisable(GL_POLYGON_OFFSET_FILL);
+  }
 }

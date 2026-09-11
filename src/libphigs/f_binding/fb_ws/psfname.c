@@ -40,7 +40,7 @@ extern int record_geom;
  * \file psfname.c
  *
  * \brief       Set workstation output file name for hardcopy workstation types
- * \notes       This function is an extension specific to OpenPHIGS
+ * \note        This function is an extension specific to OpenPHIGS
  *
  * \sa popwk
  */

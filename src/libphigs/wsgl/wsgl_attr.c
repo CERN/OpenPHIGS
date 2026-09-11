@@ -764,7 +764,6 @@ void wsgl_setup_line_attr(
     glLineWidth(ast->bundl_group.line_bundle.width);
   }
   if (wsgl_use_shaders){
-    glEnable(GL_LINE_SMOOTH);
     glUniform1i(ws->shader.shading_mode, 0);
   } else {
     glDisable(GL_LIGHTING);
@@ -945,12 +944,14 @@ void wsgl_setup_int_attr_nocol(
   /* this is a bit clumbsy indeed. Can be improved... */
   state1 = 0;
   state2 = GL_FALSE;
-  if (wsgl_use_shaders){
+  if (wsgl_use_shaders && ws->shader.applyTexture >= 0){
     glGetUniformiv(ws->shader.program, ws->shader.applyTexture, &state1);
+  } else if (wsgl_use_shaders) {
+    state1 = 0;                    /* uniform optimised out: texturing is off */
   } else {
     glGetBooleanv(GL_TEXTURE_2D, &state2);
   }
-  if (state1 ==  GL_TRUE || state2) {
+    if (state1 ==  GL_TRUE || state2) {
     wsgl_select_pattern(ws, style_ind);
   } else {
     if (style_ind > 0 && style_ind<7){

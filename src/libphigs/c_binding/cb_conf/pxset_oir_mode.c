@@ -30,7 +30,12 @@
  * \param   ws_id workstation ID
  * \param   mode
  *
- * \note This setting is only relevant if shader version 420 is in use. Mode must be lower or equal to 16. Note that the larger the number, the more memory hungry the system will be.
+ * Possible modes:
+ *  - 0: Switch OFF Order Independent Rendering
+ *  - 1: Use Default mode.
+ *  - 2: Alternative way of blending transparent surfaces.
+ *
+ * \note This setting is only relevant if shader version 430 is in use. This setting can be set via the configuration as well. As it is used to configure the workstation, the workstation must not be open yet in order to have an effect.
  *
  * \pre This setting can be set via the configuration as well. As it is used to configure the workstation, the workstation must not be open yet in order to have an effect.
  *.

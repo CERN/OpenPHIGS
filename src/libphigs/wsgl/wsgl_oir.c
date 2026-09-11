@@ -415,10 +415,12 @@ void wsgl_oir_diag_readback(Ws * ws)
     if (r == bg_r && g == bg_g && b == bg_b) blank++;
     else if (abs(r - bg_r) < 8 && abs(g - bg_g) < 8 && abs(b - bg_b) < 8) near_blank++;
   }
+#ifdef GLDEBUG
   fprintf(stderr, "[OIR][DIAG] readback #%d, ws %dx%d, background=(%d,%d,%d):"
           " %ld/%ld pixels exactly background (%.2f%%), %ld more near it\n",
           calls, width, height, bg_r, bg_g, bg_b,
           blank, total, 100.0 * (double) blank / (double) total, near_blank);
+#endif
   {
     /* sample a handful of individual pixels: 4 corners and the centre */
     long samples[5][2] = {

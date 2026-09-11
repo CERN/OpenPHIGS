@@ -8,17 +8,32 @@
  *
  * This is pass 1 of 2. It shades the fragment and then either
  *
- *   - writes it straight out, if it is opaque. Opaque geometry cannot have
- *     anything show through it, so it does not belong in the fragment list,
- *     and keeping it out is what leaves room in the list for the surfaces
- *     that do need it. It writes depth as usual, so opaque primitives such
- *     as tracks stay visible behind transparent surfaces.
+ *   - writes it straight out and lets it write depth as usual, if it is
+ *     opaque, or
  *
- *   - or appends it to the linked list of its pixel and discards, if it is
+ *   - appends it to the linked list of its pixel and discards, if it is
  *     transparent. Nothing is written to the framebuffer in that case.
  *
  * fs430_resolve.frag is pass 2: it walks each pixel's list, sorts it by depth
  * and composites the result over the opaque image left behind by this pass.
+ *
+ * TRADE-OFF, not a clean split: letting opaque geometry skip the list is
+ * what keeps a busy scene's per-pixel chains short enough for
+ * createFragmentList() in the resolve pass to walk (see MAX_WALK there), but
+ * it means the resolve pass only gets ONE depth test against the real depth
+ * buffer per pixel. That is correct with at most one transparent surface at
+ * that pixel, but not with an opaque object sandwiched between two
+ * transparent surfaces at different depths -- e.g. a detector track behind
+ * the near face of a transparent shell but in front of its far face: the
+ * single test cannot show the near face, hide the track behind it, and still
+ * let the far face shine through from behind, all at once. Routing opaque
+ * fragments through the list too (so every layer at a pixel is sorted and
+ * composited together) handles that correctly; it was changed to this
+ * straight-out split instead to stop simpler, busier 2D scenes (unrelated
+ * geometry all funnelled through the same short-capacity global list)
+ * silently losing early-appended layers. If detector views with tracks
+ * behind transparent surfaces start looking wrong again, this is the first
+ * place to look.
  */
 uniform int ShadingMode;
 uniform vec4 vAmbient;
@@ -211,16 +226,13 @@ void main()
 {
   vec4 col = fragColor(Color);
   /*
-   * Opaque fragments must not go into the list: appending them buys
-   * nothing (they cannot have anything show through), while writing their
-   * real depth here is what lets ordinary Z-buffer testing keep them
-   * correctly ordered against both other opaque geometry and any
-   * transparent surface resolved later. It also keeps the list itself
-   * short -- createFragmentList() in the resolve pass caps how many links
-   * of a pixel's chain it will walk (MAX_WALK), so a busy scene that
-   * funnelled every opaque fragment through here too could grow a pixel's
-   * chain past that cap and silently lose early entries, such as an
-   * opaque fill sitting underneath everything else drawn that frame.
+   * Opaque fragments skip the list -- see the TRADE-OFF note at the top of
+   * this file for what that costs against detector-style scenes with an
+   * opaque object between two transparent surfaces, and why it was done
+   * anyway (a busy scene that appended everything, opaque included, could
+   * grow a pixel's chain past MAX_WALK in createFragmentList() and silently
+   * lose early entries, such as an opaque fill sitting underneath
+   * everything else drawn that frame).
    */
   if (oirEnable == 0 || col.a >= 1.0){
     gl_FragColor = col;    /* OIR disabled, or opaque: straight out */

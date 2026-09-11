@@ -438,6 +438,8 @@ static void wsgl_text_string(
   str = text->char_string;
 
   len = strlen(str);
+  glEnable(GL_LINE_SMOOTH);
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   for (i = 0; i < len; i++) {
 
     ch = &fnt->chars[(int) str[i]];
@@ -446,10 +448,6 @@ static void wsgl_text_string(
       for (j = 0, spath = ch->paths;
            j < ch->num_paths;
            j++, spath++) {
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
         glBegin(GL_LINE_STRIP);
         for(z = 0; z < spath->num_points; z++) {
           glVertex2f(pos.x + spath->points[z].x * char_ht * char_expan,
@@ -469,6 +467,7 @@ static void wsgl_text_string(
     }
     pos.x += ch->right * char_ht * char_expan;
   }
+  glDisable(GL_LINE_SMOOTH);
 }
 
 /*******************************************************************************
@@ -510,6 +509,9 @@ static void wsgl_text_string3(
   glDisable(GL_LINE_STIPPLE);
 
   wsgl_set_text_align3(ws, text, ast, posa, &pos);
+
+  glEnable(GL_LINE_SMOOTH);
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   len = strlen(str);
   for (i = 0; i < len; i++) {
 
@@ -519,10 +521,6 @@ static void wsgl_text_string3(
       for (j = 0, spath = ch->paths;
            j < ch->num_paths;
            j++, spath++) {
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
         glBegin(GL_LINE_STRIP);
         for(z = 0; z < spath->num_points; z++) {
           wsgl_text_vertex3tcs(tmatrix,
@@ -542,6 +540,7 @@ static void wsgl_text_string3(
     }
     pos.x += ch->right * char_ht * char_expan;
   }
+  glDisable(GL_LINE_SMOOTH);
 }
 
 /*******************************************************************************
@@ -585,6 +584,8 @@ static void wsgl_anno_text_string3(
   glDisable(GL_LINE_STIPPLE);
 
   len = strlen(str);
+  glEnable(GL_LINE_SMOOTH);
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   for (i = 0; i < len; i++) {
 
     ch = &fnt->chars[(int) str[i]];
@@ -593,10 +594,6 @@ static void wsgl_anno_text_string3(
       for (j = 0, spath = ch->paths;
            j < ch->num_paths;
            j++, spath++) {
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
         glBegin(GL_LINE_STRIP);
         for(z = 0; z < spath->num_points; z++) {
           wsgl_text_vertex3tcs(vrc2wc,
@@ -616,6 +613,7 @@ static void wsgl_anno_text_string3(
     }
     pos.x += ch->right * char_ht * char_expan;
   }
+  glDisable(GL_LINE_SMOOTH);
 }
 
 /*******************************************************************************
@@ -659,6 +657,8 @@ static void wsgl_text_char(
   str = text->char_string;
 
   len = strlen(str);
+  glEnable(GL_LINE_SMOOTH);
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   for (i = 0; i < len; i++) {
 
     ch = &fnt->chars[(int) str[i]];
@@ -667,10 +667,6 @@ static void wsgl_text_char(
       for (j = 0, spath = ch->paths;
            j < ch->num_paths;
            j++, spath++) {
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
         glBegin(GL_LINE_STRIP);
         for(z = 0; z < spath->num_points; z++) {
           glVertex2f(pos.x + spath->points[z].x * char_ht * char_expan,
@@ -706,6 +702,7 @@ static void wsgl_text_char(
       break;
     }
   }
+  glDisable(GL_LINE_SMOOTH);
 }
 
 /*******************************************************************************
@@ -754,6 +751,8 @@ static void wsgl_text_char3(
   str = text->char_string;
 
   len = strlen(str);
+  glEnable(GL_LINE_SMOOTH);
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   for (i = 0; i < len; i++) {
 
     ch = &fnt->chars[(int) str[i]];
@@ -762,10 +761,6 @@ static void wsgl_text_char3(
       for (j = 0, spath = ch->paths;
            j < ch->num_paths;
            j++, spath++) {
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
         glBegin(GL_LINE_STRIP);
         for(z = 0; z < spath->num_points; z++) {
           wsgl_text_vertex3tcs(
@@ -803,6 +798,7 @@ static void wsgl_text_char3(
       break;
     }
   }
+  glDisable(GL_LINE_SMOOTH);
 }
 
 /*******************************************************************************
@@ -851,6 +847,8 @@ static void wsgl_anno_text_char3(
   glDisable(GL_LINE_STIPPLE);
 
   len = strlen(str);
+  glEnable(GL_LINE_SMOOTH);
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   for (i = 0; i < len; i++) {
 
     ch = &fnt->chars[(int) str[i]];
@@ -859,10 +857,6 @@ static void wsgl_anno_text_char3(
       for (j = 0, spath = ch->paths;
            j < ch->num_paths;
            j++, spath++) {
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
         glBegin(GL_LINE_STRIP);
         for(z = 0; z < spath->num_points; z++) {
           wsgl_text_vertex3tcs(
@@ -900,6 +894,7 @@ static void wsgl_anno_text_char3(
       break;
     }
   }
+  glDisable(GL_LINE_SMOOTH);
 }
 
 /*******************************************************************************
@@ -947,6 +942,8 @@ static void wsgl_text_stroke(
   wsgl_set_text_align(ws, text, ast, posa, &pos);
   str = text->char_string;
 
+  glEnable(GL_LINE_SMOOTH);
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   len = strlen(str);
   for (i = 0; i < len; i++) {
 
@@ -956,10 +953,6 @@ static void wsgl_text_stroke(
       for (j = 0, spath = ch->paths;
            j < ch->num_paths;
            j++, spath++) {
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
         glBegin(GL_LINE_STRIP);
         for(z = 0; z < spath->num_points; z++) {
           pt.x = spath->points[z].x * right.delta_x +
@@ -1007,6 +1000,7 @@ static void wsgl_text_stroke(
       break;
     }
   }
+  glDisable(GL_LINE_SMOOTH);
 }
 
 /*******************************************************************************
@@ -1061,7 +1055,9 @@ static void wsgl_text_stroke3(
   glLineStipple(2, 0xffff);
   glDisable(GL_LINE_STIPPLE);
   str = text->char_string;
-
+  
+  glEnable(GL_LINE_SMOOTH);
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   len = strlen(str);
   for (i = 0; i < len; i++) {
 
@@ -1071,10 +1067,6 @@ static void wsgl_text_stroke3(
       for (j = 0, spath = ch->paths;
            j < ch->num_paths;
            j++, spath++) {
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
         glBegin(GL_LINE_STRIP);
         for(z = 0; z < spath->num_points; z++) {
           pt.x = spath->points[z].x * right.delta_x +
@@ -1123,6 +1115,7 @@ static void wsgl_text_stroke3(
       break;
     }
   }
+  glDisable(GL_LINE_SMOOTH);
 }
 
 /*******************************************************************************
@@ -1177,6 +1170,8 @@ static void wsgl_anno_text_stroke3(
   glLineStipple(2, 0xffff);
   glDisable(GL_LINE_STIPPLE);
 
+  glEnable(GL_LINE_SMOOTH);
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   len = strlen(str);
   for (i = 0; i < len; i++) {
 
@@ -1186,10 +1181,6 @@ static void wsgl_anno_text_stroke3(
       for (j = 0, spath = ch->paths;
            j < ch->num_paths;
            j++, spath++) {
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
         glBegin(GL_LINE_STRIP);
         for(z = 0; z < spath->num_points; z++) {
           pt.x = spath->points[z].x * right.delta_x +
@@ -1238,6 +1229,7 @@ static void wsgl_anno_text_stroke3(
       break;
     }
   }
+  glDisable(GL_LINE_SMOOTH);
 }
 
 /*******************************************************************************
@@ -1359,7 +1351,6 @@ void wsgl_text3(
   /* invert */
   phg_mat_copy(wc2tlctmp, tlc2wctmp);
   phg_mat_inv(wc2tlctmp);
-  //inverse(wc2tlctmp);
 #ifdef DEBUG
   printf("inverted initial wc->tlc:\n");
   phg_mat_print(wc2tlctmp);

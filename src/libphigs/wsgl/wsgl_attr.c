@@ -764,7 +764,6 @@ void wsgl_setup_line_attr(
     glLineWidth(ast->bundl_group.line_bundle.width);
   }
   if (wsgl_use_shaders){
-    glEnable(GL_LINE_SMOOTH);
     glUniform1i(ws->shader.shading_mode, 0);
   } else {
     glDisable(GL_LIGHTING);

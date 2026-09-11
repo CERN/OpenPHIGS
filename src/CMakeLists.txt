@@ -53,6 +53,7 @@ set(GLEW_VERBOSE ON)
 
 # for debugging
 add_definitions(-g)
+# add_definitions(-DGLDEBUG)   # to get GL debugging messages and trap severe once
 # add_definitions(-DTEST)
 # add_definitions(-DDEBUGA)
 # add_definitions(-DDEBUG)

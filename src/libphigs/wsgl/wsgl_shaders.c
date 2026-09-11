@@ -375,9 +375,12 @@ void wsgl_shaders(Ws * ws){
     const char * Renderer = (const char *) glGetString(GL_RENDERER);
     printf("INFO: Hardware Shader version is %s.\n", ShaderVersion);
     printf("INFO: Hardware Vendor: %s, card: %s\n", Vendor, Renderer);
+#ifdef GL_DEBUG
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(oir_debug_cb, NULL);    /*
+    glDebugMessageCallback(oir_debug_cb, NULL);
+#endif
+    /*
       There is a bug somewhere when V3D driver (like on Raspberry-Pi) are used.
       Rendering works fine but then the program crashes with a segfault when the OpenGL window is clicked.
       For now, we switch off the use of shaders if this driver is detected.
@@ -557,24 +560,4 @@ void wsgl_shaders(Ws * ws){
     /* the geometry program has to be the current one when we return */
     glUseProgram(ws->shader.program);
   }
-//  GLint prog = 0, loc, unit = -1, tex = 0, active = 0;
-//
-//  glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
-//  loc = glGetUniformLocation(prog, "currentTexture");
-//  if (loc >= 0) glGetUniformiv(prog, loc, &unit);
-//  
-//  glGetIntegerv(GL_ACTIVE_TEXTURE, &active);
-//  if (unit >= 0) {
-//    glActiveTexture(GL_TEXTURE0 + unit);
-//    glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex);
-//    glActiveTexture(active);
-//  }
-//  
-//  fprintf(stderr, "currentTexture -> unit %d, texture %d "
-//          "(head_p_texture = %u)\n",
-//          unit, tex, ws->oir.head_p_texture);
-//  loc = glGetUniformLocation(prog, "applyTexture");
-//   if (loc >= 0) { GLint at; glGetUniformiv(prog, loc, &at);
-//                   fprintf(stderr, "applyTexture = %d\n", at); }
- 
 }

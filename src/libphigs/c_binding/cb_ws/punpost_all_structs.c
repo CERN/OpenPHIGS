@@ -63,6 +63,8 @@ void punpost_all_structs(
     }
     else {
       wsh = PHG_WSID(ws_id);
+      /* keep the CSS posted/appear lists in sync with the workstation */
+      (void) phg_css_unpost_all(wsh->out_ws.model.b.cssh, wsh);
       (*wsh->unpost_all)(wsh);
     }
   }

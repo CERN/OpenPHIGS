@@ -173,7 +173,6 @@ FTN_SUBROUTINE(popwk)(
           break;
         case  PWST_HCOPY_TRUE_OBJ:
         case  PWST_HCOPY_TRUE_GLTF:
-          printf("fb_ws: switch Recording ON\n");
           record_geom = TRUE;
         }
         args.wsid = ws_id;

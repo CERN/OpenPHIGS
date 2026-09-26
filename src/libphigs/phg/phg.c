@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <signal.h>
 
 #include "phg.h"
 #include "css.h"
@@ -71,14 +72,31 @@ void phg_add_el(
    )
 {
    Css_ws_list ws_list;
-
-   ws_list = CSS_GET_WS_ON(CSS_CUR_STRUCTP(cssh));
-
-   if (phg_css_add_elem(cssh, args)) {
-      if (ws_list != NULL) {
-         for (; ws_list->wsh != NULL; ws_list++)
-            (*ws_list->wsh->add_el)(ws_list->wsh);
-      }
+   Struct_handle curstruct = CSS_CUR_STRUCTP(cssh);
+   if (curstruct == NULL){
+     printf("ERROR in phg_add_el: No current structure");
+   } else {
+#ifdef DEBUG
+     printf("DEBUG: Currently open structure ID is %d\n", curstruct->struct_id);
+#endif
+     ws_list = CSS_GET_WS_ON(curstruct);
+     if (phg_css_add_elem(cssh, args)) {
+       if (ws_list != NULL) {
+         for (; ws_list->wsh != NULL; ws_list++){
+#ifdef DEBUG
+           printf("Add element: Workstation ID=%d\n", ws_list->wsh->id);
+#endif
+           if (ws_list->wsh->add_el == NULL) {
+             printf("CRITICAL: In adding element while parsing workstations.\n" );
+             printf("CRITICAL:    WS does not have an add_el function\n" );
+             printf("             Workstation ID=%d\n", ws_list->wsh->id);
+             raise(SIGTRAP);
+           } else {
+             (*ws_list->wsh->add_el)(ws_list->wsh);
+           }
+         }
+       }
+     }
    }
 }
 
@@ -259,13 +277,18 @@ void phg_del_struct(
    wsp = cb_list;
    structh = CSS_STRUCT_EXISTS(cssh, struct_id);
    if (structh != NULL) {
+     /* FIXME sometimes something goes bananas with the structus is_on workstation list. To be checked. */
       ws_list = CSS_GET_WS_ON(structh);
       if (ws_list != NULL) {
         for (; ws_list->wsh != NULL; ws_list++) {
+#ifdef DEBUG
+          printf("DEBUG: Deleting structure %d from wsid=%d\n", struct_id, ws_list->wsh->id);
+#endif
           if (*ws_list->wsh->delete_struct == NULL) {
-            printf("ERROR: Cannot delete this structure as wsh->>delete_struct is NULL\n");
-          } else if (ws_list->wsh->id <= 0 || ws_list->wsh->id > 10){
-            printf("ERROR: Refusing to delete structure as the WS Id looks like garbage: %d. ID=%d\n",
+            printf("ERROR: Cannot update workstation for structure %d as wsh->delete_struct is NULL\n",
+                   struct_id);
+          } else if (ws_list->wsh->id < 0 || ws_list->wsh->id > 10000){
+            printf("ERROR: Refusing to update workstation as its ID looks like garbage: %d. ID=%d\n",
                    ws_list->wsh->id,
                    struct_id);
           } else {

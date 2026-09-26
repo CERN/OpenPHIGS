@@ -31,7 +31,15 @@
 /**
  * \file pshrm.c
  *
- * \brief       set hlhsr mode
+ * \brief       set the hlhsr mode for the workstation
+ * \param       wkid workstation ID
+ * \param       hrm mode
+ * \verbatim
+ Possible values:
+   0  HLHRS off
+   1  Use Z-Buffer
+ * \endverbatim
+ * \sa  pqhrm pshrid
  */
 FTN_SUBROUTINE(pshrm)(
                       FTN_INTEGER(wkid),

@@ -309,7 +309,7 @@ Struct_handle phg_css_post(Css_handle cssh,
 Struct_handle phg_css_unpost(Css_handle cssh,
                              Pint structid,
                              Ws_handle wsh);
-void phg_css_unpost_all(Css_handle cssh, Ws_handle wsh);
+int phg_css_unpost_all(Css_handle cssh, Ws_handle wsh);
 int phg_css_add_to_ws_appear(Css_handle cssh,
                              Struct_handle execp,
                              Css_ws_list addlist,

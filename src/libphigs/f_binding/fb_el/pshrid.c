@@ -31,7 +31,18 @@
 /**
  * \file pshrid.c
  *
- * \brief       set hlhsr identifier
+ * \brief       hlhrs mode identifier, hidden line mode
+ * \param       hrid set hidden line mode
+ * \verbatim
+ Possible values:
+
+  0 PHIGS_HLHSR_ID_OFF Hidden line off
+  1 PHIGS_HLHSR_ID_ON  Hidden line on
+  2 PHIGS_HLHSR_ID_ON_NZ Hidden line on
+ * \endverbatim
+ * \note Adds a new element to the current structure
+ * \pre The current structure must be open for editing
+ * \sa pshrm pqhrm
  */
 FTN_SUBROUTINE(pshrid)(
                        FTN_INTEGER(hrid)

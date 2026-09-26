@@ -176,6 +176,12 @@ Struct_handle phg_css_unpost(Css_handle cssh,
 
     if ( !(structp = CSS_STRUCT_EXISTS(cssh, structid)) )
 	return(NULL);
+    /* Not posted to this ws: nothing to do. Removing the appearances
+     * anyway would corrupt the ws_appear_on counts of the network and
+     * leave dangling workstation handles behind once the ws is closed.
+     */
+    if ( !phg_css_ws_posted(structp, wsh) )
+	return(NULL);
     RM_FROM_WS_LIST(structp->ws_posted_to, wsh, 1)
 
     rmlist[0].wsh = wsh;
@@ -190,19 +196,30 @@ Struct_handle phg_css_unpost(Css_handle cssh,
     phg_css_unpost_all - "Unpost" all structures posted to and appearing on
 			 the given workstation, by removing wsh from all
 			 posted to and appearing on lists.
+			 Returns the number of structures which still
+			 referred to wsh.
 
 *******************/
 
-void phg_css_unpost_all(Css_handle cssh, Ws_handle wsh)
+int phg_css_unpost_all(Css_handle cssh, Ws_handle wsh)
 {
     Css_hash_block	**stab_row, *block;
     int			n;
+    int			nfound = 0;
 
     n = cssh->stab->nstructs;
     stab_row = cssh->stab->table;
     while (n) {
 	block = (*stab_row)->next;
 	while (block) {
+	    if ( phg_css_ws_posted(block->struct_ptr, wsh) ||
+		 phg_css_ws_appearances(block->struct_ptr, wsh) ) {
+#ifdef DEBUG
+		printf("phg_css_unpost_all: structure %d still refers to ws %p\n",
+		       block->struct_id, (void *)wsh);
+#endif
+		nfound++;
+	    }
 	    RM_FROM_WS_LIST(block->struct_ptr->ws_posted_to, wsh, 1)
 	    /* 0 tells RM_FROM_WS_LIST to zero the count */
 	    RM_FROM_WS_LIST(block->struct_ptr->ws_appear_on, wsh, 0)
@@ -213,6 +230,7 @@ void phg_css_unpost_all(Css_handle cssh, Ws_handle wsh)
 	    /* in case we are at the last row of the table */
 	    stab_row++;
     }
+    return(nfound);
 }
 
 /*******************
@@ -381,7 +399,8 @@ int phg_css_ws_posted(Struct_handle structp, Ws_handle wsh)
 	return(FALSE);
     while (wsptr->wsh && wsptr->wsh!=wsh)
 	wsptr++;
-    return((int)((long)wsptr->wsh));
+    /* don't return the pointer truncated to int, it may end up as 0 */
+    return(wsptr->wsh != NULL);
 }
 
 /*******************

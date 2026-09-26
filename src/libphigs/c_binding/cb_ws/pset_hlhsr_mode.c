@@ -47,6 +47,14 @@
  * \file pset_hlhsr_mode.c
  *
  * \brief       Set workstation hlhsr mode
+ * \param       ws_id workstation ID
+ * \param       hrhsr_mode mode
+ * \verbatim
+ Possible values:
+   0  HLHRS off
+   1  Use Z-Buffer
+ * \endverbatim
+ * \sa pset_hshlr_id
  */
 void pset_hlhsr_mode(
                      Pint ws_id,

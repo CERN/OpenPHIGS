@@ -72,6 +72,7 @@ void pclose_ws(
   int clean_fb = FALSE;
   int gl2ps = 0;
   int ctrl_flag = 0;
+  int nstale;
   GLubyte * pixel_buffer;
   png_byte ** png_rows;
   png_structp png;
@@ -257,6 +258,14 @@ void pclose_ws(
     while (str->higher != NULL) {
       phg_css_unpost(owsb->cssh, str->structh->struct_id, wsh);
       str = str->higher;
+    }
+    /* Make sure no structure keeps a reference to this ws once it is
+       freed. After the unposts above there should be none left; if there
+       are, the ws_appear_on counts were out of sync. */
+    nstale = phg_css_unpost_all(owsb->cssh, wsh);
+    if (nstale > 0) {
+      printf("WARNING in pclose_ws: removed stale references to workstation %d from %d structure(s)\n",
+             ws_id, nstale);
     }
     /* cleanup */
     wsgl_oir_cleanup(wsh);

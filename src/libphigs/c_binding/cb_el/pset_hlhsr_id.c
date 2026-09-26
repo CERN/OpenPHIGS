@@ -31,7 +31,19 @@
 /**
  * \file pset_hlhsr_id.c
  *
- * \brief       Create hidden lines */
+ * \brief       hlhrs mode identifier, hidden line mode
+ * \param       hrid set hidden line mode
+ * \verbatim
+ Possible values:
+
+  0 Hidden line off
+  1 Hidden line on
+  2 Hidden line on
+ * \endverbatim
+ * \note Adds a new element to the current structure
+ * \pre The current structure must be open for editing
+ * \sa pset_hlhsr_mode
+*/
 void pset_hlhsr_id(
                    Pint hlhsr_id
                    )

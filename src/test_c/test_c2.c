@@ -468,6 +468,10 @@ int main(int argc, char *argv[])
    ppost_struct(0, 3, 0);
    ppost_struct(1, 3, 0);
 
+   int ctrl_flag = 1;
+   predraw_all_structs(0, ctrl_flag);
+   predraw_all_structs(1, ctrl_flag);
+
    XSelectInput(PHG_WSID(0)->display,
                 PHG_WSID(0)->drawable_id,
                 ExposureMask | KeyPressMask);
@@ -509,4 +513,3 @@ exit:
 
    return 0;
 }
-

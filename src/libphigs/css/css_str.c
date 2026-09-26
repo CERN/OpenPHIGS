@@ -189,6 +189,7 @@ void phg_css_delete_struct(Css_handle cssh, Struct_handle delstruct)
   Css_set_ptr            el_set;
   Pint            delstruct_id;
 
+  delstruct_id = -1;
   if ( CSS_STRUCT_IS_OPEN(cssh, delstruct) )
     delstruct_id = delstruct->struct_id;
   /* remove all references to delstruct */
@@ -222,8 +223,12 @@ void phg_css_delete_struct(Css_handle cssh, Struct_handle delstruct)
     (void) phg_css_stab_delete(cssh->stab, delstruct->struct_id);
   css_struct_free(cssh, delstruct);
   /* re-open it if it was open before */
-  if ( CSS_STRUCT_IS_OPEN(cssh, delstruct) )
+  if (delstruct_id >= 0){
+#ifdef DEBUG
+    printf("css_str: deleted structure %d is open, re-opening it\n", delstruct_id);
+#endif
     (void) phg_css_open_struct(cssh, delstruct_id);
+  }
 }
 
 /*******************
@@ -799,7 +804,7 @@ Struct_handle phg_css_create_struct(Pint id)
   Css_set_ptr      set;
   El_handle        el;
   ALLOC_DECLARE(5);
-
+  printf("DEBUG CSS: Creating new structure with ID=%d\n", id);
   if ( !ALLOCATED(s = (Struct_handle) malloc(sizeof(Css_ssl))) )
     return(NULL);                    /* out of memory */
   s->ws_posted_to = NULL;

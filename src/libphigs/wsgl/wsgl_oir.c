@@ -462,7 +462,9 @@ void wsgl_oir_diag_readback(Ws * ws)
  */
 void wsgl_oir_resolve(Ws * ws){
   GLboolean depth_test, blend, depth_mask, scissor_test, alpha_test;
+  GLboolean polygon_stipple;
   GLint viewport[4];
+  GLint polygon_mode[2];
 
   if (!wsgl_oir_wanted(ws)) return;
   if (ws->oir.head_p_buffer == 0) return;
@@ -502,6 +504,17 @@ void wsgl_oir_resolve(Ws * ws){
   */
   alpha_test = glIsEnabled(GL_ALPHA_TEST);
   if (alpha_test) glDisable(GL_ALPHA_TEST);
+  /*
+    Interior style HOLLOW is implemented with glPolygonMode(GL_LINE), and
+    HATCH with GL_POLYGON_STIPPLE. If the last fill area of the frame used
+    one of them, the resolve quad would be rasterised as its outline only
+    (the whole frame stays blank) or with holes. The quad always has to be
+    filled completely.
+  */
+  glGetIntegerv(GL_POLYGON_MODE, polygon_mode);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  polygon_stipple = glIsEnabled(GL_POLYGON_STIPPLE);
+  if (polygon_stipple) glDisable(GL_POLYGON_STIPPLE);
 
   /*
     The resolve covers the viewport with one quad, so it must not be depth
@@ -546,4 +559,8 @@ void wsgl_oir_resolve(Ws * ws){
   glDepthMask(depth_mask);
   if (scissor_test) glEnable(GL_SCISSOR_TEST);
   if (alpha_test) glEnable(GL_ALPHA_TEST);
+  /* restore, so the cached interior style state in dev_st stays valid */
+  glPolygonMode(GL_FRONT, (GLenum) polygon_mode[0]);
+  glPolygonMode(GL_BACK, (GLenum) polygon_mode[1]);
+  if (polygon_stipple) glEnable(GL_POLYGON_STIPPLE);
 }

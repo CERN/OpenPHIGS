@@ -35,8 +35,21 @@ void pdel_struct(
                  Pint struct_id
                  )
 {
+  Struct_handle exists;
+#ifdef DEBUG
+  printf("Deleting structure with ID %d\n", struct_id);
+#endif
   if (phg_entry_check(PHG_ERH, ERR2, Pfn_del_struct)) {
-    phg_del_struct(PHG_CSS, struct_id);
+    exists = CSS_STRUCT_EXISTS(PHG_CSS, struct_id);
+    if (exists != NULL){
+      phg_del_struct(PHG_CSS, struct_id);
+#ifdef VERBOSE
+    } else {
+      printf("ERROR: pdel_struct: Cannot delete structure %d.\n", struct_id);
+      ERR_REPORT(PHG_ERH, ERR200);
+#endif
+    }
+  } else {
+    ERR_REPORT(PHG_ERH, ERR2);
   }
 }
-

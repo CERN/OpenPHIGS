@@ -6,7 +6,6 @@ SET(P_C_BINDING_SRCS
   c_binding/cb_ar/pclose_ar_file.c
   c_binding/cb_ar/pdel_all_structs.c
   c_binding/cb_ar/pdel_all_structs_ar.c
-  c_binding/cb_ar/pdel_struct.c
   c_binding/cb_ar/pdel_struct_net.c
   c_binding/cb_ar/pdel_struct_nets_ar.c
   c_binding/cb_ar/pdel_structs_ar.c
@@ -140,6 +139,7 @@ SET(P_C_BINDING_SRCS
   c_binding/cb_str/pdel_elem.c
   c_binding/cb_str/pdel_elem_range.c
   c_binding/cb_str/pdel_elems_labels.c
+  c_binding/cb_str/pdel_struct.c
   c_binding/cb_str/pelem_search.c
   c_binding/cb_str/pempty_struct.c
   c_binding/cb_str/pinq_cur_elem_content.c

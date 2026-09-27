@@ -804,7 +804,9 @@ Struct_handle phg_css_create_struct(Pint id)
   Css_set_ptr      set;
   El_handle        el;
   ALLOC_DECLARE(5);
+#ifdef DEBUG
   printf("DEBUG CSS: Creating new structure with ID=%d\n", id);
+#endif
   if ( !ALLOCATED(s = (Struct_handle) malloc(sizeof(Css_ssl))) )
     return(NULL);                    /* out of memory */
   s->ws_posted_to = NULL;

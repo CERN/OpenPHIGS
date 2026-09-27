@@ -359,6 +359,10 @@ void wsgl_set_clip_vol3(
       nn0.x = nn0.x/len;
       nn0.y = nn0.y/len;
       nn0.z = nn0.z/len;
+    } else {
+      nn0.x = 1.0;
+      nn0.y = 1.0;
+      nn0.z = 1.0;
     }
 #ifdef DEBUGCL
     printf("Plane0: norm in %f %f %f %flength %f\n",
@@ -371,7 +375,7 @@ void wsgl_set_clip_vol3(
            pt0.x, pt0.y, pt0.z, sqrt(pt0.x*pt0.x+pt0.y*pt0.y+pt0.z*pt0.z));
 #endif
 
-    if (2 ==num){
+    if (2 == num){
       /* first plane */
       volume1 = list[1];
       /* take a local copy of the data */
@@ -391,6 +395,10 @@ void wsgl_set_clip_vol3(
         nn1.x = nn1.x/len;
         nn1.y = nn1.y/len;
         nn1.z = nn1.z/len;
+      } else {
+        nn1.x = 1.0;
+        nn1.y = 1.0;
+        nn1.z = 1.0;
       }
 #ifdef DEBUGCL
       printf("Plane1: norm in %f %f %f %flength %f\n",

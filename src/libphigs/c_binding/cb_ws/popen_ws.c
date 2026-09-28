@@ -152,9 +152,18 @@ void popen_ws(
           memcpy(&args.conn_info, conn_id, sizeof(Phg_args_conn_info));
         }
         switch (ws_type){
+        case PWST_HCOPY_TRUE_TGA:
+        case PWST_HCOPY_TRUE_RGB_PNG:
+        case PWST_HCOPY_TRUE_RGBA_PNG:
+          record_geom = FALSE;
+          break;
         case PWST_HCOPY_TRUE_EPS:
         case PWST_HCOPY_TRUE_PDF:
         case PWST_HCOPY_TRUE_SVG:
+          /* Ignore shader for these exports:
+             gl2ps captures fixed-function GL calls for the vector
+             formats, and the shader/OIR path is not reliable off-screen. */
+          args.use_shaders = 0;
           record_geom = FALSE;
           break;
         case  PWST_HCOPY_TRUE_OBJ:

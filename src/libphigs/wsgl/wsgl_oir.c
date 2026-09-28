@@ -197,8 +197,8 @@ static void wsgl_oir_publish_state(Ws * ws, int enabled)
  */
 static int wsgl_oir_wanted(Ws * ws)
 {
-  return (ws->oir.mode > 0) && wsgl_use_shaders &&
-         (wsgl_frag_shader_version >= 430);
+  return (ws->oir.mode > 0) && (ws->shader.use_shaders > 0) &&
+         (ws->shader.fs_vers >= 430);
 }
 
 /*******************************************************************************

@@ -132,13 +132,13 @@ void wsgl_setup_back_int_attr_nocol(
   }
 
   if (wsgl->cur_struct.lighting) {
-    if (wsgl_use_shaders) {
+    if (ws->shader.use_shaders) {
       glUniform1i(ws->shader.shading_mode, 1);
     } else {
       glEnable(GL_LIGHTING);
     }
   } else {
-    if (wsgl_use_shaders) {
+    if (ws->shader.use_shaders) {
       glUniform1i(ws->shader.shading_mode, 0);
     } else {
       glDisable(GL_LIGHTING);
@@ -491,7 +491,7 @@ void wsgl_setup_int_reflectance_model(
     refl_props = &ast->bundl_group.int_bundle.refl_props;
   }
 
-  if (wsgl_use_shaders) glUniform1i(ws->shader.shading_mode, 1);
+  if (ws->shader.use_shaders) glUniform1i(ws->shader.shading_mode, 1);
 
   switch (refl_model) {
   case PREFL_AMBIENT:
@@ -622,11 +622,11 @@ void wsgl_setup_int_reflectance_model(
     diffuse[3] = 1.0;
     specular[3] = 1.0;
 
-    if (wsgl_use_shaders) glUniform1i(ws->shader.shading_mode, 0);
+    if (ws->shader.use_shaders) glUniform1i(ws->shader.shading_mode, 0);
     break;
   }
 
-  if (wsgl_use_shaders) {
+  if (ws->shader.use_shaders) {
     switch (colr_type){
     case PMODEL_RGB:
       glVertexAttrib4f(vCOLOR,
@@ -688,7 +688,7 @@ int wsgl_setup_int_colr(
            colr->direct.rgba.blue,
            colr->direct.rgba.alpha);
 #endif
-    wsgl_set_colr(colr_type, colr);
+    wsgl_set_colr(ws, colr_type, colr);
     lighting = FALSE;
   }
 
@@ -748,7 +748,7 @@ int wsgl_setup_back_int_colr(
     lighting = TRUE;
   }
   else {
-    wsgl_set_colr(colr_type, colr);
+    wsgl_set_colr(ws, colr_type, colr);
     lighting = FALSE;
   }
 

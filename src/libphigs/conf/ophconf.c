@@ -62,6 +62,9 @@ void set_defaults(Pophconf* config){
     config->vpos.y_max = 1.;
     config->set_window_pos = 1;
     config->hcsf = 1.0;
+    config->use_shaders = 1;
+    config->vs_vers = 120;
+    config->fs_vers = 120;
     config->oir = 0;
     config->layersPerPixel = 16;
 }
@@ -74,6 +77,9 @@ void query_settings(){
     cf = &config[i];
     if (cf->wkid >= 0){
       printf("Workstation   ID %d:\n", cf->wkid);
+      printf("  Shader enabled: %d\n", cf->use_shaders);
+      printf("    Vertex   shader version: %d\n", cf->vs_vers);
+      printf("    Fragment shader version: %d\n", cf->fs_vers);
       printf("  Order Independent Renderging: %d:\n", cf->oir);
       printf("  OIR layers per pixel: %d:\n", cf->layersPerPixel);
       printf("  Title:         %s\n", cf->window_title);
@@ -137,9 +143,6 @@ void read_config(char * config_file){
 
   /* defaults for updated configs */
   init_defaults();
-  wsgl_use_shaders = 1;
-  oir_mode = 0;
-  oir_lpp = 16;
 
   if (config_file == NULL){
     printf("No configuration file name defined. Using defaults instead.\n");
@@ -247,18 +250,18 @@ void read_config(char * config_file){
         }
         if (sscanf(line, "%%gs %d", &use_shaders) > 0){
           if (use_shaders == 0){
-            wsgl_use_shaders = 0;
+            newconfig.use_shaders = 0;
             printf("Shaders are DISABLED by configuration\n");
           } else {
-            wsgl_use_shaders = 1;
+            newconfig.use_shaders = 1;
             printf("Shaders are ENABLED by configuration\n");
           }
         }
         if (sscanf(line, "%%vs %d", &vertex_shader) > 0){
-          wsgl_vert_shader_version = (short)vertex_shader;
+           newconfig.vs_vers = vertex_shader;
         }
         if (sscanf(line, "%%fs %d", &fragment_shader) > 0){
-          wsgl_frag_shader_version = (short)fragment_shader;
+           newconfig.fs_vers = fragment_shader;
         }
         if (sscanf(line, "%%pc %d", &printconf) > 0){
           if (printconf == 0){

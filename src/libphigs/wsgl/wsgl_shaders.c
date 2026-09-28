@@ -376,10 +376,10 @@ void wsgl_shaders(Ws * ws){
     fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
     abort();
   }
-  if (! (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)) wsgl_use_shaders = 0;
+  if (! (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader && GLEW_ARB_shader_objects)) ws->shader.use_shaders = 0;
 #endif
   wsgl_setup_patterns();
-  if (! wsgl_use_shaders) {
+  if (! ws->shader.use_shaders) {
     fprintf(stderr, "WARNING: Shaders are not available or not wanted.\nSome functionality may not work as expected.\n");
     glUseProgram(0);
   } else {
@@ -421,45 +421,45 @@ void wsgl_shaders(Ws * ws){
     */
     driver_glsl = wsgl_glsl_version(ShaderVersion);
     if (driver_glsl > 0){
-      if (wsgl_vert_shader_version > driver_glsl){
+      if (ws->shader.vs_vers > driver_glsl){
         fprintf(stderr, "WARNING: Requested vertex shader version %d is newer"
                 " than the %d supported by the driver\n",
-                wsgl_vert_shader_version, driver_glsl);
-        wsgl_vert_shader_version = Wsgl_shader_match(driver_glsl);
-        if (wsgl_vert_shader_version > 0){
-          fprintf(stderr, "WARNING: Switching to %d\n", wsgl_vert_shader_version);
+                ws->shader.vs_vers, driver_glsl);
+        ws->shader.vs_vers = Wsgl_shader_match(driver_glsl);
+        if (ws->shader.vs_vers > 0){
+          fprintf(stderr, "WARNING: Switching to %d\n", ws->shader.vs_vers);
         } else {
           fprintf(stderr, "WARNING: Unable to find a matching shader version\n");
-          wsgl_use_shaders = 0;
+          ws->shader.use_shaders = 0;
           return;
         }
       }
-      if (wsgl_frag_shader_version > driver_glsl){
+      if (ws->shader.fs_vers > driver_glsl){
         fprintf(stderr, "WARNING: Requested fragment shader version %d is newer"
                 " than the %d supported by the driver\n",
-                wsgl_frag_shader_version, driver_glsl);
-        wsgl_frag_shader_version = Wsgl_shader_match(driver_glsl);
-        if (wsgl_frag_shader_version > 0){
-          fprintf(stderr, "WARNING: Switching to %d\n", wsgl_vert_shader_version);
+                ws->shader.fs_vers, driver_glsl);
+        ws->shader.fs_vers = Wsgl_shader_match(driver_glsl);
+        if (ws->shader.fs_vers > 0){
+          fprintf(stderr, "WARNING: Switching to %d\n", ws->shader.vs_vers);
         } else {
           fprintf(stderr, "WARNING: Unable to find a matching shader version\n");
-          wsgl_use_shaders = 0;
+          ws->shader.use_shaders = 0;
           return;
         }
       }
     }
-    if (ws->oir.mode > 0 && wsgl_frag_shader_version < 430){
+    if (ws->oir.mode > 0 && ws->shader.fs_vers < 430){
       fprintf(stderr, "WARNING: order independent rendering needs shader"
               " version 430 or later (configured: %d). Continuing with OIR"
-              " disabled for this workstation.\n", wsgl_frag_shader_version);
+              " disabled for this workstation.\n", ws->shader.fs_vers);
       ws->oir.mode = 0;
     }
     vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     wsgl_compile_shader(vertex_shader, GL_VERTEX_SHADER,
-                        wsgl_vert_shader_version);
+                        ws->shader.vs_vers);
     wsgl_compile_shader(fragment_shader, GL_FRAGMENT_SHADER,
-                        wsgl_frag_shader_version);
+                        ws->shader.fs_vers);
 
     ws->shader.program = glCreateProgram();
     glAttachShader(ws->shader.program, vertex_shader);
@@ -469,7 +469,7 @@ void wsgl_shaders(Ws * ws){
     if (!linked) {
       fprintf(stderr, "[ERROR] Linking the shader program failed"
               " (vertex version %d, fragment version %d)\n",
-              wsgl_vert_shader_version, wsgl_frag_shader_version);
+              ws->shader.vs_vers, ws->shader.fs_vers);
       wsgl_print_program_log(ws->shader.program);
       abort();
     }
@@ -568,7 +568,7 @@ void wsgl_shaders(Ws * ws){
       */
       ws->shader.oir_program = 0;
       ws->shader.oirMode = -1;
-      if (wsgl_frag_shader_version == 430 ){
+      if (ws->shader.fs_vers == 430 ){
         ws->shader.oir_program = wsgl_build_program(vertex_shader_text_430_resolve,
                                                     fragment_shader_text_430_resolve,
                                                     "OIR resolve");

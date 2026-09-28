@@ -248,8 +248,6 @@ void pclose_ws(
         printf("ERROR exporting as eps. Buffer size is too small.\n");
       }
       fclose(wsh->fd);
-      /* restore original shader settings */
-      wsgl_use_shaders = wsgl_use_shaders_settings;
       clean_fb = TRUE;
     }
     (*wsh->update)(wsh, PFLAG_PERFORM);

@@ -52,13 +52,13 @@ void CreateRandomImage(void)
     for (j = 0; j < ImageHeight; j++) {
       c = (unsigned int)(100.0*rand()/RAND_MAX+0.5);
       for (k=0; k<3;k++){
-	if (c >= 50){
-	  randomImage[i][j][k] = (GLubyte) 255;
-	} else {
-	  for (k=0; k<3;k++){
-	    randomImage[i][j][k] = (GLubyte) 0;
-	  }
-	}
+        if (c >= 50){
+          randomImage[i][j][k] = (GLubyte) 255;
+        } else {
+          for (k=0; k<3;k++){
+            randomImage[i][j][k] = (GLubyte) 0;
+          }
+        }
       }
     }
   }
@@ -132,20 +132,23 @@ void wsgl_setup_patterns(){
  * DESCR:      Set pattern
  * RETURNS:    N/A
  */
-void wsgl_select_pattern(Ws * ws, unsigned short num){
+void wsgl_select_pattern(
+                         Ws * ws,
+                         unsigned short num
+                         ){
   glActiveTexture(GL_TEXTURE0);
   switch (num) {
   case 1:
     glBindTexture(GL_TEXTURE_2D, texture[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ImageWidth,
-		 ImageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE,
-		 &checkImage[0][0][0]);
+                 ImageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE,
+                 &checkImage[0][0][0]);
     break;
   case 2:
     glBindTexture(GL_TEXTURE_2D, texture[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ImageWidth,
-		 ImageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE,
-		 &randomImage[0][0][0]);
+                 ImageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE,
+                 &randomImage[0][0][0]);
     break;
   default:
     break;
@@ -155,7 +158,7 @@ void wsgl_select_pattern(Ws * ws, unsigned short num){
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  if (wsgl_use_shaders){
+  if (ws->shader.use_shaders){
     GLint loc = glGetUniformLocation(ws->shader.program, "currentTexture");
     if (loc == -1) {
       fprintf(stderr, "currentTexture uniform not found (optimized out or wrong name)\n");

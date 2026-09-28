@@ -98,7 +98,6 @@ void popen_ws(
     read_config("phigs.def");
   };
   /* save the current shader settings */
-  wsgl_use_shaders_settings = wsgl_use_shaders;
   if (phg_entry_check(PHG_ERH, ERR2, Pfn_open_ws)) {
     if ((ws_id < 0) || (ws_id > MAX_NO_OPEN_WS)) {
       ERR_REPORT(PHG_ERH, ERR65);
@@ -117,6 +116,9 @@ void popen_ws(
       }
       else {
         memset(&args, 0, sizeof(Phg_args_open_ws));
+        args.use_shaders = config[ws_id].use_shaders;
+        args.vs_vers = config[ws_id].vs_vers;
+        args.fs_vers = config[ws_id].fs_vers;
         args.width = config[ws_id].display_width;
         args.height = config[ws_id].display_height;
         args.hcsf = config[ws_id].hcsf;
@@ -153,13 +155,12 @@ void popen_ws(
         case PWST_HCOPY_TRUE_EPS:
         case PWST_HCOPY_TRUE_PDF:
         case PWST_HCOPY_TRUE_SVG:
-          /* switch off shaders for gl2ps exports */
-          wsgl_use_shaders_settings = wsgl_use_shaders;
-          wsgl_use_shaders = 0;
+          record_geom = FALSE;
           break;
         case  PWST_HCOPY_TRUE_OBJ:
         case  PWST_HCOPY_TRUE_GLTF:
           record_geom = TRUE;
+          break;
         }
         args.wsid = ws_id;
         args.type = wst;

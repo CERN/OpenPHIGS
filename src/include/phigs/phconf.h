@@ -41,7 +41,10 @@ extern "C" {
     unsigned int border_width;
     int xpos, ypos;
     float hcsf; /* hard copy scale factor */
-    int oir; /* enable order independent rendering */
+    Pint oir; /* enable order independent rendering */
+    Pint use_shaders;
+    Pint vs_vers;
+    Pint fs_vers;
     int layersPerPixel;
   } Pophconf;
 

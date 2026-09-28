@@ -262,6 +262,11 @@ typedef struct {
 } Wsgl_oir;
 
   typedef struct {
+    Pint use_shaders;
+    /* shader versions, e.g. 120 means GSGL version 1.20 */
+    Pint vs_vers;
+    Pint fs_vers;
+    
     /* shader specific internal variables */
     GLint program;
     /* second program used to resolve the order independent rendering lists,

@@ -45,12 +45,6 @@
 #include "private/wsbP.h"
 #include "private/sofas3P.h"
 
-/* instantiate globals. */
-short int wsgl_use_shaders = 1;
-short int wsgl_use_shaders_settings = 0;
-short int wsgl_vert_shader_version = 430;
-short int wsgl_frag_shader_version = 430;
-
 #define LOG_INT(DATA)                                   \
   css_print_eltype(ELMT_HEAD(DATA)->elementType);       \
   printf(":\tSIZE: %d\t", ELMT_HEAD(DATA)->length);     \
@@ -476,7 +470,7 @@ void wsgl_begin_rendering(
 #ifdef DEBUG
   printf("Begin rendering\n");
 #endif
-  if (wsgl_use_shaders){
+  if (ws->shader.use_shaders){
     GLint currentProgram = 0;
     glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
     if (currentProgram != ws->shader.program){

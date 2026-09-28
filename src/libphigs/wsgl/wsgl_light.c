@@ -89,7 +89,7 @@ static void setup_ambient_light(
 #ifdef DEBUGL
    printf("Ambient light: %f %f %f\n", amb[0], amb[1], amb[2]);
 #endif
-   if (wsgl_use_shaders){
+   if (ws->shader.use_shaders){
 #ifdef DEBUGL
      printf("Ambient light Using shaders %d\n", ind);
 #endif
@@ -175,7 +175,7 @@ static void setup_directional_light(
           dif[0], dif[1], dif[2],
           pos[0], pos[1], pos[2]);
 #endif
-   if (wsgl_use_shaders){
+   if (ws->shader.use_shaders){
 #ifdef DEBUGL
      printf("Directional light Using shaders %d\n", ind);
 #endif
@@ -276,7 +276,7 @@ static void setup_positional_light(
           pos[0], pos[1], pos[2],
           coef[0], coef[1]);
 #endif
-   if (wsgl_use_shaders){
+   if (ws->shader.use_shaders){
 #ifdef DEBUGL
      printf("Positional light Using shaders %d\n", ind);
 #endif
@@ -406,7 +406,7 @@ void wsgl_update_light_src_state(
         }
       }
     } else {
-      if (wsgl_use_shaders){
+      if (ws->shader.use_shaders){
         switch (i){
         case 1:
           glUniform1i(ws->shader.lightSource0, 0);

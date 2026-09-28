@@ -33,11 +33,6 @@ extern "C" {
 #define WS_FILL_AREA_OFFSET    1.0
 #define MAX_VERTICES 10000
 
-  /* option to switch usage of shaders on or off */
-  extern short int wsgl_use_shaders;
-  extern short int wsgl_vert_shader_version;
-  extern short int wsgl_frag_shader_version;
-
   extern Phg_font *fnt_fonts[];
   extern unsigned char *wsgl_hatch_tbl[];
 
@@ -280,6 +275,7 @@ extern "C" {
    */
 
   void wsgl_set_colr(
+                     Ws *ws,
                      Pint colr_type,
                      Pcoval *colr
                      );
@@ -292,6 +288,7 @@ extern "C" {
    */
 
   void wsgl_set_gcolr(
+                      Ws *ws,
                       Pgcolr *gcolr
                       );
 

@@ -25,8 +25,6 @@
 #include "private/phgP.h"
 #include "ws_inp.h"
 
-extern short int wsgl_use_shaders_settings;
-
 extern Wst_input_wsdt* input_ws_open(
                                      Pint ws_id,
                                      Pint fn_id,

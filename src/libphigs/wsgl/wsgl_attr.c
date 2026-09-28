@@ -129,13 +129,13 @@ void wsgl_update_projection(
     phg_mat_mul(wsgl->model_tran,
                 wsgl->pick_tran,
                 wsgl->cur_struct.view_rep.map_matrix);
-    if (wsgl_use_shaders){
+    if (ws->shader.use_shaders){
       wsgl_set_projection_matrix(ws, wsgl->model_tran);
     } else {
       wsgl_set_matrix(wsgl->model_tran, FALSE);
     }
   } else {
-    if (wsgl_use_shaders){
+    if (ws->shader.use_shaders){
       wsgl_set_projection_matrix(ws, wsgl->cur_struct.view_rep.map_matrix);
     } else {
       wsgl_set_matrix(wsgl->cur_struct.view_rep.map_matrix, FALSE);
@@ -172,7 +172,7 @@ void wsgl_update_modelview(
   phg_mat_mul(wsgl->model_tran,
               wsgl->cur_struct.view_rep.ori_matrix,
               wsgl->composite_tran);
-  if (wsgl_use_shaders){
+  if (ws->shader.use_shaders){
     wsgl_set_model_view_matrix(ws, wsgl->model_tran);
   } else {
     wsgl_set_matrix(wsgl->model_tran, FALSE);
@@ -491,6 +491,7 @@ void wsgl_set_asf(
  * RETURNS:    N/A
  */
 void wsgl_set_colr(
+                   Ws *ws,
                    Pint colr_type,
                    Pcoval *colr
                    )
@@ -505,7 +506,7 @@ void wsgl_set_colr(
     break;
 
   case PMODEL_RGB:
-    if (wsgl_use_shaders) {
+    if (ws->shader.use_shaders) {
       glVertexAttrib4f(vCOLOR,
                        colr->direct.rgb.red,
                        colr->direct.rgb.green,
@@ -520,7 +521,7 @@ void wsgl_set_colr(
     break;
 
   case PMODEL_RGBA:
-    if (wsgl_use_shaders){
+    if (ws->shader.use_shaders){
       glVertexAttrib4f(vCOLOR,
                        colr->direct.rgba.red,
                        colr->direct.rgba.green,
@@ -557,6 +558,7 @@ void wsgl_set_colr(
  * RETURNS:    N/A
  */
 void wsgl_set_gcolr(
+                    Ws *ws,
                     Pgcolr *gcolr
                     )
 {
@@ -566,7 +568,7 @@ void wsgl_set_gcolr(
     break;
 
   case PMODEL_RGB:
-    if (wsgl_use_shaders) {
+    if (ws->shader.use_shaders) {
       glVertexAttrib4f(vCOLOR,
                        gcolr->val.general.x,
                        gcolr->val.general.y,
@@ -581,7 +583,7 @@ void wsgl_set_gcolr(
     break;
 
   case PMODEL_RGBA:
-    if (wsgl_use_shaders) {
+    if (ws->shader.use_shaders) {
 #ifdef DEBUGA
       printf("wsgl_set_gcolr setting %f %f %f %f\n",
              gcolr->val.general.x,
@@ -731,10 +733,10 @@ void wsgl_setup_line_attr(
   Pint type;
 
   if (phg_nset_name_is_set(&ast->asf_nameset, (Pint) PASPECT_LINE_COLR_IND)) {
-    wsgl_set_gcolr(&ast->indiv_group.line_bundle.colr);
+    wsgl_set_gcolr(ws, &ast->indiv_group.line_bundle.colr);
   }
   else {
-    wsgl_set_gcolr(&ast->bundl_group.line_bundle.colr);
+    wsgl_set_gcolr(ws, &ast->bundl_group.line_bundle.colr);
   }
 
   if (phg_nset_name_is_set(&ast->asf_nameset, (Pint) PASPECT_LINETYPE)) {
@@ -771,7 +773,7 @@ void wsgl_setup_line_attr(
   else {
     glLineWidth(ast->bundl_group.line_bundle.width);
   }
-  if (wsgl_use_shaders){
+  if (ws->shader.use_shaders){
     glUniform1i(ws->shader.shading_mode, 0);
   } else {
     glDisable(GL_LIGHTING);
@@ -952,9 +954,9 @@ void wsgl_setup_int_attr_nocol(
   /* this is a bit clumbsy indeed. Can be improved... */
   state1 = 0;
   state2 = GL_FALSE;
-  if (wsgl_use_shaders && ws->shader.applyTexture >= 0){
+  if (ws->shader.use_shaders && ws->shader.applyTexture >= 0){
     glGetUniformiv(ws->shader.program, ws->shader.applyTexture, &state1);
-  } else if (wsgl_use_shaders) {
+  } else if (ws->shader.use_shaders) {
     state1 = 0;                    /* uniform optimised out: texturing is off */
   } else {
     glGetBooleanv(GL_TEXTURE_2D, &state2);
@@ -984,7 +986,7 @@ void wsgl_setup_int_attr_nocol(
     wsgl->dev_st.int_shad_meth = shad_meth;
   }
 
-  if (wsgl_use_shaders){
+  if (ws->shader.use_shaders){
     if (wsgl->cur_struct.lighting) {
       glUniform1i(ws->shader.shading_mode, 1);
     }
@@ -1013,7 +1015,7 @@ void wsgl_setup_int_attr(
                          Ws_attr_st *ast
                          )
 {
-  wsgl_set_gcolr(wsgl_get_int_colr(ast));
+  wsgl_set_gcolr(ws, wsgl_get_int_colr(ast));
   wsgl_setup_int_attr_nocol(ws, ast);
 }
 
@@ -1100,10 +1102,10 @@ void wsgl_setup_edge_attr(
   Pint type;
 
   if (phg_nset_name_is_set(&ast->asf_nameset, (Pint) PASPECT_EDGE_COLR_IND)) {
-    wsgl_set_gcolr(&ast->indiv_group.edge_bundle.colr);
+    wsgl_set_gcolr(ws, &ast->indiv_group.edge_bundle.colr);
   }
   else {
-    wsgl_set_gcolr(&ast->bundl_group.edge_bundle.colr);
+    wsgl_set_gcolr(ws, &ast->bundl_group.edge_bundle.colr);
   }
 
   glLineWidth(wsgl_get_edge_width(ast));
@@ -1137,7 +1139,7 @@ void wsgl_setup_edge_attr(
     glDisable(GL_LINE_STIPPLE);
     break;
   }
-  if (wsgl_use_shaders) {
+  if (ws->shader.use_shaders) {
     glUniform1i(ws->shader.shading_mode, 0);
   } else {
     glDisable(GL_LIGHTING);
@@ -1185,10 +1187,10 @@ void wsgl_setup_marker_attr(
 {
   if (phg_nset_name_is_set(&ast->asf_nameset,
                            (Pint) PASPECT_MARKER_COLR_IND)) {
-    wsgl_set_gcolr(&ast->indiv_group.marker_bundle.colr);
+    wsgl_set_gcolr(ws, &ast->indiv_group.marker_bundle.colr);
   }
   else {
-    wsgl_set_gcolr(&ast->bundl_group.marker_bundle.colr);
+    wsgl_set_gcolr(ws, &ast->bundl_group.marker_bundle.colr);
   }
 
   if (phg_nset_name_is_set(&ast->asf_nameset, (Pint) PASPECT_MARKER_TYPE)) {
@@ -1204,7 +1206,7 @@ void wsgl_setup_marker_attr(
   else {
     *size = ast->bundl_group.marker_bundle.size;
   }
-  if (wsgl_use_shaders){
+  if (ws->shader.use_shaders){
     glUniform1i(ws->shader.shading_mode, 0);
   } else {
     glDisable(GL_LIGHTING);
@@ -1224,7 +1226,7 @@ void wsgl_setup_background(
   Wsgl_handle wsgl = ws->render_context;
   glDisable(GL_POLYGON_STIPPLE);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  if (wsgl_use_shaders) {
+  if (ws->shader.use_shaders) {
     glVertexAttrib4f(vCOLOR,
                      wsgl->background.val.general.x,
                      wsgl->background.val.general.y,
@@ -1314,10 +1316,10 @@ void wsgl_setup_text_attr(
   Pint font;
 
   if (phg_nset_name_is_set(&ast->asf_nameset, (Pint) PASPECT_TEXT_COLR_IND)) {
-    wsgl_set_gcolr(&ast->indiv_group.text_bundle.colr);
+    wsgl_set_gcolr(ws, &ast->indiv_group.text_bundle.colr);
   }
   else {
-    wsgl_set_gcolr(&ast->bundl_group.text_bundle.colr);
+    wsgl_set_gcolr(ws, &ast->bundl_group.text_bundle.colr);
   }
 
   if (phg_nset_name_is_set(&ast->asf_nameset, (Pint) PASPECT_TEXT_FONT)) {
@@ -1341,7 +1343,7 @@ void wsgl_setup_text_attr(
     *char_expan = ast->bundl_group.text_bundle.char_expan;
   }
 
-  if (wsgl_use_shaders){
+  if (ws->shader.use_shaders){
     glUniform1i(ws->shader.shading_mode, 0);
   }
   else

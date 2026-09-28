@@ -265,7 +265,7 @@ void wsgl_polymarker(
     wsgl_marker_polygon(6, &point_list, size);
     break;
   }
-  glPolygonMode(polygonMode[0], polygonMode[1]);
+  glPolygonMode(GL_FRONT_AND_BACK, polygonMode[0]);
 }
 
 /*******************************************************************************
@@ -349,5 +349,5 @@ void wsgl_polymarker3(
   else {
     ERR_REPORT(ws->erh, ERR900);
   }
-  glPolygonMode(polygonMode[0], polygonMode[1]);
+  glPolygonMode(GL_FRONT_AND_BACK, polygonMode[0]);
 }

@@ -322,11 +322,14 @@ void wsgl_oir_reset(Ws * ws){
     size_t n_pixels = (size_t) width * (size_t) height;
     const GLuint list_end = 0xFFFFFFFFu;
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ws->oir.head_p_buffer);
+    wsgl_oir_check_gl("wsgl_oir_reset: glBindBuffer(head pointer SSBO)");
     glClearBufferSubData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, 0,
                          (GLsizeiptr) n_pixels * sizeof(GLuint),
                          GL_RED_INTEGER, GL_UNSIGNED_INT, &list_end);
+    wsgl_oir_check_gl("wsgl_oir_reset: glClearBufferSubData(head pointer SSBO)");
   }
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, OIR_HEAD_POINTER_BINDING, ws->oir.head_p_buffer);
+  wsgl_oir_check_gl("wsgl_oir_reset: glBindBufferBase(head pointer SSBO)");
   glBindImageTexture(OIR_LIST_BUFFER_UNIT,
                      ws->oir.frag_storage_texture,
                      0,
@@ -334,8 +337,9 @@ void wsgl_oir_reset(Ws * ws){
                      0,
                      GL_READ_WRITE,
                      GL_RGBA32UI);
+  wsgl_oir_check_gl("wsgl_oir_reset: glBindImageTexture(fragment list)");
   glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, ws->oir.acounter_buffer);
-  wsgl_oir_check_gl("wsgl_oir_reset: buffer/image/atomic counter binding");
+  wsgl_oir_check_gl("wsgl_oir_reset: glBindBufferBase(atomic counter)");
   /*
     Before clearing the counter, read what the previous frame asked for. The
     counter keeps rising past the capacity when the list is full, so a value

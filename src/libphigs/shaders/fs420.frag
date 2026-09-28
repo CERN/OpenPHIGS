@@ -6,23 +6,16 @@
  * fragments belonging to its pixel. The list is walked, sorted by depth and
  * blended at the bottom of main().
  *
- * This is pass 1 of 2. It shades the fragment and then either
- *
- *   - writes it straight out and lets it write depth as usual, if it is
- *     opaque, or
- *
- *   - appends it to the linked list of its pixel and discards, if it is
- *     transparent. Nothing is written to the framebuffer in that case.
+ * This is pass 1 of 2. It shades the fragment and then, whenever OIR is
+ * enabled, appends it to the linked list of its pixel and discards -- opaque
+ * and transparent fragments alike (see the matching note in fs430.frag for
+ * why, and for the capacity trade-off that comes with it).
  *
  * fs430_resolve.frag is pass 2: it walks each pixel's list, sorts it by depth
- * and composites the result over the opaque image left behind by this pass.
+ * and composites the result over the opaque image already written by
+ * ordinary (non-OIR) geometry, or left over from before this frame.
  *
- * TRADE-OFF, not a clean split: see the matching note in fs430.frag -- letting
- * opaque fragments skip the list means the resolve pass gets only one depth
- * test against the real depth buffer per pixel, which is wrong for an opaque
- * object sandwiched between two transparent surfaces at different depths
- * (e.g. a detector track behind a transparent shell's near face but in front
- * of its far face). This shader is dead code at this GLSL version regardless
+ * This shader is dead code at this GLSL version regardless
  * (wsgl_oir_wanted() requires 4.30+), kept only for structural parity.
  */
 uniform int ShadingMode;
